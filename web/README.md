@@ -15,6 +15,7 @@ Portal original y responsivo basado en los recursos del repositorio BoomBang HTM
 | `catalogo.html` | Consulta de artículos activos y disponibles para compra en el catálogo del juego (solo lectura) |
 | `ranking.html` | Clasificación de la última semana de minijuegos con respeto al ajuste de privacidad `show_username` |
 | `social.html` | Solicitudes de amistad, aceptación y clanes por invitación |
+| `moderacion.html` | Revisión de reportes desde una cuenta administradora |
 | `ayuda.html` | Instrucciones para preparar el entorno y acceder al cliente HTML5 |
 
 Las imágenes siguen procediendo de `doc/screenshots/` y no de sitios externos.
@@ -52,10 +53,10 @@ Las páginas llaman a rutas **del mismo origen**: Nginx reenvía `/portal/*` a l
 - Chat: `GET/POST /portal/chat` para usuarios autenticados.
 - Presencia: `POST /portal/presence` registra la actividad de una cuenta; `status` muestra el número de usuarios activos del portal en los últimos cinco minutos, **no** los jugadores en el juego.
 - Noticias: un usuario con rol `Admin` o `Superadmin` puede publicar y eliminar noticias desde `noticias.html`.
-- Moderación: administradores pueden cerrar o eliminar temas, eliminar respuestas y borrar mensajes del chat.
+- Moderación: los miembros autenticados pueden reportar temas, respuestas y mensajes; administradores revisan reportes en `moderacion.html`, cierran o eliminan temas y retiran contenido del chat.
 - Las rutas de escritura están protegidas por sesiones, CSRF, validación de entradas, autorización y límites de solicitudes.
 
-Se crean `portal_news`, `portal_threads`, `portal_replies`, `portal_chat_messages` y `portal_presence` mediante la migración `api/database/migrations/2026_10_31_220000_create_portal_tables.php`. La migración `2026_10_31_221000_create_portal_social_tables.php` incorpora `portal_friendships`, `portal_clans`, `portal_clan_members` e invitaciones.
+Se crean `portal_news`, `portal_threads`, `portal_replies`, `portal_chat_messages` y `portal_presence` mediante la migración `api/database/migrations/2026_10_31_220000_create_portal_tables.php`. La migración `2026_10_31_221000_create_portal_social_tables.php` incorpora `portal_friendships`, `portal_clans`, `portal_clan_members` e invitaciones. La migración `2026_10_31_222000_create_portal_reports_table.php` almacena los reportes de contenido.
 
 ## Pruebas
 
