@@ -6,6 +6,9 @@ on:
       - "web/**"
       - "api/app/Http/Controllers/Portal/**"
       - "api/database/migrations/2026_10_31_220000_create_portal_tables.php"
+      - "api/database/migrations/2026_10_31_221000_create_portal_social_tables.php"
+      - "server/src/config/server.js"
+      - "api/config/services.php"
       - "api/routes/web.php"
       - ".github/workflows/portal-checks.yml"
   push:
@@ -29,10 +32,13 @@ jobs:
           for file in web/*.js web/tests/*.mjs; do node --check "$file"; done
       - name: Verificar enlaces y recursos del portal
         run: node --test web/tests/portal-static.test.mjs
+      - name: Revisar sintaxis servidor Node.js
+        run: node --check server/src/config/server.js
       - name: Revisar sintaxis PHP
         run: |
           php -l api/routes/web.php
           php -l api/database/migrations/2026_10_31_220000_create_portal_tables.php
+          php -l api/database/migrations/2026_10_31_221000_create_portal_social_tables.php
           find api/app/Http/Controllers/Portal -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Validar configuración Nginx
         run: |
