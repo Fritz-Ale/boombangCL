@@ -32,6 +32,19 @@ Route::prefix('portal')->group(function () {
     Route::get('forum/threads/{id}', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'thread'])->whereNumber('id');
 
     Route::middleware(['auth:web'])->group(function () {
+        // Social endpoints use the authenticated web guard and CSRF protection.
+        Route::get('friends', [\App\Http\Controllers\Portal\PortalSocialController::class, 'friendships']);
+        Route::post('friends', [\App\Http\Controllers\Portal\PortalSocialController::class, 'requestFriend'])->middleware('throttle:6,1');
+        Route::patch('friends/{id}/accept', [\App\Http\Controllers\Portal\PortalSocialController::class, 'acceptFriend'])->whereNumber('id')->middleware('throttle:12,1');
+        Route::delete('friends/{id}', [\App\Http\Controllers\Portal\PortalSocialController::class, 'removeFriend'])->whereNumber('id')->middleware('throttle:12,1');
+
+        Route::get('clan', [\App\Http\Controllers\Portal\PortalSocialController::class, 'clan']);
+        Route::post('clan', [\App\Http\Controllers\Portal\PortalSocialController::class, 'createClan'])->middleware('throttle:3,1');
+        Route::post('clan/invite', [\App\Http\Controllers\Portal\PortalSocialController::class, 'invite'])->middleware('throttle:6,1');
+        Route::post('clan/invitations/{id}/respond', [\App\Http\Controllers\Portal\PortalSocialController::class, 'respondInvite'])->whereNumber('id')->middleware('throttle:12,1');
+        Route::post('clan/leave', [\App\Http\Controllers\Portal\PortalSocialController::class, 'leaveClan'])->middleware('throttle:6,1');
+        Route::delete('clan', [\App\Http\Controllers\Portal\PortalSocialController::class, 'disbandClan'])->middleware('throttle:3,1');
+
         Route::post('logout', [\App\Http\Controllers\Portal\PortalAuthController::class, 'logout'])->middleware('throttle:20,1');
         Route::post('presence', [\App\Http\Controllers\Portal\PortalContentController::class, 'pulse'])->middleware('throttle:20,1');
 
