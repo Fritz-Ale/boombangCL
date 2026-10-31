@@ -137,13 +137,13 @@ El panel de administración permite gestionar usuarios, roles, salas, islas, cat
 | Directorio | Tecnología | Responsabilidad |
 | --- | --- | --- |
 | `client/` | Vue 3, Phaser 3, Vite, Pinia | Interfaz y renderizado del juego |
-| `web/` | HTML, CSS, JavaScript, Nginx | Portada informativa de BoombangCL |
+| `web/` | HTML, CSS, JavaScript, Nginx | Portal social con páginas conectadas a Laravel |
 | `server/` | Node.js, Express, Socket.IO | Lógica multijugador en tiempo real |
 | `api/` | Laravel 12, Passport, Backpack | Datos, autenticación y administración |
 | `launcher/` | Electron | Launcher de escritorio para Windows |
 | `docker/` | Docker, MariaDB, nginx-proxy | Entorno e infraestructura local |
 
-> El servicio `web/` publica la nueva portada estática de BoombangCL. El inicio de sesión y registro web todavía no están integrados. Consulta [`web/README.md`](web/README.md).
+> El servicio `web/` presenta un portal con cuenta, foro, chat, noticias, catálogo y rankings conectables a Laravel. Las funciones dinámicas requieren migraciones, sesiones web y servicios activos; los pagos y la cifra de jugadores del juego no están habilitados. Consulta [`web/README.md`](web/README.md).
 
 ## Tecnologías principales
 
