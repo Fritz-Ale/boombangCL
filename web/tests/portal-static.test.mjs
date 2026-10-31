@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url';
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const web = join(repo, 'web');
 const read = path => readFileSync(join(repo, path), 'utf8');
-const pages = ['index.html', 'comunidad.html', 'noticias.html', 'ayuda.html', 'cuenta.html', 'foro.html', 'chat.html', 'catalogo.html', 'ranking.html'];
-const assets = ['styles.css', 'portal.css', 'live.css', 'script.js', 'portal.js', 'portal-app.js'];
+const pages = ['index.html', 'comunidad.html', 'noticias.html', 'ayuda.html', 'cuenta.html', 'foro.html', 'chat.html', 'catalogo.html', 'ranking.html', 'social.html'];
+const assets = ['styles.css', 'portal.css', 'live.css', 'script.js', 'portal.js', 'portal-app.js', 'social-app.js'];
 
 test('all portal pages, scripts and styles are included in Docker image', () => {
   const docker = read('web/Dockerfile');
