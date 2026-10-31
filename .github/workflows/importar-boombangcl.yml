@@ -1,0 +1,103 @@
+name: Importar archivos de BoombangCL desde ZIP
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: importacion-boombangcl
+  cancel-in-progress: false
+
+jobs:
+  importar:
+    if: github.event_name == 'workflow_dispatch' || github.event.release.tag_name == 'import-boombangcl'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+
+      - name: Descargar ZIP adjunto a la publicación import-boombangcl
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/boombang-import"
+          gh release download import-boombangcl \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "boombang-html5-main.zip" \
+            --dir "$RUNNER_TEMP/boombang-import" \
+            --clobber
+          test -s "$RUNNER_TEMP/boombang-import/boombang-html5-main.zip"
+
+      - name: Importar archivos seguros sin sobrescribir nada
+        env:
+          SOURCE_ZIP: ${{ runner.temp }}/boombang-import/boombang-html5-main.zip
+        run: |
+          python3 - <<'PY'
+          import os
+          import shutil
+          import stat
+          import zipfile
+          from pathlib import Path, PurePosixPath
+
+          root = Path.cwd().resolve()
+          prefix = "boombang-html5-main/"
+          skip_paths = {"boombang_api.sql", "api/.rnd", "api/public/uploads.zip", "README.md"}
+          skip_names = {".env", ".env.production", ".env.local", "auth.json", ".DS_Store"}
+          skip_dirs = {".git", "node_modules", "vendor", "__pycache__", ".venv"}
+          skip_exts = {".pem", ".p12", ".pfx", ".key"}
+          added = ignored = existing = 0
+
+          with zipfile.ZipFile(os.environ["SOURCE_ZIP"]) as archive:
+              for info in archive.infolist():
+                  if info.is_dir() or not info.filename.startswith(prefix):
+                      continue
+                  rel_name = info.filename[len(prefix):]
+                  rel = PurePosixPath(rel_name)
+                  if (not rel.parts or rel.is_absolute() or ".." in rel.parts
+                          or "\\" in rel_name or not rel_name):
+                      ignored += 1
+                      continue
+                  if ((info.external_attr >> 16) & stat.S_IFMT(0o170000)) == stat.S_IFLNK:
+                      ignored += 1
+                      continue
+                  if (rel.as_posix() in skip_paths
+                          or any(part in skip_dirs or part in skip_names for part in rel.parts)
+                          or any(part.startswith(".env.") and not part.endswith(".example") for part in rel.parts)
+                          or rel.suffix.lower() in skip_exts
+                          or info.file_size > 95_000_000):
+                      ignored += 1
+                      continue
+                  dest = root.joinpath(*rel.parts)
+                  if not dest.resolve().is_relative_to(root):
+                      ignored += 1
+                      continue
+                  if dest.exists():
+                      existing += 1
+                      continue
+                  dest.parent.mkdir(parents=True, exist_ok=True)
+                  with archive.open(info) as source, dest.open("wb") as target:
+                      shutil.copyfileobj(source, target, 1024 * 1024)
+                  added += 1
+
+          print(f"Archivos nuevos: {added}; ya existentes: {existing}; excluidos: {ignored}")
+          PY
+
+      - name: Guardar archivos en GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          if git diff --cached --quiet; then
+            echo "No hay archivos nuevos que subir."
+            exit 0
+          fi
+          git commit -m "Importar archivos originales del proyecto BoombangCL"
+          git push origin HEAD:main
