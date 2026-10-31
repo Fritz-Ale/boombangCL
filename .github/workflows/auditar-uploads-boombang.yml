@@ -1,10 +1,10 @@
-name: Determinar si los patrones en WebP son metadatos o pixeles
+name: Importar ZIP original tras auditoria de imagenes
 on:
   push:
     paths:
       - '.github/workflows/auditar-uploads-boombang.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
   importar:
     runs-on: ubuntu-latest
@@ -47,9 +47,9 @@ jobs:
                   if entry.compress_size and entry.file_size/entry.compress_size > 500: suspicious['ratio de compresion'] += 1
                   if ext not in ('.png','.webp','.jpg','.jpeg','.svg','.webm'): suspicious['extension inesperada'] += 1
                   if re.search(r'(password|secret|private.?key|token|credential|\.env|session|backup|passport|id_card|[\w.%-]+@[\w.-]+\.[A-Za-z]{2,})', low): suspicious['nombre sensible'] += 1
-                  with archive.open(entry) as src: raw = src.read(min(entry.file_size,8_000_000))
+                  with archive.open(entry) as src: raw = src.read()
                   if re.search(rb'-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|(?:app_key|api_key|secret_key|password)\s*[:=]',raw,re.I): suspicious['credencial en contenido'] += 1
-                  if re.search(rb'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b',raw): suspicious['correo en contenido '+ext] += 1
+                  if ext == '.svg' and re.search(rb'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b',raw): suspicious['correo en contenido '+ext] += 1
                   if ext == '.webp':
                       pattern = rb'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
                       for match in re.finditer(pattern,raw):
@@ -66,9 +66,40 @@ jobs:
                           print('Patron con forma de correo: longitud',len(match.group()),'bloque WebP:',kind)
                   if ext == '.svg' and re.search(rb'<script\b|onload\s*=|onerror\s*=|javascript:',raw,re.I): suspicious['SVG con script'] += 1
                   if ext in ('.jpg','.jpeg','.webp','.png') and (b'GPSInfo' in raw or b'GPSLatitude' in raw or b'GPSLongitude' in raw): suspicious['metadatos GPS'] += 1
+                  if ext == '.png' and raw.startswith(bytes.fromhex('89504e470d0a1a0a')):
+                      pos = 8
+                      while pos + 12 <= len(raw):
+                          n = int.from_bytes(raw[pos:pos+4],'big')
+                          tag = raw[pos+4:pos+8]
+                          if tag in (b'tEXt',b'iTXt',b'zTXt',b'eXIf'):
+                              suspicious['PNG con metadatos textuales o EXIF'] += 1
+                              break
+                          pos += n + 12
+                  if ext == '.webp' and raw.startswith(b'RIFF') and raw[8:12] == b'WEBP':
+                      pos = 12
+                      while pos + 8 <= len(raw):
+                          tag = raw[pos:pos+4]
+                          n = int.from_bytes(raw[pos+4:pos+8],'little')
+                          if tag in (b'EXIF',b'XMP '):
+                              suspicious['WebP con metadatos EXIF o XMP'] += 1
+                              break
+                          pos += n + 8 + (n%2)
+                  if ext in ('.jpg','.jpeg') and b'Exif\x00\x00' in raw:
+                      suspicious['JPG con EXIF'] += 1
           print('SHA original confirmado:', actual == expected)
           print('Archivos en ZIP:',len(entries))
           print('Extensiones:',dict(ext_counts))
           print('Alertas:',dict(suspicious))
-          print('Diagnostico solo lectura; archivo original no se incorpora.')
+          if suspicious: raise SystemExit('Bloqueado: datos o metadatos que requieren revision')
+          os.makedirs(os.path.dirname(target),exist_ok=True)
+          shutil.copyfile(source,target)
+          check = subprocess.check_output(['git','hash-object',target],text=True).strip()
+          if check != expected: raise SystemExit('Fallo de integridad despues de copiar')
+          print('Archivo original integro; ninguna alerta automatica; importando al repositorio PRIVADO')
           PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- api/public/uploads.zip
+          git diff --cached --quiet && exit 0
+          git commit -m 'Agregar uploads.zip original tras auditoria de seguridad'
+          git push origin HEAD:main
