@@ -128,14 +128,14 @@
       message('Inicia sesión para reportar contenido.', true);
       return;
     }
-    const choices = {spam:'Spam o publicidad', harassment:'Acoso', personal_data:'Datos personales', inappropriate:'Contenido inapropiado', other:'Otro'};
-    const answer = window.prompt('Motivo del reporte: spam, harassment, personal_data, inappropriate u other');
-    if (!answer || !Object.prototype.hasOwnProperty.call(choices, answer)) {
-      if (answer) message('Motivo inválido. Usa uno de los códigos indicados.', true);
+    const choices = {'1':'spam','2':'harassment','3':'personal_data','4':'inappropriate','5':'other'};
+    const answer = window.prompt('¿Por qué quieres reportar este contenido?\\n1. Spam\\n2. Acoso\\n3. Datos personales\\n4. Contenido inapropiado\\n5. Otro');
+    if (!answer || !Object.prototype.hasOwnProperty.call(choices, answer.trim())) {
+      if (answer) message('Selecciona un número del 1 al 5.', true);
       return;
     }
     try {
-      await api('/reports', 'POST', {type, id, reason: answer});
+      await api('/reports', 'POST', {type, id, reason: choices[answer.trim()]});
       message('Reporte enviado al equipo de moderación.');
     } catch (error) {
       message(formatError(error), true);
