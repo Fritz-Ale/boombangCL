@@ -86,6 +86,7 @@
       visible('[data-logged-in]', Boolean(state.user));
       visible('[data-logged-out]', !state.user);
       put('[data-username]', state.user ? state.user.username : '');
+      visible('[data-staff-link]', Boolean(state.user && state.user.is_staff));
       message(state.user ? 'Sesión del portal iniciada.' : 'Puedes iniciar sesión o registrarte en el portal.');
     };
     for (const [selector, endpoint] of [['[data-login-form]', '/login'], ['[data-register-form]', '/register']]) {
