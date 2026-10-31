@@ -116,6 +116,27 @@ class PortalFeatureTest extends TestCase
         Http::assertSent(fn ($request) => $request->hasHeader('X-Portal-Stats-Token', 'private-test-secret'));
     }
 
+    public function test_regular_user_can_report_a_thread_but_cannot_review_reports(): void
+    {
+        $author = $this->player('ReportUsr');
+        $this->actingAs($author, 'web')
+            ->postJson('/portal/forum/threads', [
+                'title' => 'Tema a reportar',
+                'body' => 'Este tema es un ejemplo para reportes.',
+            ])->assertCreated();
+
+        $threadId = (int) \Illuminate\Support\Facades\DB::table('portal_threads')->value('id');
+        $other = $this->player('ReportDos');
+        $this->actingAs($other, 'web')->postJson('/portal/reports', [
+            'type' => 'thread', 'id' => $threadId,
+            'reason' => 'spam', 'details' => 'Mensajes repetidos.',
+        ])->assertCreated();
+        $this->actingAs($other, 'web')->getJson('/portal/reports')->assertForbidden();
+        $this->assertDatabaseHas('portal_reports', [
+            'target_type' => 'thread', 'target_id' => $threadId, 'status' => 'open',
+        ]);
+    }
+
     public function test_game_count_is_null_when_not_configured(): void
     {
         config()->set('services.portal_stats.token', null);
