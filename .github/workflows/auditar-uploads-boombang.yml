@@ -1,55 +1,71 @@
-name: Auditoria temporal de uploads.zip (sin publicarlo)
+name: Importacion temporal y verificada de uploads.zip
 on:
   push:
     paths:
       - '.github/workflows/auditar-uploads-boombang.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
-  auditar:
+  importar:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
-      - name: Descargar ZIP original y examinar su contenido sin publicarlo
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Descargar, auditar e incorporar el ZIP original
         shell: bash
         run: |
           set -euo pipefail
           curl --fail --location --retry 3 --silent --show-error 'https://raw.githubusercontent.com/GenRubiio/boombang-html5/main/api/public/uploads.zip' -o "$RUNNER_TEMP/uploads.zip"
           python3 - <<'PY'
-          import collections, hashlib, os, re, subprocess, zipfile
-          path = os.path.join(os.environ['RUNNER_TEMP'], 'uploads.zip')
+          import collections, os, re, shutil, stat, subprocess, zipfile
+          source = os.path.join(os.environ['RUNNER_TEMP'], 'uploads.zip')
+          target = 'api/public/uploads.zip'
           expected = 'c6449036b3ab262a0bb34c275b4a701588d7e900'
-          actual = subprocess.check_output(['git', 'hash-object', path], text=True).strip()
-          print('Coincide exactamente con Git del original:', actual == expected)
-          if actual != expected: raise SystemExit('El ZIP descargado no coincide con el original')
-          categories = collections.Counter()
-          risks = collections.Counter()
-          count = 0
+          actual = subprocess.check_output(['git','hash-object',source],text=True).strip()
+          if actual != expected: raise SystemExit('Bloqueado: el ZIP no coincide con el blob original')
+          if os.path.exists(target): raise SystemExit('Bloqueado: el archivo ya existe en destino')
+          suspicious = collections.Counter()
+          ext_counts = collections.Counter()
           total = 0
-          for entry in zipfile.ZipFile(path).infolist():
-              if entry.is_dir(): continue
-              count += 1
-              total += entry.file_size
-              name = entry.filename
-              low = name.lower()
-              ext = os.path.splitext(low)[1] or '(sin extension)'
-              categories[ext] += 1
-              if low.startswith('/') or '..' in name.replace('\\','/').split('/'): risks['rutas inseguras'] += 1
-              if entry.flag_bits & 1: risks['archivos cifrados'] += 1
-              if entry.file_size > 75_000_000: risks['entradas muy grandes'] += 1
-              if entry.compress_size and entry.file_size/entry.compress_size > 500: risks['expansion anomala'] += 1
-              if ext in ('.env','.pem','.key','.p12','.pfx','.sql','.db','.sqlite','.sqlite3','.p8','.kdbx','.zip','.7z','.rar'): risks['tipos potencialmente sensibles'] += 1
-              if re.search(r'(password|secret|private.?key|token|credential|\.env|session|backup|passport|id_card)',low): risks['nombres potencialmente sensibles'] += 1
-              if ext in ('.txt','.json','.xml','.csv','.ini','.cfg','.log','.php','.js','.yaml','.yml','.html','.htm') and entry.file_size < 2_000_000:
-                  with zipfile.ZipFile(path).open(entry) as src: sample = src.read(2_000_000)
-                  if re.search(rb'-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|(?:app_key|api_key|secret_key|password)\s*[:=]', sample, re.I): risks['credenciales en texto'] += 1
-                  if re.search(rb'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b', sample): risks['correos en texto'] += 1
-              if ext in ('.jpg','.jpeg','.tif','.tiff') and entry.file_size < 5_000_000:
-                  with zipfile.ZipFile(path).open(entry) as src: head = src.read(300_000)
-                  if b'Exif\x00\x00' in head: risks['imagenes con metadatos EXIF'] += 1
-          print('Archivos internos:',count)
-          print('Tamano total descomprimido (bytes):',total)
-          print('Extensiones (conteos, sin revelar nombres):', dict(categories.most_common(30)))
-          print('Alertas (conteos, sin revelar datos):',dict(risks))
-          print('La auditoria no modifica el repositorio ni publica el contenido del ZIP.')
+          max_total = 600_000_000
+          with zipfile.ZipFile(source) as archive:
+              entries = [e for e in archive.infolist() if not e.is_dir()]
+              for entry in entries:
+                  total += entry.file_size
+                  name = entry.filename
+                  low = name.lower()
+                  ext = os.path.splitext(low)[1]
+                  ext_counts[ext] += 1
+                  if total > max_total or entry.file_size > 80_000_000: suspicious['tamano excesivo'] += 1
+                  if low.startswith('/') or '..' in name.replace('\\','/').split('/'): suspicious['ruta insegura'] += 1
+                  if ((entry.external_attr >> 16) & stat.S_IFMT(0o170000)) == stat.S_IFLNK: suspicious['enlace simbolico'] += 1
+                  if entry.flag_bits & 1: suspicious['cifrado'] += 1
+                  if entry.compress_size and entry.file_size/entry.compress_size > 500: suspicious['ratio de compresion'] += 1
+                  if ext not in ('.png','.webp','.jpg','.jpeg','.svg','.webm'): suspicious['extension inesperada'] += 1
+                  if re.search(r'(password|secret|private.?key|token|credential|\.env|session|backup|passport|id_card|[\w.%-]+@[\w.-]+\.[A-Za-z]{2,})', low): suspicious['nombre sensible'] += 1
+                  with archive.open(entry) as src: raw = src.read(min(entry.file_size,8_000_000))
+                  if re.search(rb'-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|(?:app_key|api_key|secret_key|password)\s*[:=]',raw,re.I): suspicious['credencial en contenido'] += 1
+                  if re.search(rb'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b',raw): suspicious['correo en contenido'] += 1
+                  if ext == '.svg' and re.search(rb'<script\b|onload\s*=|onerror\s*=|javascript:',raw,re.I): suspicious['SVG con script'] += 1
+                  if ext in ('.jpg','.jpeg','.webp','.png') and (b'GPSInfo' in raw or b'GPSLatitude' in raw or b'GPSLongitude' in raw): suspicious['metadatos GPS'] += 1
+          print('SHA original confirmado:', actual == expected)
+          print('Archivos en ZIP:',len(entries))
+          print('Extensiones:',dict(ext_counts))
+          print('Alertas:',dict(suspicious))
+          if suspicious: raise SystemExit('Bloqueado por auditoria, sin importar')
+          os.makedirs(os.path.dirname(target), exist_ok=True)
+          shutil.copyfile(source,target)
+          check = subprocess.check_output(['git','hash-object',target],text=True).strip()
+          if check != expected: raise SystemExit('Bloqueado: falla la verificacion despues de copiar')
+          print('ZIP apto para incorporacion privada automatizada; revision visual pendiente antes de hacerlo publico.')
           PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- api/public/uploads.zip
+          git diff --cached --quiet && exit 0
+          git commit -m 'Agregar uploads.zip original tras auditoria de seguridad'
+          git push origin HEAD:main
