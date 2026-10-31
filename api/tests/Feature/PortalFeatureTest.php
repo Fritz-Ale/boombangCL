@@ -22,6 +22,8 @@ class PortalFeatureTest extends TestCase
             'avatar' => 1,
             'lang' => 'es',
             'description' => '',
+            'active' => true,
+            'is_bot' => false,
         ]);
     }
 
