@@ -1,39 +1,81 @@
-# Portal web de BoomBang CL
+# Portal BoomBang CL
 
-Sitio **original** en español, responsivo y orientado a comunidades de juegos sociales. Toma como referencia únicamente las **categorías y patrones generales** de sitios como BoomBang.tv, pero no contiene una copia íntegra de su interfaz, textos, código ni recursos. Se mantienen los créditos del proyecto de base BoomBang HTML5.
+Portal original y responsivo basado en los recursos del repositorio BoomBang HTML5. No se han copiado código, imágenes, textos ni recursos ajenos de BoomBang.tv; es un proyecto independiente no oficial.
 
 ## Páginas
 
-| Ruta | Contenido |
+| Ruta | Función |
 | --- | --- |
-| `index.html` | Portada tropical, experiencias, juego y acceso a secciones |
-| `comunidad.html` | Directorio de áreas con buscador, sistemas sociales y espacios futuros |
-| `noticias.html` | Tarjetas de novedades del desarrollo con filtro por categoría |
-| `ayuda.html` | Guía de preparación de servicios, acceso local y preguntas frecuentes |
+| `index.html` | Portada con accesos a la comunidad |
+| `comunidad.html` | Salas ilustrativas y secciones sociales |
+| `noticias.html` | Noticias propias, gestionadas por administradores y filtrado editorial de presentación |
+| `cuenta.html` | Registro, inicio de sesión y cierre de sesión web |
+| `foro.html` | Temas y respuestas guardados en la base de datos |
+| `chat.html` | Mensajes persistentes para usuarios autenticados, con actualización cada 15 segundos |
+| `catalogo.html` | Consulta de artículos activos y disponibles para compra en el catálogo del juego (solo lectura) |
+| `ranking.html` | Clasificación de la última semana de minijuegos con respeto al ajuste de privacidad `show_username` |
+| `ayuda.html` | Instrucciones para preparar el entorno y acceder al cliente HTML5 |
 
-`styles.css` y `script.js` conservan los estilos y comportamientos originales de la portada. `portal.css` y `portal.js` implementan los estilos y filtros adicionales del portal.
+Las imágenes siguen procediendo de `doc/screenshots/` y no de sitios externos.
 
-Las imágenes se utilizan desde `doc/screenshots/` del **propio repositorio** y se copian al contenedor web al construir la imagen.
+## Preparar el entorno en macOS
 
-## Ejecutar en Mac
-
-Desde la raíz del repositorio, con Docker Desktop instalado y la red de proxy previamente configurada:
+1. Instala Git y Docker Desktop y clona el repositorio.
+2. Configura los cuatro archivos de entorno siguiendo el `README.md` raíz y crea la red externa `proxy-network`.
+3. Configura `APP_KEY`, base de datos y credenciales en `api/.env`. Para probar con `http://localhost:8001`, mantén `SESSION_DOMAIN=null` (sin dominio de terceros) y `SESSION_DRIVER=database`.
+4. Ejecuta el portal y sus dependencias:
 
 ```sh
-docker compose up --build web
+docker compose up -d db api web --build
+docker compose exec api php artisan migrate --force
 ```
 
-Abre **http://localhost:8001**.
+5. Si aún no hay `APP_KEY` configurada, genera la clave dentro de `api/.env` antes de registrar usuarios:
 
-Para entrar al cliente HTML5 se requieren la API, el servidor Node.js, la base de datos y la configuración de dominios locales descrita en el `README.md` principal. La dirección de desarrollo es **http://play.boombang.com**; no representa un despliegue público.
+```sh
+docker compose exec api php artisan key:generate
+```
 
-## Estado de las funciones
+6. Abre `http://localhost:8001` y entra a `cuenta.html`.
 
-- **Disponible como interfaz estática:** navegación entre páginas, sitio adaptable a móviles, imágenes del proyecto, buscador local de áreas, filtro de novedades, menú móvil y secciones informativas.
-- **Pendiente de integración real:** registro, inicio de sesión, invitado, conteos de jugadores, actividad reciente, catálogo web, noticias desde backend, rankings en vivo, foro, clan, contenidos comunitarios y pagos/VIP.
-- **No se muestran estadísticas inventadas:** los nombres de salas son ejemplos de navegación y todos los indicadores no conectados se etiquetan como tales.
-- **Seguridad:** no recopilar credenciales ni conectar formularios de acceso a un backend sin revisar autenticación, CSRF, privacidad y validación.
+El contenido del catálogo y del ranking no se genera automáticamente: depende de los datos disponibles en MariaDB y de las migraciones/semillas existentes del proyecto. Para arrancar el juego necesitas además el servicio `server`, el `client` y la configuración de `play.boombang.com` descrita en el README raíz. **La sesión del portal no autoriza automáticamente al cliente HTML5**; el jugador inicia sesión en el cliente por separado.
 
-## Derechos y alcance
+## API del portal
 
-El portal es una implementación independiente y **no está afiliado con BoomBang.tv**. No se han descargado ni copiado sus archivos, hojas de estilo, scripts, imágenes o textos. Los recursos del código base se mantienen bajo las condiciones de `../LICENSE.txt`; revisar dichas condiciones antes de su distribución pública.
+Las páginas llaman a rutas **del mismo origen**: Nginx reenvía `/portal/*` a las rutas de `api/routes/web.php` en Laravel. Así se utiliza el middleware web con sesiones y tokens CSRF. No se expone al navegador el token interno `EMULATOR_API_TOKEN` ni tokens de Passport.
+
+- Sesión: `GET /portal/session`, `POST /portal/register`, `POST /portal/login`, `POST /portal/logout`.
+- Datos públicos: `GET /portal/news`, `/portal/catalog`, `/portal/ranking`, `/portal/status`, `/portal/forum/threads`.
+- Foro: lectura de un tema y creación/respuesta por usuarios autenticados.
+- Chat: `GET/POST /portal/chat` para usuarios autenticados.
+- Presencia: `POST /portal/presence` registra la actividad de una cuenta; `status` muestra el número de usuarios activos del portal en los últimos cinco minutos, **no** los jugadores en el juego.
+- Noticias: un usuario con rol `Admin` o `Superadmin` puede publicar y eliminar noticias desde `noticias.html`.
+- Moderación: administradores pueden cerrar o eliminar temas, eliminar respuestas y borrar mensajes del chat.
+- Las rutas de escritura están protegidas por sesiones, CSRF, validación de entradas, autorización y límites de solicitudes.
+
+Se crean `portal_news`, `portal_threads`, `portal_replies`, `portal_chat_messages` y `portal_presence` mediante la migración `api/database/migrations/2026_10_31_220000_create_portal_tables.php`.
+
+## Pruebas
+
+Comprobación sin dependencias adicionales, desde la raíz:
+
+```sh
+node --test web/tests/portal-static.test.mjs
+node --check web/portal-app.js
+php -l api/routes/web.php
+```
+
+El workflow de GitHub Actions `.github/workflows/portal-checks.yml` también verifica enlaces, archivos, sintaxis PHP/JS y configuración de Nginx. Estas comprobaciones **no** equivalen a una prueba funcional de API y base de datos. Antes de publicar, realiza pruebas integrales con Docker, Laravel, migraciones, sesiones, formularios, permisos, cookies y HTTPS.
+
+## Pendientes para producción
+
+- El portal registra usuarios en la misma tabla `users` del juego; requiere revisar protección contra bots, políticas de privacidad, verificación de correo, recuperación de contraseña y moderación continua antes de exponerlo a Internet.
+- El foro y el chat almacenan mensajes; antes de un lanzamiento público conviene agregar políticas de retención, denuncias, moderación de contenido y protección antispam avanzada.
+- No hay chat en tiempo real por WebSockets en este portal: se consulta periódicamente Laravel. El chat dentro de las salas pertenece al cliente y servidor HTML5.
+- No existe todavía una fuente verificada para el número de jugadores conectados al **juego**; se distingue explícitamente del conteo del portal.
+- El catálogo es **solo lectura**. No hay pasarela de pago web ni compra de VIP; las operaciones económicas deben implementarse únicamente con verificación de servidor y credenciales privadas.
+- Clanes, solicitudes de amistad, acceso como invitado y publicaciones de usuarios con imágenes permanecen fuera de esta entrega.
+
+## Derechos
+
+La web se desarrolló como portal propio e independiente de BoomBang.tv y no está afiliada al sitio oficial. Las capturas y el código del proyecto base conservan sus condiciones indicadas en `../LICENSE.txt`; verifica los derechos antes de redistribuir o publicar.
