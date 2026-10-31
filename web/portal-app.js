@@ -122,6 +122,25 @@
     paint();
   }
 
+  async function reportContent(type, id) {
+    if (!state.user) {
+      message('Inicia sesión para reportar contenido.', true);
+      return;
+    }
+    const choices = {spam:'Spam o publicidad', harassment:'Acoso', personal_data:'Datos personales', inappropriate:'Contenido inapropiado', other:'Otro'};
+    const answer = window.prompt('Motivo del reporte: spam, harassment, personal_data, inappropriate u other');
+    if (!answer || !Object.prototype.hasOwnProperty.call(choices, answer)) {
+      if (answer) message('Motivo inválido. Usa uno de los códigos indicados.', true);
+      return;
+    }
+    try {
+      await api('/reports', 'POST', {type, id, reason: answer});
+      message('Reporte enviado al equipo de moderación.');
+    } catch (error) {
+      message(formatError(error), true);
+    }
+  }
+
   function renderThreads(items, append) {
     const container = one('[data-forum-list]');
     if (!append) container.replaceChildren();
@@ -154,6 +173,12 @@
     put('[data-thread-body]', item.body);
     const actions = one('[data-thread-actions]');
     actions.replaceChildren();
+    if (state.user) {
+      const report = node('button', 'Reportar tema', 'portal-backlink');
+      report.type = 'button';
+      report.addEventListener('click', () => reportContent('thread', item.id));
+      actions.append(report);
+    }
     if (state.user && state.user.is_staff) {
       const lock = node('button', item.locked ? 'Reabrir tema' : 'Cerrar tema', 'portal-backlink');
       lock.type = 'button';
@@ -182,6 +207,12 @@
     else for (const reply of payload.replies) {
       const entry = node('div', null, 'portal-thread-reply');
       entry.append(node('small', reply.author + ' · ' + date(reply.created_at)), node('p', reply.body));
+      if (state.user) {
+        const report = node('button', 'Reportar respuesta', 'portal-backlink');
+        report.type = 'button';
+        report.addEventListener('click', () => reportContent('reply', reply.id));
+        entry.append(report);
+      }
       if (state.user && state.user.is_staff) {
         const remove = node('button', 'Eliminar respuesta', 'portal-backlink');
         remove.type = 'button';
@@ -253,6 +284,13 @@
       const block = node('div', null, 'portal-chat-row');
       const stamp = node('time', date(item.created_at));
       block.append(node('strong', item.author), stamp, node('p', item.body));
+      if (state.user) {
+        const report = node('button', 'Reportar', 'portal-backlink');
+        report.type = 'button';
+        report.style.marginLeft = '10px';
+        report.addEventListener('click', () => reportContent('chat', item.id));
+        block.append(report);
+      }
       if (state.user && state.user.is_staff) {
         const remove = node('button', 'Eliminar mensaje', 'portal-backlink');
         remove.type = 'button';
