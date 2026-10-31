@@ -120,6 +120,37 @@ class PortalCommunityController extends Controller
         return response()->json(['message' => 'Tema eliminado.']);
     }
 
+    public function lockThread(Request $request, int $id): JsonResponse
+    {
+        $user = $this->activeUser($request);
+        abort_unless(PortalAuthController::isStaff($user), 403);
+        $data = $request->validate(['locked' => ['required', 'boolean']]);
+        $updated = DB::table('portal_threads')->where('id', $id)
+            ->update(['is_locked' => (bool) $data['locked'], 'updated_at' => now()]);
+        abort_unless($updated, 404);
+        return response()->json(['message' => 'Estado del tema actualizado.']);
+    }
+
+    public function removeReply(Request $request, int $id): JsonResponse
+    {
+        $user = $this->activeUser($request);
+        $reply = DB::table('portal_replies')->where('id', $id)->first();
+        abort_unless($reply, 404);
+        abort_unless((int) $reply->user_id === (int) $user->id || PortalAuthController::isStaff($user), 403);
+        DB::table('portal_replies')->where('id', $id)->delete();
+        return response()->json(['message' => 'Respuesta eliminada.']);
+    }
+
+    public function removeChat(Request $request, int $id): JsonResponse
+    {
+        $user = $this->activeUser($request);
+        $message = DB::table('portal_chat_messages')->where('id', $id)->first();
+        abort_unless($message, 404);
+        abort_unless((int) $message->user_id === (int) $user->id || PortalAuthController::isStaff($user), 403);
+        DB::table('portal_chat_messages')->where('id', $id)->delete();
+        return response()->json(['message' => 'Mensaje eliminado.']);
+    }
+
     public function chat(Request $request): JsonResponse
     {
         $this->activeUser($request);
