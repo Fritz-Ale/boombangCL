@@ -58,8 +58,10 @@ class PortalAuthController extends Controller
             'avatar' => 1,
             'lang' => 'es',
             'description' => '',
+            'active' => true,
+            'is_bot' => false,
         ]));
-        Auth::guard('web')->login($user);
+        Auth::guard('web')->login($user->refresh());
         $request->session()->regenerate();
 
         return response()->json($this->snapshot($request), 201);
