@@ -95,3 +95,7 @@
 .portal-steps li{padding:24px 20px 24px 70px}
 .portal-banner h1{font-size:2.6rem}
 }
+/* Compact navigation when the full portal is enabled. */
+.main-nav{gap:15px}
+.main-nav>a{font-size:.82rem}
+@media(max-width:760px){.main-nav{gap:0}}
