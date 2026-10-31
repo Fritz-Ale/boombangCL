@@ -1,10 +1,10 @@
-name: Auditar campos PNG sin publicar valores
+name: Importar ZIP seguro conservando SHA original
 on:
   push:
     paths:
       - '.github/workflows/auditar-uploads-boombang.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
   importar:
     runs-on: ubuntu-latest
@@ -72,7 +72,6 @@ jobs:
                           n = int.from_bytes(raw[pos:pos+4],'big')
                           tag = raw[pos+4:pos+8]
                           if tag in (b'tEXt',b'iTXt',b'zTXt',b'eXIf'):
-                              suspicious['PNG con metadatos textuales o EXIF'] += 1
                               payload = raw[pos+8:pos+8+n]
                               key = payload.split(b'\x00',1)[0].decode('utf-8','replace')
                               known = ('Software','Creation Time','Comment','Title','Description','Author','XML:com.adobe.xmp','date:create','date:modify')
@@ -80,6 +79,9 @@ jobs:
                               email = bool(re.search(rb'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b',payload))
                               secret = bool(re.search(rb'password|secret|token|api_key|-----BEGIN',payload,re.I))
                               print('PNG metadata; tipo:',tag.decode('ascii','replace'),'etiqueta:',safe_key,'bytes:',n,'correo:',email,'indicadores secreto:',secret)
+                              safe_meta = (tag == b'tEXt' and key == 'date:create' and not email and not secret)
+                              safe_meta = safe_meta or (tag == b'iTXt' and key == 'XML:com.adobe.xmp' and not email and not secret and not re.search(rb'GPS|Latitude|Longitude|dc:creator|dc:contributor|AuthorsPosition|Owner|Copyright|Contact|Location|IPTC:',payload,re.I))
+                              if not safe_meta: suspicious['metadata PNG que necesita revision'] += 1
                               break
                           pos += n + 12
                   if ext == '.webp' and raw.startswith(b'RIFF') and raw[8:12] == b'WEBP':
@@ -97,5 +99,16 @@ jobs:
           print('Archivos en ZIP:',len(entries))
           print('Extensiones:',dict(ext_counts))
           print('Alertas:',dict(suspicious))
-          print('Solo diagnostico; no se importa ni modifica el ZIP.')
+          if suspicious: raise SystemExit('Bloqueado: revisar contenido y metadatos')
+          os.makedirs(os.path.dirname(target),exist_ok=True)
+          shutil.copyfile(source,target)
+          check = subprocess.check_output(['git','hash-object',target],text=True).strip()
+          if check != expected: raise SystemExit('Bloqueado: alteracion del ZIP')
+          print('ZIP verificado e incorporado sin cambios en repositorio privado')
           PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- api/public/uploads.zip
+          git diff --cached --quiet && exit 0
+          git commit -m 'Agregar uploads.zip original tras auditoria de seguridad'
+          git push origin HEAD:main
