@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0c3444">
+<meta name="description" content="Conversaciones del portal entre usuarios registrados; no es el chat de las salas del juego."><title>Chat de la comunidad. · BoomBang CL</title>
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="portal.css"><link rel="stylesheet" href="live.css">
+<script defer src="script.js"></script><script defer src="portal.js"></script><script defer src="portal-app.js"></script>
+</head><body class="portal-page">
+<a class="skip-link" href="#principal">Saltar al contenido</a>
+<div class="top-strip">✦ BoomBang CL · Comunidad independiente y en desarrollo</div>
+<header class="site-header"><div class="container header-inner">
+<a class="brand" href="index.html" aria-label="BoomBang CL, inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a>
+<button class="menu-button" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+<nav class="main-nav" id="main-nav" aria-label="Navegación principal"><a href="index.html">Inicio</a><a href="comunidad.html">Comunidad</a><a href="noticias.html">Noticias</a>
+<a href="foro.html">Foro</a><a href="catalogo.html">Catálogo</a><a href="cuenta.html">Mi cuenta</a></nav>
+</div></header><main id="principal">
+<section class="portal-banner portal-compact"><div class="container"><span class="eyebrow light">UN LUGAR PARA COMPARTIR</span><h1>Chat de la comunidad.</h1><p>Conversaciones del portal entre usuarios registrados; no es el chat de las salas del juego.</p></div></section>
+
+<section class="portal-section container portal-live" data-portal-app="chat">
+<div class="portal-live-status" data-api-status role="status" aria-live="polite">Conectando con el chat…</div>
+<div class="portal-chat-intro"><p><strong>Chat del portal:</strong> los mensajes se guardan en la API Laravel y se actualizan periódicamente. No representa los jugadores conectados ni sustituye el chat del emulador.</p><span data-portal-presence>Presencia del portal no disponible</span></div>
+<div data-chat-login class="portal-info-box" hidden><h2>Inicia sesión para conversar</h2><p>Solo los usuarios autenticados pueden leer y escribir aquí.</p><a href="cuenta.html" class="button button-sun">Entrar a mi cuenta</a></div>
+<div data-chat-app hidden><div class="portal-chat-messages" data-chat-messages aria-label="Mensajes recientes"></div>
+<form data-chat-form class="portal-chat-send"><label class="sr-only" for="chat-body">Mensaje</label><input id="chat-body" name="body" maxlength="400" placeholder="Escribe un mensaje para la comunidad…" required autocomplete="off">
+<button class="button button-sun" type="submit">Enviar</button></form>
+<p class="portal-form-response" data-form-status role="status" aria-live="polite"></p>
+<p class="portal-fineprint">No compartas contraseñas, direcciones, datos personales ni información privada. El chat usa actualizaciones periódicas, no WebSockets.</p></div>
+</section>
+</main><footer class="site-footer"><div class="container"><div class="footer-top"><div><a class="brand footer-brand" href="index.html"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a><p>Proyecto independiente de preservación y desarrollo.<br>Esta web no es el sitio oficial de BoomBang.</p></div><nav><a href="comunidad.html">Comunidad</a><a href="noticias.html">Noticias</a><a href="foro.html">Foro</a><a href="chat.html">Chat</a><a href="ranking.html">Ranking</a><a href="ayuda.html">Ayuda</a></nav></div>
+<div class="footer-bottom"><span>© <span id="year">2026</span> BoomBang CL</span><a href="https://github.com/Fritz-Ale/boombangCL">Repositorio del proyecto</a></div></div></footer></body></html>
