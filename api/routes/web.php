@@ -42,6 +42,9 @@ Route::prefix('portal')->group(function () {
         Route::post('forum/threads/{id}/replies', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'reply'])->whereNumber('id')->middleware('throttle:12,1');
         Route::delete('forum/threads/{id}', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'removeThread'])->whereNumber('id')->middleware('throttle:12,1');
 
+        Route::patch('forum/threads/{id}/lock', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'lockThread'])->whereNumber('id')->middleware('throttle:12,1');
+        Route::delete('forum/replies/{id}', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'removeReply'])->whereNumber('id')->middleware('throttle:12,1');
+        Route::delete('chat/{id}', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'removeChat'])->whereNumber('id')->middleware('throttle:12,1');
         Route::get('chat', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'chat'])->middleware('throttle:30,1');
         Route::post('chat', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'sendChat'])->middleware('throttle:8,1');
     });
