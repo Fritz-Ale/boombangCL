@@ -3,20 +3,20 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0c3444"><meta name="description" content="Actualizaciones del proyecto BoomBang CL y avances del portal web.">
 <title>Noticias · BoomBang CL</title>
-<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="portal.css">
-<script defer src="script.js"></script><script defer src="portal.js"></script>
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="portal.css"><link rel="stylesheet" href="live.css">
+<script defer src="script.js"></script><script defer src="portal.js"></script><script defer src="portal-app.js"></script>
 </head><body class="portal-page">
 <a class="skip-link" href="#principal">Saltar al contenido</a>
-<div class="top-strip"><span aria-hidden="true">✦</span> Proyecto independiente de preservación · Demo de portal sin servicios en vivo</div>
+<div class="top-strip"><span aria-hidden="true">✦</span> Proyecto independiente · Noticias editoriales desde Laravel cuando esté disponible</div>
 <header class="site-header"><div class="container header-inner">
 <a class="brand" href="index.html" aria-label="BoomBang CL, inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a>
 <button class="menu-button" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
 <nav class="main-nav" id="main-nav" aria-label="Navegación principal">
-<a href="index.html">Inicio</a><a href="comunidad.html">Comunidad</a><a href="noticias.html" aria-current="page">Noticias</a><a href="ayuda.html">Cómo jugar</a>
+<a href="index.html">Inicio</a><a href="comunidad.html">Comunidad</a><a href="noticias.html" aria-current="page">Noticias</a><a href="foro.html">Foro</a><a href="catalogo.html">Catálogo</a><a href="cuenta.html">Mi cuenta</a>
 <a class="nav-cta" href="index.html#jugar">Entrar al juego ↗</a></nav></div></header>
 <main id="principal">
 <section class="portal-banner"><div class="container portal-banner-grid"><div><span class="eyebrow light">DESDE BOOMBANG CL</span><h1>Noticias de <em>nuestra isla.</em></h1><p>Conoce los componentes del proyecto y los próximos pasos de este portal independiente.</p><a class="button button-sun" href="#publicaciones">Ver novedades ↓</a></div><img src="screenshots/portada.png" alt="Captura de BoomBang HTML5 incluida en el proyecto" loading="eager"></div></section>
-<div class="container portal-notice" role="note">Esta sección presenta <strong>información del desarrollo de BoomBang CL</strong>. No reproduce ni sincroniza noticias de BoomBang.tv y todavía no dispone de un gestor editorial.</div>
+<div class="container portal-notice" role="note">Esta sección presenta <strong>información del desarrollo de BoomBang CL</strong>. No reproduce ni sincroniza noticias de BoomBang.tv. Los administradores pueden publicar contenido propio desde la sección conectada a Laravel.</div>
 <section id="publicaciones" class="portal-section container"><div class="portal-heading"><span class="eyebrow orange">BITÁCORA DEL PROYECTO</span><h2>Avances y próximos pasos</h2><p>Contenido editorial de presentación; sin fechas de publicación ni noticias en vivo.</p></div>
 <div class="portal-filters" role="group" aria-label="Filtrar novedades">
 <button type="button" class="active" data-news-filter="todos" aria-pressed="true">Todas</button>
@@ -29,10 +29,19 @@
 <article data-news-category="cliente"><img src="screenshots/personalizacion.png" alt="Captura del sistema de avatares" loading="lazy"><div><span class="portal-tag">JUEGO HTML5</span><h3>Tu personaje, tu estilo</h3><p>La base del juego incluye personalización visual, avatares y perfiles que forman parte de la experiencia social.</p><a href="comunidad.html">Explorar características →</a></div></article>
 <article data-news-category="web"><img src="screenshots/lobby.png" alt="Captura del lobby" loading="lazy"><div><span class="portal-tag">PORTAL WEB</span><h3>La conexión en vivo es un objetivo futuro</h3><p>Los listados de usuarios y salas se mantienen sin cifras ficticias hasta conectar una API verificada.</p><a href="ayuda.html">Revisar estado →</a></div></article>
 </div></section>
+<section class="portal-section container portal-live" data-portal-app="news" id="noticias-api">
+<div class="portal-heading"><span class="eyebrow orange">PUBLICACIONES REALES</span><h2>Noticias desde la API</h2><p>Noticias guardadas en la base de datos de BoomBang CL y publicadas por un administrador.</p></div>
+<div class="portal-live-status" data-api-status role="status" aria-live="polite">Consultando noticias…</div>
+<div class="portal-form portal-editor" data-news-editor hidden><h3>Publicar una noticia (administración)</h3><form data-news-form>
+<label>Título<input name="title" minlength="5" maxlength="120" required></label>
+<label>Contenido<textarea name="body" minlength="20" maxlength="10000" rows="5" required></textarea></label>
+<button class="button button-sun" type="submit">Publicar</button><p data-form-status class="portal-form-response" role="status"></p></form></div>
+<div class="portal-live-news" data-news-feed></div>
+</section>
 <section class="portal-section portal-surface"><div class="container portal-centered"><span class="eyebrow orange">SIN PRISA, CON BASE SÓLIDA</span><h2>Más capítulos por escribir</h2><p>Los próximos anuncios se publicarán aquí cuando exista un proceso real de actualización del portal.</p><a class="button button-sun" href="index.html">Volver al inicio</a></div></section>
 </main>
 <footer class="site-footer"><div class="container"><div class="footer-top">
 <div><a class="brand footer-brand" href="index.html"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a><p>Un portal construido para el proyecto independiente BoomBang CL.<br>Sin afiliación con BoomBang.tv.</p></div>
-<nav aria-label="Enlaces de pie de página"><a href="index.html">Inicio</a><a href="comunidad.html">Comunidad</a><a href="noticias.html">Noticias</a><a href="ayuda.html">Ayuda</a><a href="https://github.com/Fritz-Ale/boombangCL">GitHub</a></nav></div>
+<nav aria-label="Enlaces de pie de página"><a href="index.html">Inicio</a><a href="foro.html">Foro</a><a href="chat.html">Chat</a><a href="catalogo.html">Catálogo</a><a href="ranking.html">Ranking</a><a href="ayuda.html">Ayuda</a><a href="https://github.com/Fritz-Ale/boombangCL">GitHub</a></nav></div>
 <div class="footer-bottom"><span>© <span id="year">2026</span> BoomBang CL · Proyecto no oficial.</span><span>Créditos y condiciones: <a href="https://github.com/Fritz-Ale/boombangCL/blob/main/LICENSE.txt">Licencia del repositorio</a></span></div></div></footer>
 </body></html>
