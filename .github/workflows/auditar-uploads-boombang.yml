@@ -1,10 +1,10 @@
-name: Importacion temporal y verificada de uploads.zip
+name: Diagnostico temporal de coincidencias de correo en ZIP
 on:
   push:
     paths:
       - '.github/workflows/auditar-uploads-boombang.yml'
 permissions:
-  contents: write
+  contents: read
 jobs:
   importar:
     runs-on: ubuntu-latest
@@ -49,23 +49,12 @@ jobs:
                   if re.search(r'(password|secret|private.?key|token|credential|\.env|session|backup|passport|id_card|[\w.%-]+@[\w.-]+\.[A-Za-z]{2,})', low): suspicious['nombre sensible'] += 1
                   with archive.open(entry) as src: raw = src.read(min(entry.file_size,8_000_000))
                   if re.search(rb'-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|(?:app_key|api_key|secret_key|password)\s*[:=]',raw,re.I): suspicious['credencial en contenido'] += 1
-                  if re.search(rb'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b',raw): suspicious['correo en contenido'] += 1
+                  if re.search(rb'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b',raw): suspicious['correo en contenido '+ext] += 1
                   if ext == '.svg' and re.search(rb'<script\b|onload\s*=|onerror\s*=|javascript:',raw,re.I): suspicious['SVG con script'] += 1
                   if ext in ('.jpg','.jpeg','.webp','.png') and (b'GPSInfo' in raw or b'GPSLatitude' in raw or b'GPSLongitude' in raw): suspicious['metadatos GPS'] += 1
           print('SHA original confirmado:', actual == expected)
           print('Archivos en ZIP:',len(entries))
           print('Extensiones:',dict(ext_counts))
           print('Alertas:',dict(suspicious))
-          if suspicious: raise SystemExit('Bloqueado por auditoria, sin importar')
-          os.makedirs(os.path.dirname(target), exist_ok=True)
-          shutil.copyfile(source,target)
-          check = subprocess.check_output(['git','hash-object',target],text=True).strip()
-          if check != expected: raise SystemExit('Bloqueado: falla la verificacion despues de copiar')
-          print('ZIP apto para incorporacion privada automatizada; revision visual pendiente antes de hacerlo publico.')
+          print('Diagnostico solo lectura; archivo original no se incorpora.')
           PY
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- api/public/uploads.zip
-          git diff --cached --quiet && exit 0
-          git commit -m 'Agregar uploads.zip original tras auditoria de seguridad'
-          git push origin HEAD:main
