@@ -32,6 +32,10 @@ Route::prefix('portal')->group(function () {
     Route::get('forum/threads/{id}', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'thread'])->whereNumber('id');
 
     Route::middleware(['auth:web'])->group(function () {
+        Route::post('reports', [\App\Http\Controllers\Portal\PortalReportController::class, 'create'])->middleware('throttle:5,1');
+        Route::get('reports', [\App\Http\Controllers\Portal\PortalReportController::class, 'index'])->middleware('throttle:30,1');
+        Route::patch('reports/{id}', [\App\Http\Controllers\Portal\PortalReportController::class, 'review'])->whereNumber('id')->middleware('throttle:20,1');
+
         // Social endpoints use the authenticated web guard and CSRF protection.
         Route::get('friends', [\App\Http\Controllers\Portal\PortalSocialController::class, 'friendships']);
         Route::post('friends', [\App\Http\Controllers\Portal\PortalSocialController::class, 'requestFriend'])->middleware('throttle:6,1');
