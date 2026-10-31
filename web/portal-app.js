@@ -75,6 +75,9 @@
       const data = await api('/status');
       const count = Number(data.portal_active_last_5_minutes);
       if (Number.isFinite(count)) put('[data-portal-presence]', count + ' usuario(s) activos en el portal en los últimos 5 minutos');
+      const gameCount = data.game_online_count;
+      const game = one('[data-game-presence]');
+      if (game) game.textContent = Number.isInteger(gameCount) ? gameCount + ' jugador(es) reales en el juego (excluye bots)' : 'Jugadores del juego: no disponible';
     } catch (_) { put('[data-portal-presence]', 'Presencia del portal no disponible'); }
   }
 
