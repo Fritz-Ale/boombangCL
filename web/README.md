@@ -16,6 +16,8 @@ Portal original y responsivo basado en los recursos del repositorio BoomBang HTM
 | `ranking.html` | Clasificación de la última semana de minijuegos con respeto al ajuste de privacidad `show_username` |
 | `social.html` | Solicitudes de amistad, aceptación y clanes por invitación |
 | `moderacion.html` | Revisión de reportes desde una cuenta administradora |
+| `normas.html` | Normas de convivencia y denuncias |
+| `privacidad.html` | Resumen del tratamiento de datos en desarrollo (no política legal definitiva) |
 | `ayuda.html` | Instrucciones para preparar el entorno y acceder al cliente HTML5 |
 
 Las imágenes siguen procediendo de `doc/screenshots/` y no de sitios externos.
