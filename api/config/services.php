@@ -49,6 +49,11 @@ return [
         'key' => env('GEMINI_API_KEY'),
     ],
 
+    'portal_stats' => [
+        'url' => env('PORTAL_GAME_SERVER_URL', 'http://server:3000'),
+        'token' => env('PORTAL_STATS_TOKEN'),
+    ],
+
     'stripe' => [
         'public' => env('STRIPE_PUBLIC_KEY'),
         'secret' => env('STRIPE_SECRET_KEY'),
