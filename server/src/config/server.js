@@ -37,6 +37,24 @@ module.exports = (port) => {
         res.status(200).json({ success: true });
     });
 
+    // Read-only authenticated statistics for Laravel; never expose player identities.
+    // A separate internal token prevents exposing the emulator's API credentials.
+    app.get('/internal/portal-stats', (req, res) => {
+        const crypto = require('node:crypto');
+        const received = req.get('X-Portal-Stats-Token') || '';
+        const configured = process.env.PORTAL_STATS_TOKEN || '';
+        if (!configured || !received) return res.sendStatus(403);
+        const a = Buffer.from(received);
+        const b = Buffer.from(configured);
+        if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return res.sendStatus(403);
+        const ConnectedUsersCollection = require('../collections/ConnectedUsersCollection');
+        const playerIds = new Set();
+        for (const user of ConnectedUsersCollection.getAll()) {
+            if (user && !user.is_bot && user.id !== undefined) playerIds.add(String(user.id));
+        }
+        return res.set('Cache-Control', 'no-store').json({ online_players: playerIds.size });
+    });
+
     // Configuración de CORS para Socket.io
     const io = new Server(server, {
         cors: {
