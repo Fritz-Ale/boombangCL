@@ -1,0 +1,365 @@
+<template>
+  <div id="island-scene-create-screen" class="island-scene-create-screen">
+    <!-- Imagen de la brújula -->
+    <img
+      v-if="dataLoaded"
+      class="brujula"
+      :class="{ disabled: isCreating }"
+      :src="asset_brujula_image"
+      alt="Brújula"
+      @load="handleImageLoad"
+      @error="handleImageLoad"
+      @click="goBackToIsland"
+    />
+
+    <div v-if="dataLoaded && scenes.length > 0">
+      <!-- Vista previa de la escena seleccionada -->
+      <div class="island-preview">
+        <img
+          :src="getImageUrl(currentScene)"
+          :alt="`Escena ${currentIndex + 1}`"
+          @load="handleImageLoad"
+          @error="handleImageLoad"
+        />
+      </div>
+
+      <!-- Controles de navegación y creación -->
+      <div class="controls">
+        <template v-if="step === 1">
+          <div class="navigation">
+            <div>
+              <button class="control-btn" @click="prevScene">
+                {{ $t("common.previous") }}
+              </button>
+            </div>
+            <div>
+              <button class="control-btn" @click="nextScene">
+                {{ $t("common.next") }}
+              </button>
+            </div>
+            <div>
+              <button class="accept-btn" @click="goToStep(2)">
+                {{ $t("common.accept") }}
+              </button>
+            </div>
+          </div>
+          <div class="navigation-label">
+            <span class="label">{{ $t("scene_create.choose_scene") }}</span>
+          </div>
+        </template>
+        <template v-else-if="step === 2">
+          <div v-if="errorCreateScene" class="error-message">
+            {{ errorMessage }}
+          </div>
+          <div class="navigation">
+            <div style="flex: 2" @dragover.prevent @drop.prevent>
+              <input
+                type="text"
+                v-model="sceneName"
+                :placeholder="$t('scene_create.scene_name_placeholder')"
+              />
+            </div>
+            <div>
+              <button class="accept-btn" @click="createScene" :disabled="isCreating">
+                {{ $t("common.accept") }}
+              </button>
+            </div>
+          </div>
+          <div class="navigation-label">
+            <span class="label">{{ $t("scene_create.set_scene_name") }}</span>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <div v-else-if="dataLoaded && scenes.length === 0" class="error-message-centered">
+      <p>{{ $t("scene_create.error_no_scenes") }}</p>
+    </div>
+  </div>
+</template>
+
+<script>
+import socket from "@/sockets/socket";
+import RequestSocketsEnum from "@/enums/RequestSocketsEnum";
+import ResponseSocketsEnum from "@/enums/ResponseSocketsEnum";
+import asset_brujula_image from "@/assets/game/basechat/brujula.webp";
+
+export default {
+  name: "IslandSceneCreateScreen",
+  props: {
+    sceneData: {
+      type: Object,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      asset_brujula_image,
+      scenes: [],
+      currentIndex: 0,
+      imagesToLoad: 0,
+      loadedImages: 0,
+      imagesLoaded: false,
+      step: 1,
+      sceneName: "",
+      errorCreateScene: false,
+      errorMessage: "",
+      isCreating: false,
+      islandConfig: null,
+      dataLoaded: false,
+    };
+  },
+  computed: {
+    currentScene() {
+      return this.scenes[this.currentIndex] || {};
+    },
+    viteEnv() {
+      return import.meta.env.VITE_APP_ENV;
+    },
+  },
+  methods: {
+    prevScene() {
+      this.currentIndex =
+        (this.currentIndex + this.scenes.length - 1) % this.scenes.length;
+    },
+    nextScene() {
+      this.currentIndex = (this.currentIndex + 1) % this.scenes.length;
+    },
+    goToStep(step) {
+      this.step = step;
+    },
+    createScene() {
+      if (this.isCreating) return;
+      this.isCreating = true;
+      this.errorCreateScene = false;
+      socket.emit(RequestSocketsEnum.PRIVATE_SCENE_CREATE, {
+        island_id: this.sceneData.id,
+        name: this.sceneName,
+        type: this.currentScene.uuid,
+      });
+      socket.off(ResponseSocketsEnum.PRIVATE_SCENE_CREATE_ERROR);
+      socket.on(ResponseSocketsEnum.PRIVATE_SCENE_CREATE_ERROR, (response) => {
+        this.errorCreateScene = true;
+        this.errorMessage = response.message;
+        this.isCreating = false;
+      });
+    },
+    handleImageLoad() {
+      if (this.imagesLoaded) return;
+      this.loadedImages++;
+      if (this.loadedImages >= this.imagesToLoad) {
+        this.imagesLoaded = true;
+        this.$emit("updateLoading", false);
+      }
+    },
+    preloadImages() {
+      const urls = this.scenes.map((s) => this.getImageUrl(s));
+      urls.push(this.asset_brujula_image);
+      this.imagesToLoad = urls.length;
+      urls.forEach((src) => {
+        if (!src) return;
+        const img = new Image();
+        img.src = src;
+        img.onload = this.handleImageLoad;
+        img.onerror = this.handleImageLoad;
+      });
+    },
+    getImageUrl(scene) {
+      if (!scene) return "";
+      // Si estamos en local, usar la ruta relativa (image)
+      // Si no, usar la URL completa (image_url)
+      return this.viteEnv === 'local' ? scene.image : scene.image_url;
+    },
+    goBackToIsland() {
+      if (this.isCreating) return;
+      this.$emit("updateLoading", true);
+      this.$emit("joinIsland", this.sceneData);
+    },
+    loadScenes() {
+      // Emitir solicitud para obtener las configuraciones de escenas privadas por isla
+      socket.emit(RequestSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND, {
+        island_config_id: this.sceneData.type,
+      });
+
+      // Escuchar respuesta exitosa
+      socket.off(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_SUCCESS);
+      socket.on(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_SUCCESS, (response) => {
+        this.dataLoaded = true;
+        if (response.private_scene_configs && response.private_scene_configs.length > 0) {
+          this.scenes = response.private_scene_configs.map((config) => ({
+            uuid: config.id,
+            image: config.image,
+            image_url: config.image_url,
+            name: config.name,
+          }));
+
+          if (this.scenes.length) {
+            this.preloadImages();
+          } else {
+            this.$emit("updateLoading", false);
+          }
+        } else {
+          console.error(
+            `IslandSceneCreateScreen: No se encontraron escenas para la isla tipo '${this.sceneData.type}'.`
+          );
+          this.scenes = [];
+          this.$emit("updateLoading", false);
+        }
+      });
+
+      // Escuchar respuesta de error
+      socket.off(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_ERROR);
+      socket.on(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_ERROR, (response) => {
+        console.error(
+          `IslandSceneCreateScreen: Error al obtener escenas - ${response.message}`
+        );
+        this.dataLoaded = true;
+        this.scenes = [];
+        this.$emit("updateLoading", false);
+      });
+    },
+  },
+  created() {
+    this.$emit("updateLoading", true);
+    this.loadScenes();
+  },
+  mounted() {
+    this.$nextTick(() => {
+      const images = this.$el.querySelectorAll("img");
+      images.forEach((img) => {
+        if (img.complete) this.handleImageLoad();
+      });
+    });
+  },
+};
+</script>
+
+<style scoped>
+.error-message {
+  color: #ffdc00;
+  font-weight: bold;
+  text-align: start;
+  width: 100%;
+  font-size: 15px;
+  margin-bottom: -9px;
+}
+
+.navigation-label {
+  box-sizing: border-box;
+  background-color: #3a4b54c9;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  width: 100%;
+  padding: 5px;
+  text-align: left;
+}
+
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 5px;
+}
+
+.navigation div {
+  flex: 1;
+  text-align: center;
+}
+
+.navigation button {
+  width: 100%;
+}
+
+.island-scene-create-screen {
+  position: relative;
+  background-color: #f0f0f0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.brujula {
+  position: absolute;
+  cursor: pointer;
+  z-index: 100;
+  right: 30px;
+  bottom: 20px;
+}
+
+.brujula.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.island-preview {
+  position: absolute;
+}
+
+.island-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.controls {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 110;
+  padding: 10px 10px 0;
+  background-color: #3c87b3ad;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  flex-direction: column;
+  width: 340px;
+}
+
+.control-btn,
+.accept-btn {
+  background-color: #3a4b54c9;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  z-index: 120;
+  position: relative;
+}
+
+.control-btn:hover,
+.accept-btn:hover {
+  background-color: #3a4b54c9;
+}
+
+.accept-btn:disabled {
+  background-color: #2a3a46;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.label {
+  color: #fff;
+  font-size: 1.2em;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+input[type="text"] {
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+}
+
+.error-message-centered {
+  color: red;
+  text-align: center;
+  margin-top: 50px;
+}
+</style>

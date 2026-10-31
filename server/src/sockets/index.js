@@ -1,0 +1,47 @@
+const authSockets = require('./authSockets');
+const connectionSockets = require('./connectionSockets');
+const publicScenesSockets = require('./game/scenes/publicScenesSockets');
+const privateScenesSockets = require('./game/scenes/privateScenesSockets');
+const scenesSockets = require('./game/scenes/scenesSockets');
+const islandSockets = require('./game/scenes/islandSockets');
+const matchMakerSockets = require('./game/scenes/matchMakerSockets');
+const userSockets = require('./game/userSockets');
+const lobbySockets = require('./game/lobbySockets');
+const objectSockets = require('./game/objectSockets');
+const adminSockets = require('./game/admin/adminSockets');
+const minigameSockets = require('./game/minigameSockets');
+const configSockets = require('./game/config/configSockets');
+const mailSockets = require('./game/mailSockets');
+const npcSockets = require('./game/npcSockets');
+const inventorySockets = require('./game/inventorySockets');
+const shopSockets = require('./game/shopSockets');
+const MinigamesEnum = require('../enums/MinigamesEnum');
+const MatchMakerInstance = require('../instances/MatchMakerInstance');
+
+module.exports = (io, authorizedBotTokens) => {
+    const matchMakers = {
+        [MinigamesEnum.GOLDEN_RING]: new MatchMakerInstance(7, io),
+    }
+
+    io.on('connection', (socket) => {
+        console.log('A player connected:', socket.id);
+
+        authSockets(socket, io, authorizedBotTokens);
+        connectionSockets(socket, io);
+        publicScenesSockets(socket, io);
+        scenesSockets(socket, io);
+        islandSockets(socket, io);
+        lobbySockets(socket, io);
+        privateScenesSockets(socket, io);
+        matchMakerSockets(socket, io, matchMakers);
+        userSockets(socket, io);
+        objectSockets(socket, io);
+        adminSockets(socket, io);
+        minigameSockets(socket, io);
+        configSockets(socket, io);
+        mailSockets(socket, io);
+        npcSockets(socket, io);
+        inventorySockets(socket, io);
+        shopSockets(socket, io);
+    });
+};

@@ -1,0 +1,173 @@
+<?php
+
+namespace App\Http\Controllers\Api\Game\Scene;
+
+use Exception;
+use Carbon\Carbon;
+use App\Models\Minigame;
+use App\Enums\MenuTypeEnum;
+use App\Models\CatalogItem;
+use App\Models\PublicScene;
+use App\Models\MinigameWeek;
+use Illuminate\Http\Request;
+use App\Models\MinigameScore;
+use App\Enums\MinigameTypeEnum;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\PublicSceneResource;
+use App\Http\Resources\PublicSceneTrapResource;
+use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Controllers\Api\Traits\ResponseApiControllerTrait;
+use App\Http\Controllers\Api\Game\Scene\Interfaces\PublicSceneApiControllerInterface;
+
+class PublicSceneApiController extends Controller implements PublicSceneApiControllerInterface
+{
+    use ResponseApiControllerTrait;
+
+    public function get(Request $request): JsonResource
+    {
+        try {
+            $items = PublicScene::with('items', 'npc', 'traps')
+                ->where('menu_type', MenuTypeEnum::PUBLIC_SCENE->key())
+                ->active()
+                ->ordered()
+                ->get();
+            return $this->successResponse(
+                [
+                    'scenes' => PublicSceneResource::collection($items)
+                ]
+            );
+        } catch (Exception $e) {
+            return $this->handleException($e);
+        }
+    }
+
+    public function userCatchItem(Request $request): JsonResource
+    {
+        try {
+            $validated = $request->validate([
+                'item_id' => 'required',
+                'scene_id' => 'required',
+            ]);
+
+            $user = Auth::user();
+            $itemId = $validated['item_id'];
+            $sceneId = $validated['scene_id'];
+            $sceneItem = PublicScene::find($sceneId)
+                ->items()
+                ->active()
+                ->find($itemId);
+            if (!$sceneItem) {
+                throw new Exception('Item not found in the scene.');
+            }
+
+            // Verificar si hay un CatalogItem asociado
+            if ($sceneItem->pivot->catalog_item_id) {
+                $catalogItemId = $sceneItem->pivot->catalog_item_id;
+
+                // Verificar si el usuario ya tiene este item
+                $alreadyOwned = $user->catalogItems()->where('catalog_item_id', $catalogItemId)->exists();
+
+                if (!$alreadyOwned) {
+                    // Obtener el catalog item para acceder a show_in_inventory
+                    $catalogItem = CatalogItem::find($catalogItemId);
+
+                    if ($catalogItem) {
+                        // Dar item al usuario
+                        $user->catalogItems()->create([
+                            'catalog_item_id' => $catalogItem->id,
+                            'show_in_inventory' => $catalogItem->show_in_inventory,
+                        ]);
+                    }
+                }
+            }
+
+            if ($sceneItem->pivot->sum_points_to_user_attribute) {
+                $userAttributeName = $sceneItem->pivot->user_attribute_name;
+                if ($userAttributeName) {
+                    $user->{$userAttributeName} += $sceneItem->pivot->sum_points;
+                    $user->save();
+
+                    // Si el atributo es coconuts_caught, agregar al ranking del minijuego
+                    if ($userAttributeName == 'coconuts_caught') {
+                        // Buscar el minijuego Crazy Coconuts
+                        $minigame = Minigame::where('type', MinigameTypeEnum::CRAZY_COCONUTS->key())->first();
+                        if ($minigame) {
+                            // Obtener la semana actual del minijuego
+                            $currentWeek = MinigameWeek::where('minigame_id', $minigame->id)
+                                ->where('start_date', '<=', now())
+                                ->where('end_date', '>=', now())
+                                ->first();
+
+                            // Si no existe la semana actual, crearla
+                            if (!$currentWeek) {
+                                $now = now();
+                                $start = $now->copy()->startOfWeek(\Carbon\Carbon::MONDAY)->startOfDay();
+                                $end = $start->copy()->addDays(7)->startOfDay();
+                                $weekNumber = $start->isoWeek();
+                                $year = $start->year;
+
+                                $currentWeek = MinigameWeek::create([
+                                    'minigame_id' => $minigame->id,
+                                    'week_number' => $weekNumber,
+                                    'year' => $year,
+                                    'start_date' => $start,
+                                    'end_date' => $end,
+                                ]);
+                            }
+
+                            // Verificar si el usuario ya tiene un score para esta semana
+                            $existingScore = MinigameScore::where('user_id', $user->id)
+                                ->where('minigame_week_id', $currentWeek->id)
+                                ->first();
+
+                            if ($existingScore) {
+                                // Actualizar el score sumando los puntos del item
+                                $existingScore->update(['score' => DB::raw('score + ' . $sceneItem->pivot->sum_points)]);
+                            } else {
+                                // Crear un nuevo registro con los puntos del item
+                                MinigameScore::create([
+                                    'user_id' => $user->id,
+                                    'minigame_week_id' => $currentWeek->id,
+                                    'minigame_id' => $minigame->id,
+                                    'score' => $sceneItem->pivot->sum_points
+                                ]);
+                            }
+                        }
+                    }
+                } else {
+                    throw new Exception('User attribute name is not set.');
+                }
+            }
+
+            return $this->successResponse(['message' => 'Item caught successfully.']);
+        } catch (Exception $e) {
+            return $this->handleException($e);
+        }
+    }
+
+    public function getTraps(Request $request): JsonResource
+    {
+        try {
+            $validated = $request->validate([
+                'scene_id' => 'required|integer',
+            ]);
+
+            $sceneId = $validated['scene_id'];
+            $publicScene = PublicScene::find($sceneId);
+
+            if (!$publicScene) {
+                throw new Exception('Scene not found.');
+            }
+
+            $traps = $publicScene->traps()->where('active', true)->get();
+
+            return $this->successResponse([
+                'traps' => PublicSceneTrapResource::collection($traps)
+            ]);
+        } catch (Exception $e) {
+            return $this->handleException($e);
+        }
+    }
+}

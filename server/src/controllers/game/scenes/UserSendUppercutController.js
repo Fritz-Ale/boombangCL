@@ -1,0 +1,103 @@
+const ConnectedUsersCollection = require('../../../collections/ConnectedUsersCollection');
+const DisconnectUserController = require('../../connection/DisconnectUserController');
+const Log = require('../../../utils/Log');
+const ResponseSocketsEnum = require('../../../enums/ResponseSocketsEnum');
+const UserBlockActionsTask = require('../../../tasks/UserBlockActionsTask');
+const AnimationEnum = require('../../../enums/AnimationEnum');
+const UserService = require('../../../services/UserService');
+const SceneTypesEnum = require('../../../enums/SceneTypesEnum');
+
+class UserSendUppercutController {
+    static async main(socket, io) {
+        try {
+            const user = ConnectedUsersCollection.getBySocketId(socket.id);
+            if (!user || !user.currentArea) return;//throw new Error('User not found or not in any area');
+            if (!user.selectedUser) return; //throw new Error('No user selected');
+
+            if (user.currentArea.scene_type == SceneTypesEnum.MINIGAME_RING
+                && !user.currentArea.gameStarted) {
+                return; // No se puede hacer uppercut si el juego no ha comenzado
+            }
+
+            const targetUser = ConnectedUsersCollection.getBySocketId(user.selectedUser.socket.id);
+            if (!targetUser || targetUser.currentArea.id !== user.currentArea.id) {
+                //throw new Error('Target user not found or not in the same area');
+                return;
+            }
+
+            if (targetUser.movementBlocked || user.movementBlocked) {
+                return; // No se puede hacer uppercut si el usuario está bloqueado
+            }
+
+            if ((targetUser.currentAreaPosition.x === targetUser.currentArea.startPosition.x
+                && targetUser.currentAreaPosition.y === targetUser.currentArea.startPosition.y)
+                || (user.currentAreaPosition.x === user.currentArea.startPosition.x
+                    && user.currentAreaPosition.y === user.currentArea.startPosition.y)
+            ) {
+                return; // No se puede hacer uppercut en la posición de entrada de sala
+            }
+
+            // Aquí NO revisamos si finalTarget es null, ya que queremos permitir el uppercut en movimiento.
+            const deltaX = user.currentAreaPosition.x - targetUser.currentAreaPosition.x;
+            const deltaY = user.currentAreaPosition.y - targetUser.currentAreaPosition.y;
+
+            // Bot validation: check if attacker can send uppercuts
+            if (!user.canSendUppercuts()) {
+                //console.log(`[BOT-VALIDATION] Bot ${user.username} tried to send uppercut but can_send_uppercuts=false`);
+                return;
+            }
+
+            // Bot validation: check if target can receive uppercuts
+            if (!targetUser.canReceiveUppercuts()) {
+                //console.log(`[BOT-VALIDATION] Bot ${user.username} tried to uppercut ${targetUser.username} but target can_receive_uppercuts=false`);
+                return;
+            }
+
+            // Bot validation: check if attacker can attack bots (if target is a bot)
+            if (targetUser.is_bot && !user.canAttackBots()) {
+                //console.log(`[BOT-VALIDATION] Bot ${user.username} tried to uppercut bot ${targetUser.username} but can_attack_bots=false`);
+                return;
+            }
+
+            // Comprobar si la posición es la adecuada para el uppercut (ajusta la lógica a tu juego)
+            if ((deltaX === -1 && deltaY === 1) || (deltaX === 1 && deltaY === -1)) {
+                if (!user.isActionBlocked(AnimationEnum.UPPERCUT) && !targetUser.isActionBlocked(AnimationEnum.UPPERCUT)) {
+                    // Cancelar movimiento actual de ambos (opcional, si corresponde a tu lógica)
+                    user.cancelMovement();
+                    targetUser.cancelMovement();
+
+                    if (targetUser.currentArea && targetUser.currentArea.scene_type == SceneTypesEnum.MINIGAME_RING) {
+                        targetUser.movementBlocked = true;
+                        targetUser.currentArea.disqualifyUser(targetUser);
+                    }
+
+                    // Bloquear acciones para uppercut
+                    UserBlockActionsTask.blockByUppercutSend(user);
+                    UserBlockActionsTask.blockByUppercutReceive(targetUser);
+
+                    if (user.currentArea.scene_type != SceneTypesEnum.MINIGAME_RING) {
+                        UserService.increaseUppercutSend(user);
+                        UserService.increaseUppercutReceived(targetUser);
+                    }
+
+                    // Emitir el uppercut sin esperar que estén quietos
+                    user.currentArea.emit(ResponseSocketsEnum.USER_SEND_UPPERCUT, {
+                        attacker: user.socket.id,
+                        receiver: targetUser.socket.id,
+                        direction: (deltaX === -1 && deltaY === 1) ? 'left' : 'right',
+                        uppercutSelected: user.uppercutSelected,
+                    });
+
+                    //console.log(`Uppercut realizado entre ${user.id} y ${targetUser.id}`);
+                }
+            }
+
+        } catch (err) {
+            Log.error('Error in SendUppercutController: ' + err);
+            DisconnectUserController.main(socket, io);
+            socket.emit('error_critical');
+        }
+    }
+}
+
+module.exports = UserSendUppercutController;

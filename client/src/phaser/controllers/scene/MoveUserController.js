@@ -1,0 +1,169 @@
+import UserWalkAnimation from "../../animations/UserWalkAnimation.js";
+import AnimationsTimerEnum from "../../../enums/AnimationsTimerEnum.js";
+import UserMoveDeniedController from "../scene/UserMoveDeniedController.js";
+import gameConfig from "@/config/gameConfig.js";
+
+//TODO: Codigo obsoleto, siempre se recibe 1 posición en el path
+class MoveUserController {
+    /**
+     * Llamada principal para iniciar el movimiento del jugador por un path.
+     * @param {Phaser.Scene} gameScene - Escena de Phaser
+     * @param {Object} data - Datos del movimiento, incluyendo el ID del socket, el path y si es el último paso.
+     */
+    static main(gameScene, data) {
+        const socketId = data.id;
+        const path = data.path;
+        const isLastStep = data.isLastStep;
+        const isTeleport = data.isTeleport;
+        const user = gameScene.users[socketId];
+
+        if (!path || !user) {
+            return;
+        }
+
+        if (path.length === 0) {
+            UserMoveDeniedController.main(gameScene, socketId);
+            return;
+        }
+
+        // Si es una teleportación, mover instantáneamente
+        if (isTeleport) {
+            this.teleportUser(gameScene, socketId, path[0]);
+            return;
+        }
+
+        // (Opcional) log de depuración, coméntalo en producción
+        //console.log(`Moving player ${socketId} to path:`, path);
+
+        // Detener tweens existentes
+        if (user.currentTween) {
+            user.currentTween.stop();
+        }
+        gameScene.tweens.killTweensOf(user.containerUser);
+
+        // Guardar el path y reiniciar el índice
+        user.path = path;
+        user.pathIndex = 0;
+
+        // Iniciar movimiento al siguiente paso
+        this.moveToNextStep(gameScene, socketId, isLastStep);
+    }
+
+    /**
+     * Teleporta al usuario instantáneamente a una posición
+     */
+    static teleportUser(gameScene, socketId, step) {
+        const user = gameScene.users[socketId];
+        if (!user) return;
+
+        // Detener cualquier animación o tween existente
+        if (user.currentTween) {
+            user.currentTween.stop();
+        }
+        gameScene.tweens.killTweensOf(user.containerUser);
+        user.spriteAvatar.stop();
+
+        // Aplicar factor de escala para big_scene
+        const scaleFactor = gameScene.sceneScaleFactor || 1;
+        const tileWidth = 65 * gameConfig.DPI * scaleFactor;
+        const tileHeight = 33 * gameConfig.DPI * scaleFactor;
+        const halfTileWidth = (tileWidth / gameConfig.DPI);
+        const halfTileHeight = (tileHeight / gameConfig.DPI);
+
+        // Calcula la posición en pantalla
+        const centerX = (step.x - step.y) * halfTileWidth + gameScene.scale.width / gameConfig.DPI;
+        const centerY = (step.x + step.y) * halfTileHeight;
+
+        // Actualiza posición lógica del jugador
+        user.position = { x: step.x, y: step.y, z: step.z };
+        user.currentAreaPosition = { x: step.x, y: step.y };
+
+        // Mueve instantáneamente el contenedor del usuario
+        user.containerUser.setPosition(centerX, centerY);
+        user.containerUser.setDepth(user.containerUser.y);
+
+        // Actualizar profundidad de overlays si existe el método
+        if (gameScene.updateWalkableOverlayDepths) {
+            gameScene.updateWalkableOverlayDepths();
+        }
+
+        // Limpiar el path
+        user.path = null;
+        user.pathIndex = 0;
+
+        // Ejecutar el controlador de movimiento denegado para detener cualquier acción
+        UserMoveDeniedController.main(gameScene, socketId);
+    }
+
+    /**
+     * Mueve al jugador al siguiente paso del path
+     */
+    static moveToNextStep(gameScene, socketId, isLastStep) {
+        const user = gameScene.users[socketId];
+        if (!user) return;
+
+        const step = user.path[user.pathIndex];
+
+        // Ajusta según tu grid isométrico
+        // Aplicar factor de escala para big_scene
+        const scaleFactor = gameScene.sceneScaleFactor || 1;
+        const tileWidth = 65 * gameConfig.DPI * scaleFactor;
+        const tileHeight = 33 * gameConfig.DPI * scaleFactor;
+        const halfTileWidth = (tileWidth / gameConfig.DPI);
+        const halfTileHeight = (tileHeight / gameConfig.DPI);
+
+        // Calcula la posición en pantalla
+        const centerX = (step.x - step.y) * halfTileWidth + gameScene.scale.width / gameConfig.DPI;
+        const centerY = (step.x + step.y) * halfTileHeight;
+
+        // Actualiza posición lógica del jugador
+        user.position = { x: step.x, y: step.y, z: step.z };
+
+        // Inicia la animación SOLO una vez (en lugar de cada frame).
+        UserWalkAnimation.playWalk(
+            user.spriteAvatar,
+            step.z,
+            user.avatarId,
+            gameScene
+        );
+
+        // Crea el tween de movimiento y almacena el tween actual para futuras referencias
+        user.currentTween = gameScene.tweens.add({
+            targets: user.containerUser,
+            x: centerX,
+            y: centerY,
+            duration: AnimationsTimerEnum.WALK,
+            onUpdate: () => {
+                if (!user.containerUser) return;
+                // Actualiza la profundidad según la Y (opcional en cada frame).
+                user.containerUser.setDepth(user.containerUser.y);
+                
+                // Update user position during animation for real-time WALKABLE_OVERLAY depth updates
+                user.currentAreaPosition = { x: step.x, y: step.y };
+                
+                // Update WALKABLE_OVERLAY depths during movement
+                if (gameScene.updateWalkableOverlayDepths) {
+                    gameScene.updateWalkableOverlayDepths();
+                }
+            },
+            onComplete: () => {
+                // Al terminar el movimiento, detenemos la animación
+                user.spriteAvatar.stop();
+                
+                // Update user's current position for WALKABLE_OVERLAY depth management
+                user.currentAreaPosition = { x: step.x, y: step.y };
+                
+                // Update WALKABLE_OVERLAY depths when user moves
+                if (gameScene.updateWalkableOverlayDepths) {
+                    gameScene.updateWalkableOverlayDepths();
+                }
+                
+                if (isLastStep) {
+                    UserMoveDeniedController.main(gameScene, socketId);
+                }
+            }
+        });
+    }
+}
+
+export default MoveUserController;

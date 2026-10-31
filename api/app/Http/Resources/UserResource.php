@@ -1,0 +1,80 @@
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use App\Http\Resources\Traits\DtoResourceTrait;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class UserResource extends JsonResource
+{
+    use DtoResourceTrait;
+
+    private static $data;
+
+    public function __construct($resource)
+    {
+        parent::__construct($resource);
+        self::$data = $resource;
+    }
+
+    public function toArray(Request $request): array
+    {
+        $return = [
+            'id' => (int)$this->id,
+            'username' => $this->username,
+            'show_username' => (bool)$this->show_username,
+            'lang' => $this->lang,
+            'description' => $this->description,
+            'ficha_color' => $this->ficha_color,
+            'shadow_color' => $this->shadow_color,
+            'chat_color' => $this->chat_color,
+            'name_color' => $this->name_color,
+            'email' => $this->email,
+            'avatar_id' => $this->avatar,
+            'gold_coins' => (int)$this->gold_coins,
+            'silver_coins' => (int)$this->silver_coins,
+            'rings_won' => (int)$this->rings_won,
+            'coconuts_caught' => (int)$this->coconuts_caught,
+            'uppercuts_sent' => (int)$this->uppercuts_sent,
+            'uppercuts_received' => (int)$this->uppercuts_received,
+            'coconuts_sent' => (int)$this->coconuts_sent,
+            'coconuts_received' => (int)$this->coconuts_received,
+            'kisses_sent' => (int)$this->kisses_sent,
+            'kisses_received' => (int)$this->kisses_received,
+            'drinks_sent' => (int)$this->drinks_sent,
+            'drinks_received' => (int)$this->drinks_received,
+            'roses_sent' => (int)$this->roses_sent,
+            'roses_received' => (int)$this->roses_received,
+
+            /**
+             * Bot settings
+             */
+            'is_bot' => (bool)$this->is_bot,
+            'bot_settings' => $this->bot_settings,
+
+            'last_update_username_at' => $this->last_update_username_at,
+            'phaser_rendering_type' => $this->phaser_rendering_type,
+            'phaser_antialias' => $this->phaser_antialias,
+            'phaser_antialias_gl' => $this->phaser_antialias_gl,
+            'phaser_pixel_art' => $this->phaser_pixel_art,
+            'phaser_round_pixels' => $this->phaser_round_pixels,
+            'phaser_power_preference' => $this->phaser_power_preference,
+            'phaser_scene_sound_volume' => (int)$this->phaser_scene_sound_volume,
+            'phaser_scene_sound_muted' => (bool)$this->phaser_scene_sound_muted,
+
+            /**
+             * User customizations
+             */
+            'fichas' => $this->enabledFichas(),
+            'chats' => $this->enabledChats(),
+            'colornames' => $this->enabledColorNames(),
+            'shadows' => $this->enabledShadows(),
+            'avatars' => $this->enabledAvatars(),
+
+            'tutorial_completed' => (bool)$this->lobby_tutorial,
+        ];
+
+        return $return;
+    }
+}

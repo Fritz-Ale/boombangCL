@@ -1,0 +1,166 @@
+<template>
+  <div>
+    <div class="tabs-container" :class="colorUser">
+      <div
+        class="tabs-container__interactions"
+        :class="{ active: activeTab === 'interactions' }"
+        @click="activeTab = 'interactions'"
+      >
+        <img
+          :src="asset_emojis_tab_icon_image"
+          :alt="$t('user_card.tabs.interactions')"
+          class="tab-icon"
+          :class="{ active: activeTab === 'interactions' }"
+        />
+      </div>
+      <div
+        class="tabs-container__statistics"
+        :class="{ active: activeTab === 'statistics' }"
+        @click="activeTab = 'statistics'"
+      >
+        <img
+          :src="asset_statistics_tab_icon_image"
+          :alt="$t('user_card.tabs.statistics')"
+          class="tab-icon"
+          :class="{ active: activeTab === 'statistics' }"
+        />
+      </div>
+    </div>
+    <component
+      :is="activeTabComponent"
+      :selectedUser="selectedUser"
+      :authUser="authUser"
+      :pendingInteraction="pendingInteraction"
+      @open-ring-info="$emit('open-ring-info')"
+      @open-coconuts-info="$emit('open-coconuts-info')"
+      @interaction-sent="$emit('interaction-sent', $event)"
+      @interaction-cancelled="$emit('interaction-cancelled')"
+    />
+  </div>
+</template>
+
+<script>
+import asset_emojis_tab_icon_image from "@/assets/game/ficha/tab-cons/user.svg";
+import asset_statistics_tab_icon_image from "@/assets/game/ficha/tab-cons/statistics.svg";
+import InteractionsTabComponent from "./tabs/InteractionsTabComponent.vue";
+import StatisticsTabComponent from "./tabs/StatisticsTabComponent.vue";
+
+export default {
+  props: {
+    selectedUser: {
+      type: Object,
+      required: true,
+    },
+    authUser: {
+      type: Object,
+      required: true,
+    },
+    pendingInteraction: {
+      type: Object,
+      required: false,
+    },
+  },
+  data() {
+    return {
+      activeTab: "interactions",
+      asset_emojis_tab_icon_image,
+      asset_statistics_tab_icon_image,
+    };
+  },
+  computed: {
+    activeTabComponent() {
+      return this.activeTab === "interactions"
+        ? InteractionsTabComponent
+        : StatisticsTabComponent;
+    },
+    colorUser() {
+      if (this.selectedUser.ficha_color == "user") {
+        return "selected";
+      }
+      return this.selectedUser.ficha_color;
+    },
+  },
+  components: {
+    InteractionsTabComponent,
+    StatisticsTabComponent,
+  },
+};
+</script>
+
+<style scoped>
+.tabs-container {
+  max-width: 177px;
+  width: 100%;
+  height: 21px;
+  display: flex;
+  gap: 3px;
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.tabs-container__interactions {
+  height: 23px;
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  padding-left: 6px;
+}
+
+.tabs-container__statistics {
+  height: 23px;
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ajuste específico para la pestaña Statistics, ya que tiene menos ancho */
+.tabs-container__statistics {
+  width: 30px;
+}
+
+/* Icono dentro de cada pestaña */
+.tab-icon {
+  width: 13px;
+  height: 13px;
+  filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%)
+    contrast(100%);
+}
+
+.tab-icon.active {
+  filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%)
+    contrast(100%);
+}
+
+/********************************************************************* */
+.tabs-container.admin .tabs-container__interactions,
+.tabs-container.admin .tabs-container__statistics {
+  background-color: #f59200;
+}
+
+.tabs-container.vip .tabs-container__interactions,
+.tabs-container.vip .tabs-container__statistics {
+  background-color: #420143;
+}
+
+.tabs-container.selected .tabs-container__interactions,
+.tabs-container.selected .tabs-container__statistics {
+  background-color: #045d03;
+}
+
+.tabs-container.beta .tabs-container__interactions,
+.tabs-container.beta .tabs-container__statistics {
+  background-color: rgb(1, 167, 167);
+}
+
+.tabs-container__interactions.active,
+.tabs-container__statistics.active {
+  background-color: white !important;
+}
+</style>
