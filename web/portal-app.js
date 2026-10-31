@@ -149,12 +149,46 @@
     put('[data-thread-title]', item.title);
     put('[data-thread-meta]', item.author + ' · ' + date(item.created_at) + (item.locked ? ' · Tema cerrado' : ''));
     put('[data-thread-body]', item.body);
+    const actions = one('[data-thread-actions]');
+    actions.replaceChildren();
+    if (state.user && state.user.is_staff) {
+      const lock = node('button', item.locked ? 'Reabrir tema' : 'Cerrar tema', 'portal-backlink');
+      lock.type = 'button';
+      lock.addEventListener('click', async () => {
+        try { await api('/forum/threads/' + item.id + '/lock', 'PATCH', { locked: !item.locked }); await openThread(item.id, false); }
+        catch (error) { message(formatError(error), true); }
+      });
+      const remove = node('button', 'Eliminar tema', 'portal-backlink');
+      remove.type = 'button';
+      remove.style.marginLeft = '20px';
+      remove.addEventListener('click', async () => {
+        if (!window.confirm('¿Eliminar este tema y todas sus respuestas?')) return;
+        try {
+          await api('/forum/threads/' + item.id, 'DELETE');
+          state.page = 1; await loadThreads();
+          visible('[data-thread-view]', false);
+          one('.portal-forum-layout').hidden = false;
+          history.pushState(null, '', 'foro.html');
+        } catch (error) { message(formatError(error), true); }
+      });
+      actions.append(lock, remove);
+    }
     const replies = one('[data-thread-replies]');
     replies.replaceChildren();
     if (!(payload.replies || []).length) empty(replies, 'Todavía no hay respuestas.');
     else for (const reply of payload.replies) {
       const entry = node('div', null, 'portal-thread-reply');
       entry.append(node('small', reply.author + ' · ' + date(reply.created_at)), node('p', reply.body));
+      if (state.user && state.user.is_staff) {
+        const remove = node('button', 'Eliminar respuesta', 'portal-backlink');
+        remove.type = 'button';
+        remove.addEventListener('click', async () => {
+          if (!window.confirm('¿Eliminar esta respuesta?')) return;
+          try { await api('/forum/replies/' + reply.id, 'DELETE'); await openThread(state.threadId, false); }
+          catch (error) { message(formatError(error), true); }
+        });
+        entry.append(remove);
+      }
       replies.append(entry);
     }
     if (payload.truncated) replies.append(node('p', 'Hay más respuestas que las 100 mostradas.'));
@@ -216,6 +250,16 @@
       const block = node('div', null, 'portal-chat-row');
       const stamp = node('time', date(item.created_at));
       block.append(node('strong', item.author), stamp, node('p', item.body));
+      if (state.user && state.user.is_staff) {
+        const remove = node('button', 'Eliminar mensaje', 'portal-backlink');
+        remove.type = 'button';
+        remove.style.marginLeft = '10px';
+        remove.addEventListener('click', async () => {
+          try { await api('/chat/' + item.id, 'DELETE'); await refreshChat(); }
+          catch (error) { message(formatError(error), true); }
+        });
+        block.append(remove);
+      }
       container.append(block);
     }
     if (scroll || nearBottom) container.scrollTop = container.scrollHeight;
