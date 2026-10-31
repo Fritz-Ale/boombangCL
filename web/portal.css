@@ -1,0 +1,97 @@
+/* Portal BoomBang CL: estilos originales, sin recursos de BoomBang.tv. */
+.portal-page{background:#fffaf1}
+.portal-banner{background:radial-gradient(circle at 85% 15%,#29d4c7,transparent 42%),linear-gradient(115deg,#0c7797,#0db6b8);color:#fff;padding:80px 0}
+.portal-banner-grid{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:55px}
+.portal-banner h1{font-family:Outfit,'Trebuchet MS',sans-serif;line-height:1.03;font-size:clamp(3rem,5.4vw,5.4rem);letter-spacing:-.06em;margin:0 0 24px;font-weight:900}
+.portal-banner h1 em{font-style:normal;color:#ffe4a1}
+.portal-banner p{line-height:1.8;color:#ecfffc;max-width:470px}
+.portal-banner img{width:100%;aspect-ratio:1.45;object-fit:cover;border-radius:28px;border:9px solid #fff;box-shadow:0 28px 60px #044f6280;transform:rotate(2deg)}
+.portal-banner .button{margin-top:14px}
+.portal-notice{padding:18px 23px;border:1px solid #f2d49a;background:#fff3d4;border-radius:15px;color:#78592e;font-size:.91rem;line-height:1.7;margin-top:28px}
+.portal-section{padding-top:85px;padding-bottom:90px}
+.portal-heading{max-width:720px;margin-bottom:34px}
+.portal-heading h2{font-size:clamp(2.4rem,4.2vw,4rem);margin:0 0 15px}
+.portal-heading p{color:var(--muted);line-height:1.8}
+.portal-surface{background:#f1f8ef}
+.portal-toolbar{display:grid;gap:7px;margin-bottom:22px;max-width:390px}
+.portal-toolbar label{font-size:.85rem;font-weight:900;color:#315566}
+.portal-toolbar input{width:100%;height:48px;border-radius:13px;border:2px solid #d6e5dd;background:#fff;padding:0 14px;font:inherit;color:#123b50}
+.portal-toolbar input:focus{border-color:#07abae;outline:3px solid #49d6c640}
+.portal-areas{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.portal-area{position:relative;background:#fff;border:1px solid #e7e7d8;border-radius:20px;box-shadow:0 12px 24px #0a37420a;min-height:185px;padding:25px}
+.portal-area .area-emoji{font-size:2.3rem;line-height:1}
+.portal-area h3{font-size:1.4rem;margin:17px 0 6px}
+.portal-area p{font-size:.91rem;color:#667d81;margin:0 0 15px}
+.portal-area small{font-size:.69rem;display:inline-block;background:#f4f0e8;color:#6a7779;padding:5px 9px;border-radius:18px;font-weight:900}
+.portal-empty{color:var(--muted);font-weight:800;padding:18px 0}
+.portal-linkgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:19px}
+.portal-linkgrid article{background:#fff;padding:27px;border:1px solid #e1eee4;border-radius:22px;display:flex;flex-direction:column;align-items:flex-start}
+.portal-linkgrid article>span:first-child{font-size:2.2rem}
+.portal-linkgrid h3{font-size:1.4rem;margin:15px 0 7px}
+.portal-linkgrid p{font-size:.93rem;line-height:1.7;color:#657a81;flex:1}
+.portal-tag{font-size:.69rem;font-weight:900;letter-spacing:.075em;text-transform:uppercase;color:#067e8f;background:#e0f8f2;display:inline-flex;padding:7px 10px;border-radius:20px}
+.portal-image-feature{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.portal-image-feature img{aspect-ratio:1.36;object-fit:cover;border:9px solid white;border-radius:23px;box-shadow:var(--shadow);transform:rotate(-2deg)}
+.portal-image-feature p{color:var(--muted);line-height:1.8}
+.portal-image-feature .button{margin-top:20px}
+.portal-filters{display:flex;gap:9px;flex-wrap:wrap;margin:0 0 28px}
+.portal-filters button{font:inherit;font-size:.9rem;font-weight:900;border-radius:25px;border:1px solid #c7ded7;background:#fff;color:#305366;padding:10px 20px;cursor:pointer}
+.portal-filters button.active,.portal-filters button:hover{background:#0c8093;color:#fff;border-color:#0c8093}
+.portal-filters button:focus-visible{outline:3px solid #f3bb38;outline-offset:3px}
+.portal-newsgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:25px}
+.portal-newsgrid article{background:white;border:1px solid #f1e6d5;overflow:hidden;border-radius:23px;box-shadow:0 14px 36px #1639450b}
+.portal-newsgrid article[hidden],.portal-area[hidden]{display:none!important}
+.portal-newsgrid img{height:240px;width:100%;object-fit:cover;background:#9adecf}
+.portal-newsgrid article>div{padding:28px 30px 30px}
+.portal-newsgrid h3{font-size:1.65rem;line-height:1.2;margin:16px 0 12px}
+.portal-newsgrid p{font-size:.96rem;color:#647b84;line-height:1.8}
+.portal-newsgrid a{color:#f27a59;font-weight:900;text-decoration:underline;text-underline-offset:5px}
+.portal-centered{max-width:780px;text-align:center}
+.portal-centered h2{margin:8px 0 20px}
+.portal-centered p{color:#637984;margin-bottom:28px}
+.portal-steps{list-style:none;counter-reset:guide;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;padding:0;margin:0 0 32px}
+.portal-steps li{counter-increment:guide;background:#fff;border:1px solid #eee3d6;border-radius:20px;padding:28px 28px 28px 78px;position:relative;min-height:170px}
+.portal-steps li:before{content:counter(guide);display:grid;place-items:center;position:absolute;top:27px;left:23px;width:41px;height:41px;border-radius:50%;background:#ffdb8c;color:#245069;font-size:1.4rem;font-weight:900}
+.portal-steps strong{font-family:Outfit,'Trebuchet MS',sans-serif;font-size:1.2rem}
+.portal-steps p{font-size:.92rem;color:#607781;line-height:1.75;margin:12px 0 0}
+.portal-actionrow{display:flex;flex-wrap:wrap;gap:13px;align-items:center}
+.portal-button-alt{background:#0d7792;color:white}
+.portal-fineprint{font-size:.82rem;color:#637984;margin:24px 0 0}
+.portal-faq{max-width:860px}
+.portal-faq details{border-bottom:1px solid #cfddd1;padding:20px 0}
+.portal-faq summary{font-weight:900;font-size:1.12rem;cursor:pointer}
+.portal-faq p{color:#657b80;line-height:1.8;font-size:.95rem;margin:15px 0 2px}
+.portal-preview-section{background:#e9f6ed;padding:95px 0}
+.portal-preview-head{display:flex;justify-content:space-between;align-items:end;gap:22px;margin-bottom:28px}
+.portal-preview-head h2{margin:0}
+.portal-preview-head p{color:#627982;max-width:370px;margin:0}
+.portal-preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.portal-preview-card{background:#fff;padding:26px;border-radius:22px;color:#1c4855;text-decoration:none;border:1px solid #dbece5;box-shadow:0 15px 35px #123b4210;display:flex;flex-direction:column;align-items:flex-start;transition:transform .2s}
+.portal-preview-card:hover{transform:translateY(-5px)}
+.portal-preview-card>span:first-child{font-size:2.65rem}
+.portal-preview-card h3{font-size:1.47rem;margin:19px 0 11px}
+.portal-preview-card p{font-size:.9rem;line-height:1.75;color:#607d84;flex:1}
+.portal-preview-card strong{color:#e67e5d;font-size:.91rem}
+.portal-statusline{margin:22px 0 0;color:#547881;font-size:.85rem}
+@media(max-width:850px){
+.portal-areas,.portal-linkgrid,.portal-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.portal-banner-grid{gap:25px}
+.portal-image-feature{gap:30px}
+}
+@media(max-width:760px){
+.portal-banner-grid,.portal-image-feature{grid-template-columns:1fr}
+.portal-banner{padding:60px 0}
+.portal-banner h1{font-size:3.1rem}
+.portal-banner img{max-width:500px;margin:10px auto}
+.portal-section{padding-top:65px;padding-bottom:65px}
+.portal-newsgrid,.portal-steps{grid-template-columns:1fr}
+.portal-preview-section{padding:70px 0}
+.portal-preview-head{display:block}
+.portal-preview-head p{margin-top:17px}
+}
+@media(max-width:500px){
+.portal-areas,.portal-linkgrid,.portal-preview-grid{grid-template-columns:1fr}
+.portal-newsgrid img{height:195px}
+.portal-steps li{padding:24px 20px 24px 70px}
+.portal-banner h1{font-size:2.6rem}
+}
