@@ -1,0 +1,77 @@
+/* Live portal components. Uses the original BoomBang CL design tokens. */
+[hidden]{display:none!important}
+.portal-compact{padding:58px 0 62px}
+.portal-compact h1{max-width:960px;margin:10px 0 12px;font-size:clamp(2.9rem,6vw,4.9rem)}
+.portal-compact p{max-width:690px;margin:0}
+.portal-live{min-height:430px}
+.portal-live-status{border-radius:13px;background:#fff4cf;color:#755c2e;border:1px solid #f1d59d;padding:14px 18px;margin-bottom:30px;font-size:.9rem;font-weight:800;line-height:1.6}
+.portal-live-status.ok{background:#e9f9ec;border-color:#bedfc5;color:#1f635d}
+.portal-live-status.error{background:#fff1ec;border-color:#f0c6b8;color:#963f2f}
+.portal-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.portal-form{background:#fff;padding:30px;border:1px solid #eee4d7;border-radius:23px;box-shadow:0 12px 30px #133b4612}
+.portal-form h2{font-size:2rem;margin-bottom:12px}
+.portal-form h3{font-size:1.5rem;margin:0 0 18px}
+.portal-form p{font-size:.92rem;line-height:1.7;color:#637984}
+.portal-form label{display:grid;gap:7px;margin:16px 0;font-size:.85rem;font-weight:900;color:#32576b}
+.portal-form input,.portal-form textarea,.portal-chat-send input{width:100%;border:2px solid #d9e5e0;border-radius:12px;padding:12px 13px;background:#fbfdfb;color:#15394d;font-family:inherit;font-size:1rem}
+.portal-form textarea{resize:vertical;line-height:1.5}
+.portal-form input:focus,.portal-form textarea:focus,.portal-chat-send input:focus{outline:3px solid #27cec144;border-color:#00a6ac}
+.portal-form .button{margin-top:5px}
+.portal-form-response{font-size:.88rem!important;line-height:1.65;color:#8b5b38;min-height:1.3em;overflow-wrap:anywhere}
+.portal-honeypot{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+.portal-member-box{background:#fff;border:1px solid #e8e2ce;padding:30px;border-radius:24px}
+.portal-member-box h2{font-size:2.1rem}
+.portal-member-box p{color:#658088;line-height:1.8}
+.portal-member-box .button{margin-right:10px}
+.portal-info-box{padding:24px;background:#e9f6ed;border-radius:19px;margin-top:20px}
+.portal-info-box:first-child{margin-top:0}
+.portal-info-box h3{font-size:1.35rem;margin:0 0 7px}
+.portal-info-box p{font-size:.9rem;line-height:1.7;color:#596e78}
+.portal-forum-layout{grid-template-columns:minmax(0,1.8fr) minmax(230px,1fr);align-items:start}
+.portal-forum-list{display:grid;gap:12px;margin-bottom:20px}
+.portal-forum-list button{appearance:none;text-align:left;width:100%;background:#fff;border:1px solid #e4e9df;border-radius:15px;padding:20px;cursor:pointer;color:#183e50;font-family:inherit}
+.portal-forum-list button:hover{border-color:#35c4b8;background:#f5fff9}
+.portal-forum-list button strong{display:block;font-size:1.1rem}
+.portal-forum-list button span{display:block;font-size:.81rem;margin:6px 0;color:#729094}
+.portal-forum-list button p{font-size:.92rem;line-height:1.5;margin:0;color:#55707a;overflow-wrap:anywhere}
+.portal-thread{max-width:850px;background:white;padding:32px;border-radius:23px;border:1px solid #e9e8dc}
+.portal-thread h2{font-size:2.4rem}
+.portal-thread h3{font-size:1.55rem;margin:30px 0 14px}
+.portal-thread-meta{font-size:.8rem;color:#69868c}
+.portal-thread-body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}
+.portal-thread-reply{border-top:1px solid #e3ebe6;padding:16px 0}
+.portal-thread-reply small{color:#70868d}
+.portal-thread-reply p{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0;font-size:.93rem}
+.portal-backlink{background:none;border:0;font:inherit;color:#087f91;cursor:pointer;font-weight:900;padding:0;margin-bottom:25px}
+.portal-chat-intro{display:flex;align-items:start;justify-content:space-between;gap:25px;margin-bottom:20px}
+.portal-chat-intro p{font-size:.94rem;color:#647d84;max-width:650px}
+.portal-chat-intro span{font-size:.78rem;white-space:nowrap;background:#e1f6e9;padding:8px 12px;border-radius:18px;color:#1a7a71;font-weight:900}
+.portal-chat-messages{height:380px;overflow-y:auto;background:#fff;border:1px solid #e5e9e2;border-radius:18px 18px 0 0;padding:20px;display:grid;align-content:start;gap:11px}
+.portal-chat-row{background:#eff8f3;max-width:94%;width:fit-content;padding:11px 14px;border-radius:14px}
+.portal-chat-row strong{font-size:.84rem;color:#087e89}
+.portal-chat-row time{font-size:.72rem;color:#6b8691;margin-left:10px}
+.portal-chat-row p{font-size:.93rem;white-space:pre-wrap;overflow-wrap:anywhere;margin:7px 0 0}
+.portal-chat-send{display:flex;gap:10px;border:1px solid #e5e9e2;border-top:0;padding:14px;background:#fff;border-radius:0 0 18px 18px}
+.portal-chat-send input{flex:1;min-width:0}
+.portal-catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin:22px 0 30px}
+.portal-catalog-item{background:#fff;border:1px solid #e9e6dc;padding:25px;border-radius:20px;display:flex;flex-direction:column}
+.portal-catalog-item span{font-size:.71rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#09978e}
+.portal-catalog-item h3{font-size:1.4rem;margin:14px 0 6px}
+.portal-catalog-item p{font-size:.91rem;line-height:1.65;color:#667c82;flex:1;overflow-wrap:anywhere}
+.portal-catalog-item strong{font-size:1rem;color:#d8684a}
+.portal-rank-list{display:grid;gap:7px}
+.portal-rank-row{display:grid;grid-template-columns:55px 1fr auto;gap:13px;align-items:center;padding:14px 17px;background:#f3faf7;border-radius:12px}
+.portal-rank-row b{color:#d88c51}
+.portal-rank-row strong{font-size:1rem}
+.portal-rank-row span{font-size:.85rem;color:#647c83}
+.portal-editor{margin-bottom:35px}
+.portal-editor h3{font-size:1.3rem}
+.portal-live-news{display:grid;gap:17px}
+.portal-live-news article{background:#fff;border:1px solid #ebe3d6;border-radius:20px;padding:28px}
+.portal-live-news article h3{font-size:1.55rem}
+.portal-live-news article p{white-space:pre-wrap;overflow-wrap:anywhere;color:#536f78;line-height:1.8}
+.portal-live-news article small{color:#64848a;font-weight:800}
+.portal-empty-state{background:#f4f9f4;padding:24px;border-radius:16px;color:#62818a;line-height:1.8}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:920px){.portal-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-chat-intro{flex-direction:column;gap:4px}.portal-chat-intro span{white-space:normal}}
+@media(max-width:700px){.portal-form-grid,.portal-forum-layout{grid-template-columns:1fr}.portal-catalog-grid{grid-template-columns:1fr}.portal-compact{padding:45px 0}.portal-live{padding-top:50px}.portal-chat-send{flex-wrap:wrap}.portal-chat-send .button{width:100%}.portal-member-box{padding:22px}.portal-thread{padding:22px}}
