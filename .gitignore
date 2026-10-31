@@ -1,0 +1,12 @@
+.env
+.env.production
+.env.local
+.env.*.local
+NUL
+.claude
+logs/
+
+# Credential files - never commit these
+**/auth.json
+**/.env.production
+**/.env.local
