@@ -137,12 +137,13 @@ El panel de administración permite gestionar usuarios, roles, salas, islas, cat
 | Directorio | Tecnología | Responsabilidad |
 | --- | --- | --- |
 | `client/` | Vue 3, Phaser 3, Vite, Pinia | Interfaz y renderizado del juego |
+| `web/` | HTML, CSS, JavaScript, Nginx | Portada informativa de BoombangCL |
 | `server/` | Node.js, Express, Socket.IO | Lógica multijugador en tiempo real |
 | `api/` | Laravel 12, Passport, Backpack | Datos, autenticación y administración |
 | `launcher/` | Electron | Launcher de escritorio para Windows |
 | `docker/` | Docker, MariaDB, nginx-proxy | Entorno e infraestructura local |
 
-> `docker-compose.yml` también conserva la configuración de un servicio `web/` para el sitio público, pero ese directorio no está incluido actualmente en este repositorio.
+> El servicio `web/` publica la nueva portada estática de BoombangCL. El inicio de sesión y registro web todavía no están integrados. Consulta [`web/README.md`](web/README.md).
 
 ## Tecnologías principales
 
@@ -197,7 +198,7 @@ El panel de administración permite gestionar usuarios, roles, salas, islas, cat
 5. Levanta los servicios disponibles:
 
    ```bash
-   docker compose up db phpmyadmin api server client --build
+   docker compose up db phpmyadmin api server client web --build
    ```
 
 6. Ejecuta las migraciones y carga los datos iniciales:
@@ -209,12 +210,13 @@ El panel de administración permite gestionar usuarios, roles, salas, islas, cat
 
 7. Abre el cliente en [http://play.boombang.com](http://play.boombang.com).
 
-> Los dominios locales requieren una instancia de `nginx-proxy` conectada a `proxy-network`. El comando anterior omite el servicio `web`, ya que su directorio no está incluido actualmente.
+> Los dominios locales requieren una instancia de `nginx-proxy` conectada a `proxy-network`. También puedes abrir la portada directamente desde [http://localhost:8001](http://localhost:8001) cuando el servicio `web` esté ejecutándose.
 
 ## Servicios locales
 
 | Servicio | URL |
 | --- | --- |
+| Portal BoombangCL | [http://localhost:8001](http://localhost:8001) |
 | Cliente del juego | [http://play.boombang.com](http://play.boombang.com) |
 | API y panel administrativo | [http://api.boombang.com](http://api.boombang.com) |
 | Servidor Socket.IO | [http://server.boombang.com:3000](http://server.boombang.com:3000) |
