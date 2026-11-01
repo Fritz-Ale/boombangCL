@@ -1,5 +1,6 @@
 const express = require('express');
 const http = require('http');
+const crypto = require('node:crypto');
 const { Server } = require('socket.io');
 const ConsoleLogger = require('../utils/ConsoleLogger');
 const logger = new ConsoleLogger();
@@ -20,18 +21,28 @@ module.exports = (port) => {
 
     // Internal endpoint for the Laravel API to pre-authorize a bot token
     app.post('/internal/add-bot-token', (req, res) => {
-        const { token } = req.body;
-        if (!token) {
-            return res.status(400).json({ error: 'Token is required.' });
+        // Internal operations require an independent shared secret. The
+        // emulator API token must not be reused as a browser-visible credential.
+        const configured = process.env.BOT_PREAUTH_TOKEN || '';
+        const received = req.get('X-Bot-Preauth-Token') || '';
+        if (!configured || configured.startsWith('CHANGE_ME') || !received) return res.sendStatus(403);
+        const expected = Buffer.from(configured);
+        const provided = Buffer.from(received);
+        if (expected.length !== provided.length || !crypto.timingSafeEqual(expected, provided)) {
+            return res.sendStatus(403);
+        }
+        const { token } = req.body || {};
+        if (typeof token !== 'string' || !/^[a-zA-Z0-9]{40}$/.test(token)) {
+            return res.status(400).json({ error: 'Invalid token format.' });
         }
 
-        logger.log(`Received token pre-authorization: ${token}`, 'info');
+        // Never log tokens: a leaked short-lived token can impersonate a bot.
         authorizedBotTokens.add(token);
 
         // The token is valid for 30 seconds. After that, remove it.
         setTimeout(() => {
             authorizedBotTokens.delete(token);
-            logger.log(`Token expired and removed: ${token}`, 'info');
+            logger.log('Expired a short-lived bot token', 'info');
         }, 30000);
 
         res.status(200).json({ success: true });
@@ -40,7 +51,6 @@ module.exports = (port) => {
     // Read-only authenticated statistics for Laravel; never expose player identities.
     // A separate internal token prevents exposing the emulator's API credentials.
     app.get('/internal/portal-stats', (req, res) => {
-        const crypto = require('node:crypto');
         const received = req.get('X-Portal-Stats-Token') || '';
         const configured = process.env.PORTAL_STATS_TOKEN || '';
         if (!configured || !received) return res.sendStatus(403);
@@ -69,5 +79,5 @@ module.exports = (port) => {
         logger.log(`Server running on port ${port}`, 'success');
     });
 
-    return { app, io, authorizedBotTokens };
+    return { app, io, authorizedBotTokens, httpServer: server };
 };
