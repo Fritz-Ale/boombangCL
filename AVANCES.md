@@ -86,3 +86,9 @@ La ruta del panel dentro del portal es `/avance.html`, una vez desplegada la ver
 ### Corrección de navegación (31 de octubre de 2026)
 
 La página «Inicio» de GitHub Pages ahora contiene la **portada real** en lugar del panel de avances y el menú enlaza a páginas HTML internas existentes. Las secciones que requieren Laravel muestran una explicación, sin formularios falsos. [Consultar las nueve dependencias de lanzamiento](https://fritz-ale.github.io/boombangCL/pendientes.html). Se mantienen **11 de 20** tareas con código y **9 pendientes**: reparar enlaces no completa automáticamente las tareas del backend.
+
+### Galería de capturas del cliente HTML5
+
+La [galería pública de BoomBang CL](https://fritz-ale.github.io/boombangCL/galeria.html) reúne **nueve capturas** ya existentes en `doc/screenshots/`: portada, lobby, salas, islas, personalización, Golden Ring, ranking y catálogo. Ofrece filtros por mundo, personajes y minijuegos, y permite abrir las imágenes originales. La navegación, el buscador, la portada y la página de comunidad enlazan a esta sección.
+
+**Alcance:** son ilustraciones del repositorio, **no** prueba de partidas activas ni de que exista un servidor multijugador desplegado. La revisión de licencias y activos de terceros sigue pendiente; no se han añadido archivos externos nuevos. El código fuente que reconstruye esta página es `web/scripts/build-gallery.mjs`, coordinado por `web/scripts/enhance-public-site.mjs`. El despliegue sigue aislado del backend y de los formularios de cuentas.
