@@ -1,0 +1,36 @@
+name: Recover stuck GitHub Pages deployment
+
+# One-time maintenance: only a change to this workflow in the development
+# branch triggers it. Never runs on the public website or on every push.
+on:
+  push:
+    branches:
+      - feature/portal-comunidad-noticias-2026
+    paths:
+      - .github/workflows/recover-pages-deployment.yml
+
+permissions:
+  contents: read
+  pages: write
+
+jobs:
+  cancel-stale-pages-deployment:
+    name: Cancel orphaned GitHub Pages deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Cancel stuck deployment reported by GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          STALE_PAGES_COMMIT: b91fa7d455dc327c341850e2b8a4764096423c4c
+        run: |
+          set -eu
+          echo "Cancelling only the stale Pages deployment reported by GitHub."
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            "https://api.github.com/repos/${REPO}/pages/deployments/${STALE_PAGES_COMMIT}/cancel"
+          echo "GitHub accepted the cancellation request."
