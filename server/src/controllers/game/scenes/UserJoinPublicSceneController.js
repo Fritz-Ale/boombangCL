@@ -21,7 +21,20 @@ class UserJoinPublicSceneController {
                 //throw new Error("User not found");
                 return;
             }
-            const scene = data.menuType == MenuTypeEnum.PUBLIC_SCENE ?
+            // Reject malformed requests before looking up a scene or mutating
+            // player state. Only the two supported scene categories are valid.
+            if (!data || typeof data !== 'object' ||
+                (data.menuType !== MenuTypeEnum.PUBLIC_SCENE &&
+                 data.menuType !== MenuTypeEnum.GAME_SCENE) ||
+                typeof data.sceneUuid !== 'string' ||
+                !data.sceneUuid.trim() || data.sceneUuid.length > 128) {
+                socket.emit(ResponseSocketsEnum.JOIN_PUBLIC_SCENE, {
+                    success: false,
+                    message: 'Invalid scene request'
+                });
+                return;
+            }
+            const scene = data.menuType === MenuTypeEnum.PUBLIC_SCENE ?
                 PublicScenesCollection.getByUid(data.sceneUuid) :
                 GameScenesCollection.getByUid(data.sceneUuid);
             if (!scene) {
