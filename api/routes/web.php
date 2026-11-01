@@ -20,9 +20,9 @@ Route::get('/stripe-cancel', [StripeController::class, 'stripeCancelPage'])->nam
 */
 Route::prefix('portal')->group(function () {
     Route::get('session', [\App\Http\Controllers\Portal\PortalAuthController::class, 'session'])->middleware('throttle:60,1');
-    Route::post('login', [\App\Http\Controllers\Portal\PortalAuthController::class, 'login'])->middleware('throttle:8,1');
-    Route::post('register', [\App\Http\Controllers\Portal\PortalAuthController::class, 'register'])->middleware('throttle:3,1');
-    Route::post('forgot-password', [\App\Http\Controllers\Portal\PortalPasswordController::class, 'requestLink'])->middleware('throttle:3,1');
+    Route::post('login', [\App\Http\Controllers\Portal\PortalAuthController::class, 'login'])->middleware('throttle:portal-login');
+    Route::post('register', [\App\Http\Controllers\Portal\PortalAuthController::class, 'register'])->middleware('throttle:portal-register');
+    Route::post('forgot-password', [\App\Http\Controllers\Portal\PortalPasswordController::class, 'requestLink'])->middleware('throttle:portal-recovery');
     Route::post('reset-password', [\App\Http\Controllers\Portal\PortalPasswordController::class, 'reset'])->middleware('throttle:5,1');
 
     Route::get('news', [\App\Http\Controllers\Portal\PortalContentController::class, 'news']);
