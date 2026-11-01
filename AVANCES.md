@@ -59,6 +59,17 @@ Este es el panel de seguimiento para consultar desde **GitHub, incluido el telé
 | Decisión de VIP/pagos con seguridad transaccional | ⏳ Pendiente; pagos web desactivados |
 | Revisión y fusión de la PR #1 | ⏳ Pendiente |
 
+## 📱 Vista previa descargable sin publicar el proyecto
+
+Desde GitHub (incluido el móvil) puedes obtener una versión de **solo el panel de avances**, sin habilitar Pages ni compartir el repositorio:
+
+1. Abre [GitHub Actions · Portal web - chequeos](https://github.com/Fritz-Ale/boombangCL/actions/workflows/portal-checks.yml).
+2. Entra en una ejecución de la **Pull Request #1** que haya terminado correctamente.
+3. En la sección **Artifacts**, descarga `boombangcl-avances-vista-previa`.
+4. Descomprime el ZIP y abre `index.html` en un navegador. El HTML contiene sus propios estilos, scripts y 20 tareas; **no necesita Docker, Laravel ni internet** para mostrar los indicadores. Los enlaces a GitHub sí requieren conexión y permiso de acceso al repositorio.
+
+El archivo es una **fotografía editorial** de la rama, no un panel en vivo ni una web publicada. El artefacto se conserva durante **14 días** por ejecución y es accesible según los permisos del repositorio. No contiene secretos, cuentas, código del juego ni datos de usuarios.
+
 ## ¿Dónde ver el avance más reciente?
 
 1. [Issue #2 — Hoja de ruta](https://github.com/Fritz-Ale/boombangCL/issues/2): marca casillas cuando las tareas se completen.
