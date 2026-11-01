@@ -21,7 +21,7 @@ class SocketNotificationService
             $socketServerUrl = config('app.socket_server_url', 'http://localhost:3000');
             
             // Enviar notificación al servidor socket
-            $response = Http::timeout(5)->post("{$socketServerUrl}/api/notify-credits-update", [
+            $response = Http::timeout(5)->withHeaders(['X-Emulator-Token' => config('app.emulator_api_token')])->post("{$socketServerUrl}/api/notify-credits-update", [
                 'user_id' => $user->id,
                 'gold' => $user->gold_coins,
                 'silver' => $user->silver_coins,
