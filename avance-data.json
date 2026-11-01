@@ -157,6 +157,27 @@
   "updates": [
     {
       "date": "2026-10-31",
+      "title": "Galería pública de imágenes del proyecto",
+      "description": "Nueve capturas del cliente HTML5 disponibles en una galería con filtros. Son imágenes de referencia y no representan jugadores conectados.",
+      "kind": "site",
+      "url": "galeria.html"
+    },
+    {
+      "date": "2026-10-31",
+      "title": "Buscador y navegación móvil",
+      "description": "Buscador de secciones y tareas, mejoras para teclado, menú responsive y enlaces internos verificados.",
+      "kind": "site",
+      "url": "buscar.html"
+    },
+    {
+      "date": "2026-10-31",
+      "title": "Portada publicada en GitHub Pages",
+      "description": "El sitio informativo cuenta con una portada propia y una hoja de ruta visible. La API y el juego multijugador siguen sin servicio público.",
+      "kind": "site",
+      "url": "index.html"
+    },
+    {
+      "date": "2026-10-31",
       "title": "Recuperación de cuentas",
       "description": "Restablecimiento por correo de un solo uso y validación de enlaces caducados.",
       "kind": "code"
