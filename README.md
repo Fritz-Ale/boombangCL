@@ -144,6 +144,8 @@ El panel de administración permite gestionar usuarios, roles, salas, islas, cat
 | `docker/` | Docker, MariaDB, nginx-proxy | Entorno e infraestructura local |
 
 > [📊 **Ver avances del proyecto en GitHub**](AVANCES.md) · [Hoja de ruta con tareas](https://github.com/Fritz-Ale/boombangCL/issues/2) · [PR de desarrollo](https://github.com/Fritz-Ale/boombangCL/pull/1).
+>
+> Para **visualizar una vista previa sin publicar el sitio**, descarga el artefacto `boombangcl-avances-vista-previa` de una [ejecución aprobada de GitHub Actions](https://github.com/Fritz-Ale/boombangCL/actions/workflows/portal-checks.yml), descomprímelo y abre `index.html`. Consulta [`AVANCES.md`](AVANCES.md) para más detalles.
 
 > El servicio `web/` presenta un portal con cuentas, recuperación de contraseñas, amistades, clanes, foro, chat, moderación, noticias, catálogo y rankings conectables a Laravel. Las funciones dinámicas necesitan migraciones, sesiones web y servicios activos; el contador del juego requiere además un secreto privado compartido con Node.js. Los pagos web siguen desactivados. La recuperación por correo requiere un proveedor de correo saliente y un origen HTTPS configurado antes de publicar. Consulta [`web/README.md`](web/README.md).
 
