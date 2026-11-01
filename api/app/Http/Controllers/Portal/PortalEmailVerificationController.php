@@ -12,6 +12,20 @@ use Illuminate\Support\Facades\URL;
 
 class PortalEmailVerificationController extends Controller
 {
+    public static function deliveryReady(): bool
+    {
+        if (!app()->environment('production')) {
+            return true;
+        }
+
+        // Neither the log nor the array transport delivers real emails.
+        // Registration stays closed until both public origins are HTTPS.
+        $mailer = (string) config('mail.default');
+        return !in_array($mailer, ['log', 'array'], true)
+            && parse_url((string) config('app.url'), PHP_URL_SCHEME) === 'https'
+            && parse_url((string) config('services.portal.frontend_url'), PHP_URL_SCHEME) === 'https';
+    }
+
     public static function dispatch(User $user): void
     {
         $url = URL::temporarySignedRoute('portal.verify-email', now()->addMinutes(60), [
@@ -51,6 +65,12 @@ class PortalEmailVerificationController extends Controller
 
     public function resend(Request $request): JsonResponse
     {
+        if (!self::deliveryReady()) {
+            return response()->json([
+                'message' => 'La verificación por correo todavía no está configurada.',
+            ], 503)->header('Cache-Control', 'no-store');
+        }
+
         $user = $request->user('web');
 
         if ($user && $user->active && !$user->is_bot &&
