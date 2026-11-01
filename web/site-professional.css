@@ -182,3 +182,39 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,su
 @media(max-width:760px){.site-header .main-nav{background:#f9f9f5;border-bottom:1px solid #d9ded9;box-shadow:0 10px 30px #0f283125}.site-header .main-nav>a{font-size:.94rem;font-weight:630}.pro-site .main-nav>a{font-size:.94rem;min-height:45px}.pro-header .header-inner{min-height:75px}.pro-hero-bottom{padding-top:18px}.pro-brand{font-size:1.19rem}.pro-brand small{font-size:.46rem}.pro-symbol{width:29px;height:29px}.pro-operational{margin-top:25px}}
 @media(max-width:540px){.container,.pro-site .container{width:min(100% - 34px,480px)}.top-strip{font-size:.57rem;letter-spacing:.04em}.pro-utility-inner{gap:10px}.pro-utility-inner>span{max-width:225px}.pro-utility a{font-size:.59rem}.pro-hero{padding-top:38px}.pro-hero h1{font-size:clamp(2.7rem,11.3vw,3.9rem)}.pro-lead{font-size:.94rem}.pro-hero-actions{align-items:stretch;flex-direction:column}.pro-button{width:100%}.pro-hero-visual figcaption{font-size:.47rem}.pro-intro h2,.pro-heading-row h2,.pro-progress h2,.pro-last h2{font-size:clamp(2.2rem,9vw,3.3rem)}.pro-heading-row{display:block}.pro-heading-row>.pro-text-link{margin-top:19px}.pro-collection-grid,.pro-news-grid{grid-template-columns:1fr}.pro-artifact-image img{aspect-ratio:1.6}.pro-progress-stat{padding:23px}.pro-progress-actions{align-items:stretch;flex-direction:column}.pro-footer-main{display:block;padding-bottom:34px}.pro-footer-main nav{margin-top:23px;gap:13px 18px}.pro-footer-bottom{flex-direction:column;gap:8px}.pro-hero-bottom{font-size:.59rem}.pro-hero-bottom a{font-size:.62rem}}
 @media(prefers-reduced-motion:reduce){.pro-artifact-image img{transition:none!important}}
+
+
+/* Accesibilidad móvil: controles táctiles, zoom de formularios y navegación por teclado. */
+@media (pointer:coarse) {
+  .pro-site .main-nav a,
+  .pro-site .pro-footer-main nav a,
+  .pro-site .pro-hero-bottom a {min-height:44px;display:inline-flex;align-items:center}
+  .pro-site button,
+  .pro-site input[type="submit"],
+  .pro-site input[type="button"] {min-height:44px}
+}
+@media (max-width:760px) {
+  .pro-site input:not([type="checkbox"]):not([type="radio"]),
+  .pro-site select,
+  .pro-site textarea {font-size:16px}
+  .pro-site .pro-hero-grid,
+  .pro-site .pro-intro-grid,
+  .pro-site .pro-progress-grid,
+  .pro-site .pro-last-grid {min-width:0}
+  .pro-site img {max-width:100%;height:auto}
+  .pro-site .pro-footer-main nav {align-items:stretch}
+}
+@media (max-width:360px) {
+  .pro-site .container {width:calc(100% - 28px)}
+  .pro-site .pro-hero h1 {font-size:clamp(2.15rem,10.5vw,2.7rem)}
+  .pro-site .pro-progress-stat {padding:16px}
+  .pro-site .pro-stat-numbers strong {font-size:3.4rem}
+}
+@media (prefers-reduced-motion:reduce) {
+  .pro-site *, .pro-site *::before, .pro-site *::after {
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}
