@@ -47,6 +47,17 @@ jobs:
           php -l api/database/migrations/2026_10_31_221000_create_portal_social_tables.php
           php -l api/database/migrations/2026_10_31_222000_create_portal_reports_table.php
           find api/app/Http/Controllers/Portal api/app/Notifications -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Construir vista previa descargable, sin desplegar ni publicar
+        run: node web/scripts/build-progress-bundle.mjs _preview standalone
+      - name: Adjuntar vista previa privada para revisar desde GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: boombangcl-avances-vista-previa
+          path: |
+            _preview/index.html
+            _preview/LEEME.txt
+          retention-days: 14
+          if-no-files-found: error
       - name: Validar configuración Nginx
         run: |
           docker run --rm -v "$PWD/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro" nginx:1.27-alpine nginx -t
