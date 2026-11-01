@@ -48,9 +48,9 @@ export function galleryPage(nav) {
     '<link rel="stylesheet" href="site-preview.css"><link rel="stylesheet" href="site-gallery.css"><script defer src="script.js"></script>'+
     '<script defer src="site-gallery.js"></script></head><body class="portal-page">'+
     '<a class="skip-link" href="#principal">Saltar al contenido</a>'+
-    '<div class="top-strip">✦ BoomBang CL · Recuerdos del proyecto HTML5</div>'+
+    '<div class="top-strip">BoomBang CL · Recuerdos del proyecto HTML5</div>'+
     '<header class="site-header"><div class="container header-inner">'+
-    '<a class="brand" href="index.html" aria-label="BoomBang CL, inicio"><span class="brand-sun" aria-hidden="true">✳</span>'+
+    '<a class="brand" href="index.html" aria-label="BoomBang CL, inicio"><span class="brand-sun" aria-hidden="true"></span>'+
     '<span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a>'+
     '<button class="menu-button" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Abrir menú">'+
     '<span></span><span></span><span></span></button>'+nav.replace('href="galeria.html"','href="galeria.html" aria-current="page"')+
