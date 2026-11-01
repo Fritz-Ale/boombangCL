@@ -31,6 +31,8 @@ const noIndex=new Set(['buscar.html','404.html','foro.html','chat.html','social.
 const safe=value=>String(value).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 
 export function addMetadata(filename,html) {
+  // Avoid conflicting duplicate OpenGraph tags from the source homepage.
+  html = html.replace(/<meta\s+property="og:(?:type|title|description|url|site_name)"[^>]*>/g,'');
   const row=pages.find(entry=>entry[0]===filename);
   const title=row?row[1]+' · BoomBang CL':'BoomBang CL';
   const description=row?row[2]:'Portal independiente BoomBang CL.';
