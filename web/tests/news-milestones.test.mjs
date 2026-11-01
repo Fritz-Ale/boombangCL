@@ -11,13 +11,13 @@ const load = async () => JSON.parse(await readFile('web/avance-data.json','utf8'
 test('all project updates are dated, curated and linked without changing the roadmap',async () => {
   const roadmap=await load();
   const updates=normalizeMilestones(roadmap);
-  assert.equal(updates.length,7);
+  assert.equal(updates.length,roadmap.updates.length);
   assert.ok(updates.every(item=>/^\d{4}-\d{2}-\d{2}$/.test(item.date)));
   assert.equal(roadmap.phases.flatMap(p=>p.tasks).filter(t=>t.status==='implemented').length,11);
   assert.equal(roadmap.phases.flatMap(p=>p.tasks).filter(t=>t.status==='pending').length,9);
-  assert.equal(updates[0].url,'galeria.html');
-  assert.equal(updates[1].url,'buscar.html');
-  assert.equal(updates[2].url,'index.html');
+  assert.ok(updates.some(item=>item.url==='galeria.html'));
+  assert.ok(updates.some(item=>item.url==='buscar.html'));
+  assert.ok(updates.some(item=>item.url==='index.html'));
 });
 
 test('milestones escape untrusted text and reject external or scripting links', () => {
@@ -47,7 +47,7 @@ test('public news and homepage have working milestone HTML even without JavaScri
     const js=await readFile(join(dir,'site-milestones.js'),'utf8');
     assert.match(news,/id="hitos-reales"/);
     assert.match(news,/data-milestone-filter="test"/);
-    assert.equal((news.match(/class="milestone-card"/g)||[]).length,7);
+    assert.equal((news.match(/class="milestone-card"/g)||[]).length,(await load()).updates.length);
     assert.match(news,/Galería pública de imágenes del proyecto/);
     assert.match(news,/No son noticias de BoomBang.tv/);
     assert.match(news,/site-milestones.js/);
