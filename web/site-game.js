@@ -51,6 +51,17 @@
 
   for (const button of buttons) {
     button.addEventListener('click', () => selectScene(button.dataset.gameScene));
+    button.addEventListener('keydown', event => {
+      if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const index = buttons.indexOf(button);
+      const next = event.key === 'Home' ? 0
+        : event.key === 'End' ? buttons.length - 1
+        : (index + (event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length;
+      const target = buttons[next];
+      selectScene(target.dataset.gameScene);
+      target.focus();
+    });
   }
   selectScene('salas');
 })();
