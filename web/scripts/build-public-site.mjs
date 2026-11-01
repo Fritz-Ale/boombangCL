@@ -11,6 +11,7 @@
 import { readFile, writeFile, copyFile, mkdir, stat } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { enhancePublicSite } from './enhance-public-site.mjs';
 
 const root = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const web = join(root, 'web');
@@ -200,8 +201,10 @@ export async function buildPublicSite(targetDir) {
   }
   // Verify all copied media resources exist before publication.
   await Promise.all([...available].map(async item => { await stat(join(out,item)); }));
-  console.log('Public BoomBang CL site prepared: ' + pages.size + ' pages / ' + tasks.length + ' tracked tasks');
-  return { pages:[...pages.keys()], tasks:tasks.length };
+  // Add safe search, SEO, keyboard-friendly navigation and progress snapshot.
+  const enriched = await enhancePublicSite(out,roadmap);
+  console.log('Public BoomBang CL site prepared: ' + enriched.pages + ' pages / ' + tasks.length + ' tracked tasks');
+  return { pages:[...pages.keys(),'buscar.html'], tasks:tasks.length };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
