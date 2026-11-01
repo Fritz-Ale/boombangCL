@@ -18,6 +18,12 @@ on:
       - "web/normas.html"
       - "web/privacidad.html"
       - "web/scripts/build-public-site.mjs"
+      - "web/scripts/enhance-public-site.mjs"
+      - "web/scripts/build-gallery.mjs"
+      - "web/site-gallery.js"
+      - "web/site-gallery.css"
+      - "web/site-search.js"
+      - "web/site-search.css"
       - "web/avance.html"
       - "web/avance.css"
       - "web/avance.js"
@@ -53,7 +59,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-      - name: Preparar exclusivamente el panel de avances
+      - name: Construir web informativa navegable y galería
         run: node web/scripts/build-public-site.mjs _site
       - name: Generar fotografía de GitHub (sin publicar token)
         env:
@@ -63,6 +69,6 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-      - name: Desplegar panel de avances
+      - name: Desplegar web informativa BoomBang CL
         id: deployment
         uses: actions/deploy-pages@v4
