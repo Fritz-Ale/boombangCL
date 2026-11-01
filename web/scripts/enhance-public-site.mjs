@@ -130,6 +130,14 @@ export async function enhancePublicSite(directory,roadmap) {
  for(const filename of existing){
    let html=await readFile(join(output,filename),'utf8');
    if(filename!=='404.html') html=addSearchNavigation(html);
+   if(filename==='comunidad.html'){
+     const promo='<section class="container portal-section" aria-label="Archivo visual">'+
+       '<div class="portal-notice"><strong>¿Quieres ver los escenarios?</strong> Explora las '+
+       '<a href="galeria.html">nueve capturas del juego y sus personajes</a>. '+
+       'Son imágenes del proyecto, no partidas en vivo.</div></section>';
+     if(!html.includes('</main>'))throw new Error('Community page main missing');
+     html=html.replace('</main>',promo+'</main>');
+   }
    if(filename==='index.html'){
      if(!html.includes('<section class="intro section-pad"')) throw new Error('Homepage progress anchor missing');
      html=html.replace('<section class="intro section-pad"',homepageProgress(tasks)+'<section class="intro section-pad"');
