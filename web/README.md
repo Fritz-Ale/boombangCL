@@ -96,3 +96,11 @@ La web se desarrolló como portal propio e independiente de BoomBang.tv y no est
 - [GitHub Actions](https://github.com/Fritz-Ale/boombangCL/actions): resultado actual de las pruebas ejecutadas.
 
 El panel calcula una proporción de **tareas de su propio listado**. No es el porcentaje total del videojuego y **no** significa que el código esté desplegado. El JSON se actualiza como parte de los cambios del proyecto; al tratarse de un repositorio privado no se consulta su API desde el navegador porque exigiría credenciales del usuario. No pegues tokens personales en la web. Una publicación con GitHub Pages necesitará habilitar Pages y verificar la visibilidad del sitio.
+
+## Publicar únicamente el panel con GitHub Pages (opcional)
+
+El workflow `.github/workflows/pages-avances.yml` deja preparada una versión **estática y aislada** de la página de progreso: publica `avance.html`, sus estilos, scripts y `avance-data.json`, pero no publica Laravel, pantallas de inicio de sesión ni los secretos del juego.
+
+**Situación actual:** el repositorio es privado y la publicación con GitHub Pages **no se ha activado ni verificado**. Para publicarlo cuando se apruebe el Pull Request, revisa la disponibilidad de Pages para tu plan de GitHub. Una vez que el workflow esté en `main`, abre *Settings → Pages → Build and deployment → Source: GitHub Actions*. El workflow se ejecutará en los cambios de estos archivos en `main` y admite ejecución manual desde Actions.
+
+Ten presente que un sitio Pages puede ser público aunque el repositorio de origen sea privado. El workflow sube solo contenido apto para mostrar avances, no el código de la API, credenciales ni los recursos del juego. Por el momento puedes consultar [AVANCES.md](../AVANCES.md) y la [hoja de ruta (issue #2)](https://github.com/Fritz-Ale/boombangCL/issues/2) desde GitHub sin activar Pages.
