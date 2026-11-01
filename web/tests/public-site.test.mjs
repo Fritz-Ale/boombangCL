@@ -29,9 +29,9 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     // Style requirements: no platform emoji or ornamental ordinal numerals.
     assert.doesNotMatch(homeTitle, /[\p{Emoji_Presentation}\uFE0F]/gu);
     assert.doesNotMatch(homeTitle, /class="game-scene-number"|\b0[123] \/ (?:EXPLORACIÓN|COMUNIDAD|DIVERSIÓN)/);
-    assert.doesNotMatch(homeTitle, /data-game-scene-count>\\d/);
+    assert.doesNotMatch(homeTitle, /data-game-scene-count>\d/);
     assert.match(homeTitle, /class="game-scene-marker"/);
-    for (const filename of built.pages) {
+    for (const filename of result.pages) {
       const content = await readFile(join(dir,filename),'utf8');
       assert.doesNotMatch(content, /[\p{Emoji_Presentation}\uFE0F]/gu, filename + ': standard emoji are prohibited');
     }
