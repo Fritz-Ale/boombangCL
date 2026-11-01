@@ -52,6 +52,8 @@ return [
     'portal' => [
         // Web origin used in recovery links; configure an HTTPS domain in production.
         'frontend_url' => env('PORTAL_FRONTEND_URL'),
+        // Set true only after confirming real delivery from a verified sender.
+        'mail_delivery_verified' => env('PORTAL_MAIL_DELIVERY_VERIFIED', false),
     ],
 
     'portal_bot' => [
