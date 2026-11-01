@@ -155,9 +155,17 @@ class PublicSceneLoader {
     }
 
     static #loadBackground(gameScene, spriteName, gameTime, roomHasDarkening) {
-        const background = gameScene.add.image(0, 0, spriteName).setOrigin(0);
+        const isVideo = gameScene.cache.video.has(spriteName);
+        const background = isVideo
+            ? gameScene.add.video(0, 0, spriteName)
+            : gameScene.add.image(0, 0, spriteName);
+        background.setOrigin(0);
         background.setDisplaySize(gameScene.scale.width, gameScene.scale.height);
-        background.setDepth(-1); // Asegurar que esté detrás de todo
+        background.setDepth(-1); // Mantener detrás de los demás elementos
+        if (isVideo) {
+            background.setLoop(true);
+            background.play(true);
+        }
         
         // El oscurecimiento ahora es global por escena, no por sprite
     }
