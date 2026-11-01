@@ -7,6 +7,7 @@ import {resolve,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {writeGalleryAssets,galleryItems} from './build-gallery.mjs';
 import {newsMilestones,homeMilestones} from './build-milestones.mjs';
+import {renderProfessionalHomepage} from './build-professional-home.mjs';
 
 const web=resolve(fileURLToPath(new URL('../',import.meta.url)));
 const base='https://fritz-ale.github.io/boombangCL/';
@@ -172,6 +173,30 @@ export async function enhancePublicSite(directory,roadmap) {
  await writeFile(join(output,'search-index.json'),JSON.stringify(publicSearchIndex(roadmap),null,2)+'\n');
  await writeFile(join(output,'robots.txt'),'User-agent: *\nAllow: /\nSitemap: '+base+'sitemap.xml\n');
  await writeFile(join(output,'sitemap.xml'),sitemap());
+
+ // Consistent visual direction across every static page. Replace the former
+ // emoji-heavy marketing homepage only after route and screenshot generation.
+ await copyFile(join(web,'site-professional.css'),join(output,'site-professional.css'));
+ for(const filename of (await readdir(output)).filter(name=>name.endsWith('.html'))) {
+   let html=filename==='index.html' ? addMetadata('index.html',await renderProfessionalHomepage(roadmap))
+     : await readFile(join(output,filename),'utf8');
+   if(filename!=='index.html'){
+     html=html
+       .replace(/(<div class="top-strip"[^>]*>)(?:<span[^>]*>✦<\/span>\s*|✦\s*)/,'$1')
+       .replace(/Proyecto independiente · Portal conectado a la API si se ejecuta Laravel/g,'BOOMBANG CL · ARCHIVO Y DESARROLLO')
+       .replace('Donde empiezan las <em>amistades.</em>','El mundo de <em>BoomBang HTML5.</em>')
+       .replace('Descubre las salas, los rincones sociales y las funciones que queremos reunir en BoomBang CL.','Una mirada a los escenarios, sistemas sociales y recursos conservados del proyecto HTML5.')
+       .replace('Noticias de <em>nuestra isla.</em>','Actualizaciones del <em>proyecto.</em>')
+       .replace('Conoce los componentes del proyecto y los próximos pasos de este portal independiente.','Seguimiento de las mejoras y decisiones técnicas del proyecto BoomBang CL.')
+       .replace('Así va nuestra <em>aventura.</em>','Estado del <em>desarrollo.</em>');
+     if(['foro.html','chat.html','social.html','catalogo.html','ranking.html','moderacion.html','cuenta.html','restablecer.html'].includes(filename))
+       html=html.replace(/(<h1>)[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u,'$1');
+   }
+   if(!html.includes('href="site-professional.css"'))
+     html=html.replace('</head>','<link rel="stylesheet" href="site-professional.css"></head>');
+   await writeFile(join(output,filename),html);
+ }
+
 
  const files=new Set(await readdir(output));
  const allHtml=(await readdir(output)).filter(file=>file.endsWith('.html'));
