@@ -55,6 +55,12 @@ class PortalAuthController extends Controller
             'password' => ['required', 'confirmed', Password::min(10)],
             'website' => ['nullable', 'size:0'], // Honeypot, in addition to CSRF and throttling.
         ]);
+        if (!PortalEmailVerificationController::deliveryReady()) {
+            return response()->json([
+                'message' => 'El registro se habilitará cuando los correos de verificación estén configurados.',
+            ], 503)->header('Cache-Control', 'no-store');
+        }
+
         $user = DB::transaction(fn () => User::create([
             'username' => $data['username'],
             'name' => $data['username'],
