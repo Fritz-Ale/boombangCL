@@ -51,7 +51,7 @@ class SocketNotificationService
     public static function notifyInventoryUpdate(User $user, array $items = [])
     {
         try {
-            $socketServerUrl = config('app.socket_server_url', 'http://localhost:3001');
+            $socketServerUrl = config('app.socket_server_url', 'http://localhost:3000');
             
             $response = Http::timeout(5)->post("{$socketServerUrl}/api/notify-inventory-update", [
                 'user_id' => $user->id,
