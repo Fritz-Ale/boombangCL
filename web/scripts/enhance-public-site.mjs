@@ -5,6 +5,7 @@
 import {readFile, writeFile, copyFile, readdir, access} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {writeGalleryAssets,galleryItems} from './build-gallery.mjs';
 
 const web=resolve(fileURLToPath(new URL('../',import.meta.url)));
 const base='https://fritz-ale.github.io/boombangCL/';
@@ -26,6 +27,7 @@ const pages=[
  ['cuenta.html','Mi cuenta','Registro y sesiones aún sin API pública','iniciar sesión, registro'],
  ['restablecer.html','Recuperar acceso','Correo de recuperación aún no disponible','contraseña, correo'],
  ['buscar.html','Buscar','Encuentra páginas y tareas de BoomBang CL','buscar, índice'],
+ ['galeria.html','Galería','Capturas de islas, salas, personajes y minijuegos','capturas, imágenes, fotografías, mundo, personajes'],
 ];
 const noIndex=new Set(['buscar.html','404.html','foro.html','chat.html','social.html','catalogo.html','ranking.html','moderacion.html','cuenta.html','restablecer.html']);
 const safe=value=>String(value).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
@@ -51,7 +53,7 @@ export function addMetadata(filename,html) {
 export function addSearchNavigation(html) {
   const rx=/<nav\b[^>]*\bid="main-nav"[^>]*>[\s\S]*?<\/nav>/;
   if(!rx.test(html)) throw new Error('Missing primary site navigation');
-  return html.replace(rx,nav=>nav.replace('</nav>','<a href="buscar.html">Buscar</a></nav>'));
+  return html.replace(rx,nav=>nav.replace('</nav>','<a href="galeria.html">Galería</a><a href="buscar.html">Buscar</a></nav>'));
 }
 
 export function homepageProgress(tasks) {
@@ -63,7 +65,8 @@ export function homepageProgress(tasks) {
    '<h2 id="home-project-status">Construimos la isla paso a paso.</h2>'+
    '<p>La web se puede explorar. Para activar cuentas, funciones sociales y partidas en línea todavía necesitamos servidores y pruebas.</p>'+
    '<div class="site-status-links"><a class="button button-sun" href="avance.html">Ver todos los avances →</a>'+
-   '<a class="button portal-button-alt" href="pendientes.html">Qué falta para jugar →</a></div></div>'+
+   '<a class="button portal-button-alt" href="pendientes.html">Qué falta para jugar →</a>'+ 
+   '<a class="button portal-button-alt" href="galeria.html">Ver capturas del juego →</a></div></div>'+
    '<div class="site-status-counter"><span>FUNCIONALIDADES DEL PANEL</span>'+
    '<strong>'+done+'<small>/'+(done+pending)+'</small></strong>'+
    '<div class="site-status-track" role="progressbar" aria-label="Porcentaje de tareas implementadas en código" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+ratio+'">'+
@@ -138,6 +141,9 @@ export async function enhancePublicSite(directory,roadmap) {
  }
 
  await writeFile(join(output,'buscar.html'),addMetadata('buscar.html',searchPage(nav)));
+ await writeGalleryAssets(output,nav);
+ const galleryHtml=await readFile(join(output,'galeria.html'),'utf8');
+ await writeFile(join(output,'galeria.html'),addMetadata('galeria.html',galleryHtml));
  await copyFile(join(web,'site-search.js'),join(output,'site-search.js'));
  await copyFile(join(web,'site-search.css'),join(output,'site-search.css'));
  await writeFile(join(output,'search-index.json'),JSON.stringify(publicSearchIndex(roadmap),null,2)+'\n');
@@ -157,5 +163,5 @@ export async function enhancePublicSite(directory,roadmap) {
    }
    if(filename==='cuenta.html' && /<form\b/.test(html))throw new Error('Public account forms are forbidden');
  }
- return {pages:allHtml.length,searchEntries:publicSearchIndex(roadmap).entries.length};
+ return {pages:allHtml.length,searchEntries:publicSearchIndex(roadmap).entries.length,galleryPhotos:galleryItems.length};
 }
