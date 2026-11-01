@@ -160,3 +160,13 @@ La web de BoomBang CL adopta una identidad visual profesional centrada en el con
 - No se prometen jugadores en línea, cuentas registrables, compras ni partidas abiertas; la revisión de derechos de los recursos originales sigue pendiente.
 
 **URL pública:** https://fritz-ale.github.io/boombangCL/
+
+### Identidad de portal de juego inspirada en BoomBang.tv
+
+El sitio público fue rediseñado para transmitir la estética de un **mundo social tropical**, sin copiar el código ni los elementos gráficos del sitio oficial. La portada incluye cielo turquesa, interfaz tipo ventana de juego, tarjetas con escenas reales del repositorio y un explorador de capturas de salas, islas y Golden Ring. El conjunto utiliza una nueva paleta y componentes propios en lugar de reproducir la web oficial.
+
+**Código fuente:** `web/pro-home.html`, `web/site-game.css`, `web/site-game.js`. La generación sigue usando `web/scripts/build-professional-home.mjs` y `web/scripts/enhance-public-site.mjs`, y el workflow de GitHub Pages incluye los nuevos recursos. El mismo tema visual se aplica a las 19 rutas estáticas.
+
+**Seguridad:** el explorador muestra archivos de `doc/screenshots/` y no consulta cuentas, API, servidores ni datos de jugadores. Se mantiene el estado real del proyecto en **11 de 20 tareas implementadas en código y nueve pendientes**. No hay botón funcional de partida multijugador hasta contar con una infraestructura verificada.
+
+[Ver sitio público](https://fritz-ale.github.io/boombangCL/) · [Galería](https://fritz-ale.github.io/boombangCL/galeria.html) · [Avances](https://fritz-ale.github.io/boombangCL/avance.html)
