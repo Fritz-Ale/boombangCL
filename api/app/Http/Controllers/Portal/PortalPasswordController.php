@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
+use Illuminate\Validation\ValidationException;
 
 class PortalPasswordController extends Controller
 {
@@ -63,7 +64,7 @@ class PortalPasswordController extends Controller
 
         $result = Password::broker('users')->reset($data, function (User $user, string $password) {
             if (!$user->active || $user->is_bot) {
-                return;
+                throw ValidationException::withMessages(['token' => 'El enlace ya no es válido.']);
             }
 
             $user->forceFill([
