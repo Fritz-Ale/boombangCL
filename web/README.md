@@ -7,6 +7,7 @@ Portal original y responsivo basado en los recursos del repositorio BoomBang HTM
 | Ruta | Función |
 | --- | --- |
 | `index.html` | Portada con accesos a la comunidad |
+| `avance.html` | Panel de avances, estado de desarrollo, tareas y enlaces a GitHub |
 | `comunidad.html` | Salas ilustrativas y secciones sociales |
 | `noticias.html` | Noticias propias, gestionadas por administradores y filtrado editorial de presentación |
 | `cuenta.html` | Registro, inicio de sesión y cierre de sesión web |
@@ -86,3 +87,12 @@ El workflow de GitHub Actions `.github/workflows/portal-checks.yml` también ver
 ## Derechos
 
 La web se desarrolló como portal propio e independiente de BoomBang.tv y no está afiliada al sitio oficial. Las capturas y el código del proyecto base conservan sus condiciones indicadas en `../LICENSE.txt`; verifica los derechos antes de redistribuir o publicar.
+
+## Seguimiento del desarrollo
+
+- [Panel visual de avances](avance.html): usa `avance-data.json` como fotografía versionada del estado de las tareas, sin cargar tokens de GitHub.
+- [Hoja de ruta en GitHub](https://github.com/Fritz-Ale/boombangCL/issues/2): casillas de control editables desde GitHub para registrar lo implementado y lo pendiente.
+- [Pull Request de desarrollo](https://github.com/Fritz-Ale/boombangCL/pull/1): historial real de cambios antes de fusionarlos a `main`.
+- [GitHub Actions](https://github.com/Fritz-Ale/boombangCL/actions): resultado actual de las pruebas ejecutadas.
+
+El panel calcula una proporción de **tareas de su propio listado**. No es el porcentaje total del videojuego y **no** significa que el código esté desplegado. El JSON se actualiza como parte de los cambios del proyecto; al tratarse de un repositorio privado no se consulta su API desde el navegador porque exigiría credenciales del usuario. No pegues tokens personales en la web. Una publicación con GitHub Pages necesitará habilitar Pages y verificar la visibilidad del sitio.
