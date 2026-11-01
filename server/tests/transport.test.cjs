@@ -51,6 +51,22 @@ test('game server transport: internal endpoints reject public requests and Socke
     });
     assert.equal(res.status, 400, 'preauthorization validates bot token format');
 
+    // The secret allows the Laravel API (not an anonymous visitor) to
+    // preauthorize a short-lived bot token without logging its value.
+    const issuedToken = 'b'.repeat(40);
+    res = await fetch(base + '/internal/add-bot-token', {
+      method: 'POST',
+      headers: {
+        'content-type':'application/json',
+        'X-Bot-Preauth-Token':process.env.BOT_PREAUTH_TOKEN,
+      },
+      body: JSON.stringify({token: issuedToken}),
+    });
+    assert.equal(res.status,200);
+    assert.deepEqual(await res.json(),{success:true});
+    assert.equal(transport.authorizedBotTokens.has(issuedToken),true);
+    transport.authorizedBotTokens.delete(issuedToken);
+
     res = await fetch(base + '/internal/portal-stats');
     assert.equal(res.status, 403, 'online player stats are not public');
 
