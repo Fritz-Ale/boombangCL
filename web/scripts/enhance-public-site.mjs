@@ -6,6 +6,7 @@ import {readFile, writeFile, copyFile, readdir, access} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {writeGalleryAssets,galleryItems} from './build-gallery.mjs';
+import {newsMilestones,homeMilestones} from './build-milestones.mjs';
 
 const web=resolve(fileURLToPath(new URL('../',import.meta.url)));
 const base='https://fritz-ale.github.io/boombangCL/';
@@ -130,6 +131,14 @@ export async function enhancePublicSite(directory,roadmap) {
  for(const filename of existing){
    let html=await readFile(join(output,filename),'utf8');
    if(filename!=='404.html') html=addSearchNavigation(html);
+   if(filename==='noticias.html'){
+     const marker='<section id="publicaciones"';
+     if(!html.includes(marker))throw new Error('News page editorial anchor missing');
+     html=html.replace(marker,newsMilestones(roadmap)+'\n'+marker);
+     html=html.replace('Contenido editorial de presentación; sin fechas de publicación ni noticias en vivo.',
+       'Tarjetas ilustrativas del mundo y del cliente HTML5; no representan noticias en vivo.');
+     html=html.replace('</head>','<link rel="stylesheet" href="site-milestones.css"><script defer src="site-milestones.js"></script></head>');
+   }
    if(filename==='comunidad.html'){
      const promo='<section class="container portal-section" aria-label="Archivo visual">'+
        '<div class="portal-notice"><strong>¿Quieres ver los escenarios?</strong> Explora las '+
@@ -141,6 +150,10 @@ export async function enhancePublicSite(directory,roadmap) {
    if(filename==='index.html'){
      if(!html.includes('<section class="intro section-pad"')) throw new Error('Homepage progress anchor missing');
      html=html.replace('<section class="intro section-pad"',homepageProgress(tasks)+'<section class="intro section-pad"');
+     const projectAnchor='<section class="project section-pad"';
+     if(!html.includes(projectAnchor))throw new Error('Homepage latest-updates anchor missing');
+     html=html.replace(projectAnchor,homeMilestones(roadmap)+projectAnchor);
+     html=html.replace('</head>','<link rel="stylesheet" href="site-milestones.css"></head>');
      html=html.replace('El botón de juego abre la dirección local del cliente y requiere que los servicios estén configurados.',
        'La página para jugar explica qué servicios faltan. No hay servidor multijugador público activo.');
    }
@@ -152,6 +165,8 @@ export async function enhancePublicSite(directory,roadmap) {
  await writeGalleryAssets(output,nav);
  const galleryHtml=await readFile(join(output,'galeria.html'),'utf8');
  await writeFile(join(output,'galeria.html'),addMetadata('galeria.html',galleryHtml));
+ await copyFile(join(web,'site-milestones.js'),join(output,'site-milestones.js'));
+ await copyFile(join(web,'site-milestones.css'),join(output,'site-milestones.css'));
  await copyFile(join(web,'site-search.js'),join(output,'site-search.js'));
  await copyFile(join(web,'site-search.css'),join(output,'site-search.css'));
  await writeFile(join(output,'search-index.json'),JSON.stringify(publicSearchIndex(roadmap),null,2)+'\n');
