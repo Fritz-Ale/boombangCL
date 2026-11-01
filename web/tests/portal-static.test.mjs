@@ -86,3 +86,28 @@ test('GitHub Pages status is optional and never requires client-side repository 
   assert.match(generator, /GITHUB_REPOSITORY/);
   assert.match(generator, /PROGRESS_GITHUB_TOKEN/);
 });
+
+
+test('new portal accounts must confirm email before social writes; legacy game accounts remain eligible', () => {
+  const routes = read('api/routes/web.php');
+  const controller = read('api/app/Http/Controllers/Portal/PortalEmailVerificationController.php');
+  const auth = read('api/app/Http/Controllers/Portal/PortalAuthController.php');
+  const middleware = read('api/app/Http/Middleware/EnsurePortalEmailVerified.php');
+  const migration = read('api/database/migrations/2026_11_01_000000_add_portal_email_verification_flag_to_users.php');
+  const account = read('web/cuenta.html');
+  const client = read('web/portal-app.js');
+
+  assert.match(routes, /portal\.verified/);
+  assert.match(routes, /throttle:portal-resend-verification/);
+  assert.match(routes, /signed/);
+  assert.match(controller, /temporarySignedRoute/);
+  assert.match(controller, /hash_equals/);
+  assert.match(auth, /portal_email_verification_required_at/);
+  assert.match(migration, /portal_email_verification_required_at/);
+  assert.match(migration, /nullable\(\)/);
+  assert.match(middleware, /email_verification_required/);
+  assert.match(middleware, /portal_email_verification_required_at !== null/);
+  assert.match(account, /data-email-pending/);
+  assert.match(account, /data-resend-verification/);
+  assert.match(client, /resend-verification/);
+});
