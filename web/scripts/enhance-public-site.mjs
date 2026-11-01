@@ -177,6 +177,8 @@ export async function enhancePublicSite(directory,roadmap) {
  // Consistent visual direction across every static page. Replace the former
  // emoji-heavy marketing homepage only after route and screenshot generation.
  await copyFile(join(web,'site-professional.css'),join(output,'site-professional.css'));
+ await copyFile(join(web,'site-game.css'),join(output,'site-game.css'));
+ await copyFile(join(web,'site-game.js'),join(output,'site-game.js'));
  for(const filename of (await readdir(output)).filter(name=>name.endsWith('.html'))) {
    let html=filename==='index.html' ? addMetadata('index.html',await renderProfessionalHomepage(roadmap))
      : await readFile(join(output,filename),'utf8');
@@ -194,6 +196,8 @@ export async function enhancePublicSite(directory,roadmap) {
    }
    if(!html.includes('href="site-professional.css"'))
      html=html.replace('</head>','<link rel="stylesheet" href="site-professional.css"></head>');
+   if(!html.includes('href="site-game.css"'))
+     html=html.replace('</head>','<link rel="stylesheet" href="site-game.css"></head>');
    await writeFile(join(output,filename),html);
  }
 
