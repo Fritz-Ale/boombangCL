@@ -165,3 +165,11 @@ test('professional portal keeps essential mobile accessibility rules', async () 
   assert.match(css, /@media \(max-width:360px\)/);
   assert.match(css, /prefers-reduced-motion:reduce/);
 });
+
+test('mobile navigation closes on keyboard focus leaving and viewport resize', async () => {
+  const script = await readFile(new URL('../script.js', import.meta.url), 'utf8');
+  assert.match(script, /addEventListener\('focusin'/);
+  assert.match(script, /addEventListener\('resize'/);
+  assert.match(script, /nav\.classList\.contains\('open'\)/);
+  assert.match(script, /setAttribute\('aria-expanded', 'false'\)/);
+});
