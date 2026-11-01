@@ -34,6 +34,9 @@ concurrency:
 
 jobs:
   publish:
+    # Opt-in required even after the PR is merged. Publishing the progress
+    # status of a private repository must never be an accidental side-effect.
+    if: vars.ENABLE_PROGRESS_PAGES == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
