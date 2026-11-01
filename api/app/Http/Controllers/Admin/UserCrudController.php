@@ -136,6 +136,7 @@ class UserCrudController extends CrudController
      */
     public function store()
     {
+        request()->validate(['username' => ['required', 'string', 'max:255']]);
         $this->crud->setRequest($this->crud->validateRequest());
         $this->crud->setRequest($this->handlePasswordInput($this->crud->getRequest()));
         $this->crud->unsetValidation(); // validation has already been run
@@ -312,9 +313,10 @@ class UserCrudController extends CrudController
             ],
             [
                 'name'  => 'username',
-                'label' => 'Username',
+                'label' => 'Username (required)',
                 'type'  => 'text',
-                'tab'   => 'Game Stats',
+                'attributes' => ['required' => 'required'],
+                'tab'   => 'User Details',
             ],
             [
                 'name'  => 'show_username',
