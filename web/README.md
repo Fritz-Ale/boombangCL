@@ -106,3 +106,15 @@ El workflow `.github/workflows/pages-avances.yml` deja preparada una versión **
 **Situación actual:** el repositorio es privado y la publicación con GitHub Pages **no se ha activado ni verificado**. Para publicarlo cuando se apruebe el Pull Request, revisa la disponibilidad de Pages para tu plan de GitHub. Una vez que el workflow esté en `main`, abre *Settings → Pages → Build and deployment → Source: GitHub Actions*. **La publicación está bloqueada por defecto**: habilítala explícitamente creando la variable de repositorio `ENABLE_PROGRESS_PAGES=true` en *Settings → Secrets and variables → Actions → Variables* solo después de revisar que deseas publicar la fotografía. El workflow se ejecutará al cambiar archivos del panel en `main`, cada día o manualmente, únicamente cuando la variable esté activada.
 
 Ten presente que un sitio Pages puede ser público aunque el repositorio de origen sea privado. El workflow sube solo contenido apto para mostrar avances, no el código de la API, credenciales ni los recursos del juego. Por el momento puedes consultar [AVANCES.md](../AVANCES.md) y la [hoja de ruta (issue #2)](https://github.com/Fritz-Ale/boombangCL/issues/2) desde GitHub sin activar Pages.
+
+## 📱 Vista previa descargable sin publicar el proyecto
+
+Desde GitHub (incluido el móvil) puedes obtener una versión de **solo el panel de avances**, sin habilitar Pages ni compartir el repositorio:
+
+1. Abre [GitHub Actions · Portal web - chequeos](https://github.com/Fritz-Ale/boombangCL/actions/workflows/portal-checks.yml).
+2. Entra en una ejecución de la **Pull Request #1** que haya terminado correctamente.
+3. En la sección **Artifacts**, descarga `boombangcl-avances-vista-previa`.
+4. Descomprime el ZIP y abre `index.html` en un navegador. El HTML contiene sus propios estilos, scripts y 20 tareas; **no necesita Docker, Laravel ni internet** para mostrar los indicadores. Los enlaces a GitHub sí requieren conexión y permiso de acceso al repositorio.
+
+El archivo es una **fotografía editorial** de la rama, no un panel en vivo ni una web publicada. El artefacto se conserva durante **14 días** por ejecución y es accesible según los permisos del repositorio. No contiene secretos, cuentas, código del juego ni datos de usuarios.
+
