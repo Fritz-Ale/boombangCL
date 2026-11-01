@@ -36,7 +36,7 @@ class BotController extends Controller
         // Pre-authorize the token by sending it to the game server directly.
         // This request happens server-to-server within the Docker network.
         try {
-            $response = Http::post($gameServerUrl . '/internal/add-bot-token', [
+            $response = Http::withHeaders(['X-Emulator-Token' => config('app.emulator_api_token')])->post($gameServerUrl . '/internal/add-bot-token', [
                 'token' => $token
             ]);
 
