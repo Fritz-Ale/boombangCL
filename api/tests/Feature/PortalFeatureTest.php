@@ -16,6 +16,15 @@ class PortalFeatureTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // An in-memory cache can survive between feature tests. Reset limiter
+        // counters at each test boundary; each test still verifies its own
+        // per-IP and per-account throttling within the same request sequence.
+        \Illuminate\Support\Facades\Cache::flush();
+    }
+
     private function player(string $username): User
     {
         return User::query()->create([
