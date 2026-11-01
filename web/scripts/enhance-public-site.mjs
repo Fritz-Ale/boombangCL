@@ -196,6 +196,10 @@ export async function enhancePublicSite(directory,roadmap) {
      if(['foro.html','chat.html','social.html','catalogo.html','ranking.html','moderacion.html','cuenta.html','restablecer.html'].includes(filename))
        html=html.replace(/(<h1>)[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u,'$1');
    }
+   // Remove operating-system emoji glyphs from all visitor-facing pages.
+   // Keep real labels, task counters and the original image assets intact.
+   html=html.replace(/[\\p{Emoji_Presentation}\\uFE0F]/gu,'');
+   html=html.replace(/(<div class="top-strip"[^>]*>)\\s*✦\\s*/g,'$1');
    if(!html.includes('href="site-professional.css"'))
      html=html.replace('</head>','<link rel="stylesheet" href="site-professional.css"></head>');
    if(!html.includes('href="site-game.css"'))
