@@ -218,6 +218,60 @@ class PortalFeatureTest extends TestCase
         ]);
     }
 
+
+    public function test_registration_rejects_honeypot_data_without_creating_a_user(): void
+    {
+        $this->postJson('/portal/register', [
+            'username' => 'SpamBot42',
+            'email' => 'spambot42@example.test',
+            'password' => 'strong-password-123',
+            'password_confirmation' => 'strong-password-123',
+            'website' => 'https://automated-submit.invalid',
+        ])->assertUnprocessable();
+
+        $this->assertDatabaseMissing('users', ['username' => 'SpamBot42']);
+    }
+
+    public function test_registration_rejects_bursts_by_ip(): void
+    {
+        $payload = [
+            'username' => 'BurstUser',
+            'email' => 'burstuser@example.test',
+            'password' => 'short',
+            'password_confirmation' => 'short',
+        ];
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            $this->postJson('/portal/register', $payload)->assertUnprocessable();
+        }
+        $this->postJson('/portal/register', $payload)->assertStatus(429);
+        $this->assertDatabaseMissing('users', ['username' => 'BurstUser']);
+    }
+
+    public function test_login_has_account_throttling_in_addition_to_ip_limiting(): void
+    {
+        $user = $this->player('LoginLimit');
+        $payload = [
+            'username' => $user->username,
+            'password' => 'incorrect-password',
+        ];
+        for ($attempt = 0; $attempt < 6; $attempt++) {
+            $this->postJson('/portal/login', $payload)->assertUnprocessable();
+        }
+        $this->postJson('/portal/login', $payload)->assertStatus(429);
+    }
+
+    public function test_password_recovery_rejects_repeated_requests(): void
+    {
+        Notification::fake();
+        config()->set('services.portal.frontend_url', 'http://localhost:8001');
+        $payload = ['email' => 'unknown@example.test'];
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            $this->postJson('/portal/forgot-password', $payload)->assertOk();
+        }
+        $this->postJson('/portal/forgot-password', $payload)->assertStatus(429);
+        Notification::assertNothingSent();
+    }
+
     public function test_game_count_is_null_when_not_configured(): void
     {
         config()->set('services.portal_stats.token', null);
