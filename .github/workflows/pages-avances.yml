@@ -20,6 +20,8 @@ on:
       - "web/scripts/build-public-site.mjs"
       - "web/pro-home.html"
       - "web/site-professional.css"
+      - "web/site-game.css"
+      - "web/site-game.js"
       - "web/scripts/build-professional-home.mjs"
       - "web/scripts/enhance-public-site.mjs"
       - "web/scripts/build-gallery.mjs"
