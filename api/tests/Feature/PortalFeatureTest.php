@@ -415,6 +415,46 @@ class PortalFeatureTest extends TestCase
         }
     }
 
+    public function test_production_email_gate_needs_explicit_delivery_proof_and_sender(): void
+    {
+        $settings = [
+            'app.env', 'app.url', 'services.portal.frontend_url',
+            'services.portal.mail_delivery_verified', 'mail.default', 'mail.from.address',
+        ];
+        $original = [];
+        foreach ($settings as $setting) {
+            $original[$setting] = config($setting);
+        }
+
+        try {
+            config()->set('app.env', 'production');
+            config()->set('app.url', 'https://api.boombangcl.example');
+            config()->set('services.portal.frontend_url', 'https://boombangcl.example');
+            config()->set('mail.default', 'smtp');
+            config()->set('mail.from.address', 'noreply@boombangcl.cl');
+            config()->set('services.portal.mail_delivery_verified', false);
+            $this->assertFalse(\App\Http\Controllers\Portal\PortalEmailVerificationController::deliveryReady());
+
+            config()->set('services.portal.mail_delivery_verified', true);
+            config()->set('mail.default', 'log');
+            $this->assertFalse(\App\Http\Controllers\Portal\PortalEmailVerificationController::deliveryReady());
+
+            config()->set('mail.default', 'smtp');
+            config()->set('mail.from.address', 'hello@example.com');
+            $this->assertFalse(\App\Http\Controllers\Portal\PortalEmailVerificationController::deliveryReady());
+
+            config()->set('mail.from.address', 'noreply@boombangcl.cl');
+            $this->assertTrue(\App\Http\Controllers\Portal\PortalEmailVerificationController::deliveryReady());
+
+            config()->set('app.url', 'http://localhost:8000');
+            $this->assertFalse(\App\Http\Controllers\Portal\PortalEmailVerificationController::deliveryReady());
+        } finally {
+            foreach ($original as $setting => $value) {
+                config()->set($setting, $value);
+            }
+        }
+    }
+
     public function test_game_count_is_null_when_not_configured(): void
     {
         config()->set('services.portal_stats.token', null);
