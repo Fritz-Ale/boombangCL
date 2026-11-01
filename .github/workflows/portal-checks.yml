@@ -15,6 +15,7 @@ on:
       - "api/app/Notifications/**"
       - "api/.env.example"
       - "api/routes/web.php"
+      - "api/app/Providers/AppServiceProvider.php"
       - ".github/workflows/portal-checks.yml"
       - ".github/workflows/pages-avances.yml"
   push:
@@ -23,6 +24,7 @@ on:
       - "web/**"
       - "api/app/Http/Controllers/Portal/**"
       - "api/routes/web.php"
+      - "api/app/Providers/AppServiceProvider.php"
       - ".github/workflows/portal-checks.yml"
 
 permissions:
@@ -43,6 +45,7 @@ jobs:
       - name: Revisar sintaxis PHP
         run: |
           php -l api/routes/web.php
+          php -l api/app/Providers/AppServiceProvider.php
           php -l api/database/migrations/2026_10_31_220000_create_portal_tables.php
           php -l api/database/migrations/2026_10_31_221000_create_portal_social_tables.php
           php -l api/database/migrations/2026_10_31_222000_create_portal_reports_table.php
