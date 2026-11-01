@@ -76,3 +76,13 @@ test('progress dashboard tracks reviewed tasks without claiming production deplo
   assert.match(read('web/avance.js'), /textContent/);
   assert.doesNotMatch(read('web/avance.js'), /GITHUB_TOKEN|PRIVATE_TOKEN|access_token/);
 });
+
+test('GitHub Pages status is optional and never requires client-side repository credentials', () => {
+  const script = read('web/avance.js');
+  const generator = read('web/scripts/generate-progress-status.mjs');
+  assert.match(script, /avance-github\.json/);
+  assert.ok(!script.includes('Authorization:'));
+  assert.ok(!script.includes('api.github.com'));
+  assert.match(generator, /GITHUB_REPOSITORY/);
+  assert.match(generator, /PROGRESS_GITHUB_TOKEN/);
+});
