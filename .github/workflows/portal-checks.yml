@@ -6,6 +6,7 @@ on:
       - "README.md"
       - "web/**"
       - "client/**"
+      - "server/**"
       - "api/app/Http/Controllers/Portal/**"
       - "api/database/migrations/2026_10_31_220000_create_portal_tables.php"
       - "api/database/migrations/2026_10_31_221000_create_portal_social_tables.php"
@@ -28,6 +29,7 @@ on:
     paths:
       - "web/**"
       - "client/**"
+      - "server/**"
       - "api/app/Http/Controllers/Portal/**"
       - "api/routes/web.php"
       - "api/app/Providers/AppServiceProvider.php"
@@ -78,6 +80,29 @@ jobs:
       - name: Validar configuración Nginx
         run: |
           docker run --rm -v "$PWD/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro" nginx:1.27-alpine nginx -t
+
+  server-smoke:
+    name: Transporte Node + Socket.IO
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - name: Instalar dependencias del servidor
+        run: npm ci --no-audit --no-fund
+      - name: Verificar API interna y conexión Socket.IO
+        run: node --test tests/*.test.cjs
+        env:
+          RUN_BOTS: "false"
+          NODE_ENV: test
 
   client-build:
     name: Cliente HTML5 Phaser + Vue
