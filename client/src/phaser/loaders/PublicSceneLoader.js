@@ -4,7 +4,7 @@ import DarkeningUtils from "@/utils/DarkeningUtils";
 class PublicSceneLoader {
     static main(gameScene, preload = true) {
         const areaId = gameScene.sceneData.scenery.id;
-        const assets = gameScene.sceneData.scenery.assets_data.assets_data_repeatable || [];
+        const assets = gameScene.sceneData.scenery.assets_data?.assets_data_repeatable || [];
         const npc = gameScene.sceneData.scenery.npc;
         const baseApiUrl = (gameScene.sceneData.scenery.base_api_url || '').replace(/\/$/, '') + '/';
 
@@ -175,7 +175,7 @@ class PublicSceneLoader {
 
     static async #loadItems(gameScene) {
         const viteEnv = import.meta.env.VITE_APP_ENV;
-        for (const item of gameScene.sceneData.scenery.items) {
+        for (const item of (gameScene.sceneData.scenery.items || [])) {
             const assetSpriteFile = viteEnv == 'local' ? item.sprite_file : item.sprite_file_url;
             gameScene.load.image('item_' + item.file_name, assetSpriteFile);
             if (item.catch_file_name) {
