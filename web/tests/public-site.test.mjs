@@ -155,3 +155,13 @@ test('search and metadata never contain secrets or operational account forms', a
     assert.ok(index.entries.every(item=>['page','task'].includes(item.kind)));
   } finally { await rm(dir,{recursive:true,force:true}); }
 });
+
+
+test('professional portal keeps essential mobile accessibility rules', async () => {
+  const css = await readFile(new URL('../site-professional.css', import.meta.url), 'utf8');
+  assert.match(css, /@media \(pointer:coarse\)/);
+  assert.match(css, /min-height:44px/);
+  assert.match(css, /font-size:16px/);
+  assert.match(css, /@media \(max-width:360px\)/);
+  assert.match(css, /prefers-reduced-motion:reduce/);
+});
