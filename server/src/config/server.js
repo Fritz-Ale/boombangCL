@@ -21,17 +21,21 @@ module.exports = (port) => {
     // Internal endpoint for the Laravel API to pre-authorize a bot token
     app.post('/internal/add-bot-token', (req, res) => {
         const { token } = req.body;
-        if (!token) {
-            return res.status(400).json({ error: 'Token is required.' });
+        const configuredSecret = process.env.EMULATOR_API_TOKEN;
+        if (!configuredSecret || req.get('X-Emulator-Token') !== configuredSecret) {
+            return res.status(401).json({ error: 'Unauthorized.' });
         }
-
-        logger.log(`Received token pre-authorization: ${token}`, 'info');
+        if (typeof token !== 'string' || !/^[a-zA-Z0-9]{40}$/.test(token)) {
+            return res.status(400).json({ error: 'Invalid token.' });
+        }
+        // Never log authentication tokens.
+        logger.log('Received bot token pre-authorization', 'info');
         authorizedBotTokens.add(token);
 
         // The token is valid for 30 seconds. After that, remove it.
         setTimeout(() => {
             authorizedBotTokens.delete(token);
-            logger.log(`Token expired and removed: ${token}`, 'info');
+            logger.log('Bot token expired and removed', 'info');
         }, 30000);
 
         res.status(200).json({ success: true });
