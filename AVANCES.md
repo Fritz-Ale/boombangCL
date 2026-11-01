@@ -120,3 +120,11 @@ El sitio público fue rediseñado para transmitir la estética de un **mundo soc
 **Seguridad:** el explorador muestra archivos de `doc/screenshots/` y no consulta cuentas, API, servidores ni datos de jugadores. Se mantiene el estado real del proyecto en **11 de 20 tareas implementadas en código y nueve pendientes**. No hay botón funcional de partida multijugador hasta contar con una infraestructura verificada.
 
 [Ver sitio público](https://fritz-ale.github.io/boombangCL/) · [Galería](https://fritz-ale.github.io/boombangCL/galeria.html) · [Avances](https://fritz-ale.github.io/boombangCL/avance.html)
+
+### Capturas centradas y protección antispam (1 de noviembre de 2026)
+
+La web pública utiliza `web/site-image-center.css` para centrar las imágenes completas de la portada, islas, avatares, minijuegos y galería. Se evitan recortes provocados por `object-fit: cover`, con ajustes específicos para móviles. El compilador de `gh-pages` incluye esta hoja de estilos al final del documento, y las pruebas comprueban ese orden en todas las páginas.
+
+El backend Laravel usa ahora **límites de registro, inicio y recuperación tanto por IP como por dirección de correo/nombre de cuenta** (estos identificadores se usan convertidos en hash SHA-256 dentro de las claves de caché). Esto complementa CSRF, el campo antispam y la validación existente. Las pruebas automatizadas cubren el bloqueo de ráfagas, intentos de contraseña y honeypots. **No sustituye la verificación efectiva de correo**, que permanece pendiente junto con el proveedor de correo saliente real.
+
+El inventario preliminar de capturas y la revisión de derechos pendiente se encuentran en [`doc/PUBLIC_ASSET_REVIEW.md`](../doc/PUBLIC_ASSET_REVIEW.md). La licencia de código consultada no basta para confirmar los permisos de publicación de cada recurso gráfico.
