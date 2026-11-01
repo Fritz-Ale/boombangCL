@@ -319,9 +319,9 @@ class PortalFeatureTest extends TestCase
         $this->assertNotNull($user->fresh()->email_verified_at);
         $this->getJson('/portal/session')->assertOk()
             ->assertJsonPath('user.email_verified', true);
-        $this->postJson('/portal/forum/threads', [
-            'title' => 'Ya verificado', 'body' => 'Publicación permitida después del correo.',
-        ])->assertCreated();
+        // This endpoint shares the verification gate but has no unrelated
+        // posting rate limit, so it tests the gate instead of limiter state.
+        $this->getJson('/portal/friends')->assertOk();
     }
 
     public function test_email_verification_rejects_tampered_and_expired_signed_links(): void
