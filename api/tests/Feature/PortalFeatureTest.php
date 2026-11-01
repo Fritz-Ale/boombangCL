@@ -78,6 +78,29 @@ class PortalFeatureTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_expired_password_reset_token_cannot_be_reused(): void
+    {
+        Notification::fake();
+        config()->set('services.portal.frontend_url', 'http://localhost:8001');
+        $user = $this->player('ExpiredPwd');
+        $this->postJson('/portal/forgot-password', ['email' => $user->email])->assertOk();
+        $notification = Notification::sent($user, PortalPasswordResetNotification::class)->first();
+        parse_str((string) parse_url($notification->url, PHP_URL_FRAGMENT), $params);
+
+        \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+            ->where('email', $user->email)
+            ->update(['created_at' => now()->subMinutes(75)]);
+
+        $this->postJson('/portal/reset-password', [
+            'email' => $user->email,
+            'token' => $params['token'],
+            'password' => 'replacement-password-123',
+            'password_confirmation' => 'replacement-password-123',
+        ])->assertUnprocessable();
+
+        $this->assertTrue(Hash::check('safe-password-123', $user->fresh()->password));
+    }
+
     public function test_recovery_requires_configured_frontend_url(): void
     {
         config()->set('services.portal.frontend_url', null);
