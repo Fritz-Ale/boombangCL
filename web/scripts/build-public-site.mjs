@@ -28,14 +28,14 @@ const menu = [
 const repo = 'https://github.com/Fritz-Ale/boombangCL';
 
 export const pendingPages = [
-  ['foro.html','Foro de la comunidad','📝','Los temas y respuestas necesitan Laravel y una base de datos pública operativa. No mostramos publicaciones ficticias.'],
-  ['chat.html','Chat de BoomBang CL','💬','Enviar mensajes requiere una sesión de usuario y almacenamiento en un servidor seguro. No hay chat público activo.'],
-  ['social.html','Amigos y clanes','🤝','Las solicitudes e invitaciones están implementadas en el portal de desarrollo. Falta conectarlas al cliente del juego y desplegar el servidor.'],
-  ['catalogo.html','Catálogo de objetos','🛍️','La consulta requiere una API con objetos reales. Las compras siguen desactivadas.'],
-  ['ranking.html','Rankings y minijuegos','🏅','Las clasificaciones necesitan resultados reales almacenados en el backend. No se publican puntuaciones inventadas.'],
-  ['moderacion.html','Moderación de la comunidad','🛡️','El panel de reportes está reservado para personal autorizado y requiere una API protegida.'],
-  ['cuenta.html','Mi cuenta','👤','El registro y el inicio de sesión requieren HTTPS y Laravel. Esta página estática nunca te pedirá contraseña.'],
-  ['restablecer.html','Recuperar contraseña','🔐','El restablecimiento requiere una API y un proveedor de correo real. No introduzcas contraseñas en esta página.'],
+  ['foro.html','Foro de la comunidad','','Los temas y respuestas necesitan Laravel y una base de datos pública operativa. No mostramos publicaciones ficticias.'],
+  ['chat.html','Chat de BoomBang CL','','Enviar mensajes requiere una sesión de usuario y almacenamiento en un servidor seguro. No hay chat público activo.'],
+  ['social.html','Amigos y clanes','','Las solicitudes e invitaciones están implementadas en el portal de desarrollo. Falta conectarlas al cliente del juego y desplegar el servidor.'],
+  ['catalogo.html','Catálogo de objetos','','La consulta requiere una API con objetos reales. Las compras siguen desactivadas.'],
+  ['ranking.html','Rankings y minijuegos','','Las clasificaciones necesitan resultados reales almacenados en el backend. No se publican puntuaciones inventadas.'],
+  ['moderacion.html','Moderación de la comunidad','','El panel de reportes está reservado para personal autorizado y requiere una API protegida.'],
+  ['cuenta.html','Mi cuenta','','El registro y el inicio de sesión requieren HTTPS y Laravel. Esta página estática nunca te pedirá contraseña.'],
+  ['restablecer.html','Recuperar contraseña','','El restablecimiento requiere una API y un proveedor de correo real. No introduzcas contraseñas en esta página.'],
 ];
 
 export function navbar(current) {
@@ -106,7 +106,7 @@ function unavailablePage(path, title, emoji, description) {
   const right = media ? `<img src="screenshots/${media}" alt="Captura ilustrativa sin datos en vivo" loading="lazy">` :
     '<span aria-hidden="true">' + emoji + '</span>';
   return shell(path,title,`<section class="portal-banner portal-compact"><div class="container">
-<span class="eyebrow light">EN DESARROLLO</span><h1>${emoji} ${title}</h1><p>Esta función aún no puede utilizarse en GitHub Pages.</p>
+<span class="eyebrow light">EN DESARROLLO</span><h1>${title}</h1><p>Esta función aún no puede utilizarse en GitHub Pages.</p>
 </div></section><section class="portal-section container"><div class="preview-cols"><div>
 <span class="eyebrow orange">NO DISPONIBLE AÚN</span><h2>Seguimos trabajando.</h2><p>${description}</p>
 <div class="portal-notice"><strong>Privacidad:</strong> no solicitamos credenciales ni mostramos funciones simuladas.</div>
