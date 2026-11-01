@@ -16,21 +16,21 @@
       alt:'Captura de una sala pública del cliente BoomBang HTML5',
       title:'Salas públicas',
       description:'Explora la apariencia de los espacios compartidos de BoomBang HTML5.',
-      count:'01 / 03',
+      count:'SALAS',
     }),
     islas: Object.freeze({
       src:'screenshots/islas.png',
       alt:'Captura de islas y escenarios incluidos en BoomBang HTML5',
       title:'Islas',
       description:'Una muestra de los espacios que puedes construir dentro del cliente.',
-      count:'02 / 03',
+      count:'ISLAS',
     }),
     ring: Object.freeze({
       src:'screenshots/golden-ring.png',
       alt:'Captura del minijuego Golden Ring incluido en BoomBang HTML5',
       title:'Golden Ring',
       description:'Captura del minijuego que forma parte del código del proyecto.',
-      count:'03 / 03',
+      count:'GOLDEN RING',
     }),
   });
 
