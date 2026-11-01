@@ -1,0 +1,36 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<meta name="description" content="Recupera el acceso a tu cuenta del portal BoomBang CL.">
+<title>Restablecer contraseña · BoomBang CL</title>
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="portal.css"><link rel="stylesheet" href="live.css">
+<script defer src="script.js"></script><script defer src="password-reset.js"></script></head>
+<body class="portal-page"><a class="skip-link" href="#principal">Saltar al contenido</a>
+<div class="top-strip">✦ BoomBang CL · Cuentas del portal</div>
+<header class="site-header"><div class="container header-inner">
+<a href="index.html" class="brand" aria-label="BoomBang CL, inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a>
+<button class="menu-button" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+<nav class="main-nav" id="main-nav" aria-label="Navegación"><a href="index.html">Inicio</a><a href="ayuda.html">Ayuda</a><a href="cuenta.html">Mi cuenta</a></nav></div></header>
+<main id="principal"><section class="portal-banner portal-compact"><div class="container"><span class="eyebrow light">ACCESO SEGURO</span><h1>Vuelve a tu <em>isla.</em></h1><p>Restablece la contraseña de tu cuenta del portal. Nunca te pediremos tu clave por chat.</p></div></section>
+<section class="portal-section container portal-live">
+<div class="portal-live-status" data-reset-status role="status" aria-live="polite">Preparando recuperación segura…</div>
+<div class="portal-form" style="max-width:600px" data-request-box hidden>
+<h2>¿Olvidaste tu contraseña?</h2>
+<p>Indica el correo de tu cuenta. Si existe una cuenta elegible, te enviaremos un enlace para restablecer el acceso.</p>
+<form data-request-reset><label>Correo electrónico
+<input type="email" name="email" required autocomplete="email" maxlength="254" placeholder="tu-correo@ejemplo.cl"></label>
+<button type="submit" class="button button-sun">Enviar enlace</button></form>
+</div>
+<div class="portal-form" style="max-width:600px" data-new-password-box hidden>
+<h2>Crear una contraseña nueva</h2>
+<form data-confirm-reset>
+<label>Correo electrónico<input type="email" name="email" autocomplete="email" maxlength="254" required readonly></label>
+<label>Nueva contraseña (mínimo 10 caracteres)
+<input type="password" name="password" autocomplete="new-password" minlength="10" required></label>
+<label>Confirmar nueva contraseña
+<input type="password" name="password_confirmation" autocomplete="new-password" minlength="10" required></label>
+<button type="submit" class="button button-sun">Cambiar contraseña</button></form>
+</div>
+<p class="portal-fineprint">Los enlaces tienen un solo uso y caducan según la configuración del servidor. Si el correo no llega, revisa el spam. En la versión local de desarrollo, los mensajes pueden registrarse en los logs de Laravel hasta que se configure un servicio de correo.</p>
+<p><a href="cuenta.html">← Regresar al inicio de sesión</a></p>
+</section></main><footer class="site-footer"><div class="container"><p>© <span id="year">2026</span> BoomBang CL · Proyecto no oficial. <a href="privacidad.html">Privacidad</a></p></div></footer></body></html>
