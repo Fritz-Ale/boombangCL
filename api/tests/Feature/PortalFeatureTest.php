@@ -386,6 +386,35 @@ class PortalFeatureTest extends TestCase
         ])->assertCreated();
     }
 
+
+    public function test_production_registration_stays_closed_without_real_email_and_https(): void
+    {
+        $oldEnvironment = $this->app->environment();
+        $oldAppUrl = config('app.url');
+        $oldFrontend = config('services.portal.frontend_url');
+        $oldMailer = config('mail.default');
+
+        try {
+            $this->app->instance('env', 'production');
+            config()->set('mail.default', 'log');
+            config()->set('app.url', 'http://localhost:8000');
+            config()->set('services.portal.frontend_url', 'http://localhost:8001');
+
+            $this->postJson('/portal/register', [
+                'username' => 'NoMailProd',
+                'email' => 'nomailprod@example.test',
+                'password' => 'strong-pass-123',
+                'password_confirmation' => 'strong-pass-123',
+            ])->assertStatus(503);
+            $this->assertDatabaseMissing('users', ['username' => 'NoMailProd']);
+        } finally {
+            $this->app->instance('env', $oldEnvironment);
+            config()->set('mail.default', $oldMailer);
+            config()->set('app.url', $oldAppUrl);
+            config()->set('services.portal.frontend_url', $oldFrontend);
+        }
+    }
+
     public function test_game_count_is_null_when_not_configured(): void
     {
         config()->set('services.portal_stats.token', null);
