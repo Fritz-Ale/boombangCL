@@ -87,7 +87,18 @@
       visible('[data-logged-out]', !state.user);
       put('[data-username]', state.user ? state.user.username : '');
       visible('[data-staff-link]', Boolean(state.user && state.user.is_staff));
-      message(state.user ? 'Sesión del portal iniciada.' : 'Puedes iniciar sesión o registrarte en el portal.');
+      const needsEmail = Boolean(state.user && state.user.email_verification_required && !state.user.email_verified);
+      visible('[data-email-pending]', needsEmail);
+      visible('[data-email-confirmed]', Boolean(state.user && state.user.email_verification_required && state.user.email_verified));
+      const verifiedQuery = new URLSearchParams(window.location.search).get('email') === 'verified';
+      message(needsEmail ? 'Confirma el correo para activar las funciones sociales.' :
+        verifiedQuery && state.user ? 'Correo confirmado correctamente.' :
+        state.user ? 'Sesión del portal iniciada.' : 'Puedes iniciar sesión o registrarte en el portal.');
+      if (verifiedQuery) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('email');
+        history.replaceState(null, '', url.pathname + url.search + url.hash);
+      }
     };
     for (const [selector, endpoint] of [['[data-login-form]', '/login'], ['[data-register-form]', '/register']]) {
       const form = one(selector);
@@ -109,6 +120,18 @@
         } finally { button.disabled = false; }
       });
     }
+    const resend = one('[data-resend-verification]');
+    if (resend) resend.addEventListener('click', async () => {
+      resend.disabled = true;
+      try {
+        const response = await api('/resend-verification', 'POST', {});
+        put('[data-verification-message]', response.message || 'Consulta tu bandeja de entrada.');
+      } catch (error) {
+        put('[data-verification-message]', formatError(error));
+      } finally {
+        resend.disabled = false;
+      }
+    });
     const logout = one('[data-logout]');
     if (logout) logout.addEventListener('click', async () => {
       logout.disabled = true;
