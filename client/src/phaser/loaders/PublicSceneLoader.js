@@ -6,7 +6,7 @@ class PublicSceneLoader {
         const areaId = gameScene.sceneData.scenery.id;
         const assets = gameScene.sceneData.scenery.assets_data.assets_data_repeatable || [];
         const npc = gameScene.sceneData.scenery.npc;
-        const baseApiUrl = gameScene.sceneData.scenery.base_api_url + '/';
+        const baseApiUrl = (gameScene.sceneData.scenery.base_api_url || '').replace(/\/$/, '') + '/';
 
         if (preload) {
             this.#preload(areaId, assets, npc, gameScene, baseApiUrl);
@@ -30,7 +30,7 @@ class PublicSceneLoader {
             }
         });
         if (npc && npc.active) {
-            const spriteName = 'public_scene_' + areaId + '_npc_' + npc.sprite_name;
+            const spriteName = 'public_scene_' + areaId + '_npc_' + (npc.spriteName ?? npc.sprite_name ?? npc.stripeName);
             const npcSrc = viteEnv == 'local' ? npc.image : (baseApiUrl + npc.image);
             if (SceneUtils.isVideoFile(npcSrc)) {
                 gameScene.load.video(spriteName, npcSrc);
@@ -63,7 +63,7 @@ class PublicSceneLoader {
                     x: parseInt(asset.position_x),
                     y: parseInt(asset.position_y),
                     custom_depth: parseInt(asset.depth),
-                    scale: parseInt(asset.scale) || null,
+                    scale: Number(asset.scale) || 1,
                     show_item: shouldShow,
                     show_controller: asset.show_controller == 1,
                     darkening: asset.darkening,
@@ -85,7 +85,7 @@ class PublicSceneLoader {
 
         let sprite;
         const depth = item.custom_depth == 0 ? 0 : (item.custom_depth || item.y) * item.scale;
-        if (SceneUtils.isVideoFile(item.image)) {
+        if (gameScene.cache.video.has(spriteName)) {
             sprite = gameScene.add.video(item.x * item.scale, item.y * item.scale, spriteName)
                 .setOrigin(0.5, 1)
                 .setDepth(depth)
@@ -119,9 +119,9 @@ class PublicSceneLoader {
         }
         // Aplicar factor de escala para big_scene (los NPCs sí se escalan)
         const scaleFactor = gameScene.sceneScaleFactor || 1;
-        const finalScale = npcData.scale * scaleFactor;
+        const finalScale = (Number(npcData.scale) || 1) * scaleFactor;
 
-        const spriteName = 'public_scene_' + areaId + '_npc_' + npcData.spriteName;
+        const spriteName = 'public_scene_' + areaId + '_npc_' + (npcData.spriteName ?? npcData.sprite_name ?? npcData.stripeName);
         let sprite;
 
         if (SceneUtils.isVideoFile(npcData.image)) {
