@@ -16,6 +16,7 @@ on:
       - "api/.env.example"
       - "api/routes/web.php"
       - ".github/workflows/portal-checks.yml"
+      - ".github/workflows/pages-avances.yml"
   push:
     branches: [main]
     paths:
@@ -34,9 +35,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Revisar sintaxis JavaScript
         run: |
-          for file in web/*.js web/tests/*.mjs; do node --check "$file"; done
+          for file in web/*.js web/tests/*.mjs web/scripts/*.mjs; do node --check "$file"; done
       - name: Verificar enlaces y recursos del portal
-        run: node --test web/tests/portal-static.test.mjs
+        run: node --test web/tests/*.test.mjs
       - name: Revisar sintaxis servidor Node.js
         run: node --check server/src/config/server.js
       - name: Revisar sintaxis PHP
