@@ -118,3 +118,21 @@ Desde GitHub (incluido el móvil) puedes obtener una versión de **solo el panel
 
 El archivo es una **fotografía editorial** de la rama, no un panel en vivo ni una web publicada. El artefacto se conserva durante **14 días** por ejecución y es accesible según los permisos del repositorio. No contiene secretos, cuentas, código del juego ni datos de usuarios.
 
+
+## Sitio informativo navegable en GitHub Pages
+
+El repositorio público tiene una rama independiente `gh-pages` con una portada real, menú interno y páginas informativas (incluye `index.html`, `comunidad.html`, `noticias.html`, `avance.html`, `ayuda.html`, `pendientes.html` y vistas descriptivas para las funciones que requieren API).
+
+- Dirección prevista y utilizada para el sitio: https://fritz-ale.github.io/boombangCL/
+- El código para reconstruir la web está en `web/scripts/build-public-site.mjs` (17 páginas HTML y recursos gráficos permitidos del repositorio).
+- El despliegue de páginas por workflow sigue **bloqueado por defecto** hasta activar voluntariamente `ENABLE_PROGRESS_PAGES=true`. La rama `gh-pages` puede servirse directamente con GitHub Pages en modo *Deploy from a branch / gh-pages / (root)*.
+- El menú de la página pública nunca debe redirigir «Inicio» a GitHub; las referencias locales deben existir dentro del sitio y se comprueban en `web/tests/public-site.test.mjs`.
+- Los formularios de registro, recuperación, chat y administración **no** se publican desde la web estática. GitHub Pages **no** ejecuta Laravel, MariaDB ni Socket.IO. Las nueve tareas pendientes de lanzamiento continúan sin marcar.
+
+Para construir localmente una copia del sitio informativo:
+
+```bash
+node web/scripts/build-public-site.mjs _site
+```
+
+No confundas esta publicación estática con el cliente multijugador listo para jugar. Ningún secreto o contraseña debe subirse al repositorio.
