@@ -1,0 +1,65 @@
+name: Publicar panel de avances - GitHub Pages
+
+# Publica SOLO el panel estático, nunca Laravel ni pantallas de cuentas.
+# Requiere habilitar Pages -> GitHub Actions en Settings del repositorio
+# y disponer de un plan que permita Pages para repositorios privados.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "web/avance.html"
+      - "web/avance.css"
+      - "web/avance.js"
+      - "web/avance-data.json"
+      - "web/styles.css"
+      - "web/portal.css"
+      - "web/script.js"
+      - ".github/workflows/pages-avances.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages-avances
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Preparar pagina estática y segura
+        shell: bash
+        run: |
+          mkdir -p _site
+          cp web/avance.html _site/index.html
+          cp web/avance-data.json web/avance.css web/avance.js web/styles.css web/portal.css web/script.js _site/
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          page = Path('_site/index.html')
+          html = page.read_text(encoding='utf-8')
+          # The Pages site intentionally contains only the progress dashboard.
+          # Replace navigation to the full (private) game with the repository link.
+          html = re.sub(
+              r'href="(?:index|comunidad|noticias|cuenta|normas|privacidad)\.html"',
+              'href="https://github.com/Fritz-Ale/boombangCL"',
+              html
+          )
+          page.write_text(html, encoding='utf-8')
+          PY
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Desplegar panel de avances
+        id: deployment
+        uses: actions/deploy-pages@v4
