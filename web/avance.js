@@ -99,9 +99,16 @@
 
   async function init() {
     try {
-      const response = await fetch('avance-data.json', { cache: 'no-store' });
-      if (!response.ok) throw new Error('No se pudieron cargar los datos del proyecto');
-      roadmap = await response.json();
+      // The downloadable GitHub Actions preview embeds the same roadmap JSON.
+      // This avoids file:// fetch restrictions on macOS, iPhone and Android.
+      const embedded = document.getElementById('avance-embedded');
+      if (embedded) {
+        roadmap = JSON.parse(embedded.textContent);
+      } else {
+        const response = await fetch('avance-data.json', { cache: 'no-store' });
+        if (!response.ok) throw new Error('No se pudieron cargar los datos del proyecto');
+        roadmap = await response.json();
+      }
       if (roadmap.version !== 1 || !Array.isArray(roadmap.phases)) throw new Error('Formato de avances no válido');
       render();
       const updates = query('[data-updates]');
