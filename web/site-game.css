@@ -176,3 +176,7 @@ body.portal-page .site-footer{background:#183b55;color:#cae0e1}
 .game-scene-marker{width:14px;height:14px;display:block;flex:none;background:#82c5b6;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 2px #a8d7cd}
 .game-scene-choice.is-active .game-scene-marker{background:#ffb551;box-shadow:0 0 0 2px #efa744}
 @media(max-width:820px){.game-scene-marker{min-width:12px}}
+
+/* Original geometric brand mark replaces the old decorative character. */
+.portal-page .brand-sun,.portal-page .footer-brand .brand-sun{font-size:0!important;display:inline-block;flex-shrink:0;width:26px;height:26px;border-radius:6px;background:conic-gradient(from -12deg,#40b9c3 0 25%,#ffbc6e 25% 50%,#7757b3 50% 75%,#70c4a5 75% 100%);border:3px solid #e5f7f2;box-shadow:0 0 0 1px #5baeb2;transform:rotate(-8deg);vertical-align:middle}
+@media(max-width:560px){.portal-page .brand-sun{width:22px;height:22px}}
