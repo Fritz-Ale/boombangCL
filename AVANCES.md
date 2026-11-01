@@ -70,4 +70,4 @@ Este es el panel de seguimiento para consultar desde **GitHub, incluido el telé
 
 La ruta del panel dentro del portal es `/avance.html`, una vez desplegada la versión de la rama. El repositorio es **privado**, y GitHub no tiene un sitio público de Pages verificado en este momento. Por eso **no anunciamos una URL pública inventada**. Puedes consultar este archivo Markdown directamente en GitHub con acceso a tu cuenta.
 
-**Actualización del tablero:** para mantenerlo fiel a la realidad, cambiar el estado de `web/avance-data.json` al completar tareas y actualizar la issue #2. El navegador no usa ni almacena tokens privados de GitHub.
+**Actualización del tablero:** la issue #2 tiene las mismas 20 tareas que `web/avance-data.json`; al finalizar tareas, actualiza ambas. Una vez configurado GitHub Pages, un workflow de GitHub Actions generará un resumen mínimo de estado de PR, checks y issue, también con ejecución diaria. No expone el `GITHUB_TOKEN` al navegador ni muestra código privado. Sin Pages, el panel funciona con la fotografía editorial y los enlaces a GitHub.
