@@ -14,7 +14,7 @@ class PortalEmailVerificationController extends Controller
 {
     public static function deliveryReady(): bool
     {
-        if (!app()->environment('production')) {
+        if (config('app.env') !== 'production') {
             return true;
         }
 
