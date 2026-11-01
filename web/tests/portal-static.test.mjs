@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url';
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const web = join(repo, 'web');
 const read = path => readFileSync(join(repo, path), 'utf8');
-const pages = ['index.html', 'comunidad.html', 'noticias.html', 'ayuda.html', 'cuenta.html', 'foro.html', 'chat.html', 'catalogo.html', 'ranking.html', 'social.html', 'moderacion.html', 'normas.html', 'privacidad.html', 'restablecer.html'];
-const assets = ['styles.css', 'portal.css', 'live.css', 'script.js', 'portal.js', 'portal-app.js', 'social-app.js', 'moderacion.js', 'password-reset.js'];
+const pages = ['index.html', 'comunidad.html', 'noticias.html', 'ayuda.html', 'cuenta.html', 'foro.html', 'chat.html', 'catalogo.html', 'ranking.html', 'social.html', 'moderacion.html', 'normas.html', 'privacidad.html', 'restablecer.html', 'avance.html'];
+const assets = ['styles.css', 'portal.css', 'live.css', 'script.js', 'portal.js', 'portal-app.js', 'social-app.js', 'moderacion.js', 'password-reset.js', 'avance.js', 'avance.css', 'avance-data.json'];
 
 test('all portal pages, scripts and styles are included in Docker image', () => {
   const docker = read('web/Dockerfile');
@@ -60,4 +60,19 @@ test('community auth is isolated behind Laravel sessions and CSRF', () => {
   const proxy = read('web/nginx.conf');
   assert.ok(proxy.includes('location ^~ /portal/'));
   assert.ok(proxy.includes('proxy_pass http://$portal_backend;'));
+});
+
+test('progress dashboard tracks reviewed tasks without claiming production deployment', () => {
+  const data = JSON.parse(read('web/avance-data.json'));
+  assert.equal(data.version, 1);
+  assert.equal(data.pr.status, 'draft');
+  assert.equal(data.issue.number, 2);
+  const tasks = data.phases.flatMap(phase => phase.tasks);
+  assert.ok(tasks.length >= 12, 'roadmap must contain meaningful tasks');
+  assert.ok(tasks.some(task => task.status === 'pending'), 'unfinished work remains explicit');
+  assert.ok(tasks.some(task => task.status === 'implemented'));
+  assert.ok(tasks.every(task => ['implemented', 'pending', 'testing'].includes(task.status)));
+  assert.match(read('web/avance.html'), /GitHub Actions|Pruebas automáticas/);
+  assert.match(read('web/avance.js'), /textContent/);
+  assert.doesNotMatch(read('web/avance.js'), /GITHUB_TOKEN|PRIVATE_TOKEN|access_token/);
 });
