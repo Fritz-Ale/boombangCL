@@ -197,3 +197,10 @@ Las rutas de escritura y lectura social bajo `portal.verified` exigen confirmaci
 
 **Estado de hoja de ruta:** se completó la implementación base de verificación **en código**, pero «Verificación de correo y antispam reforzado» continúa pendiente como requisito de lanzamiento hasta demostrar entrega real y revisión de abusos. «Envío real de correos y dominio remitente» también permanece pendiente.
 
+
+### Compilación del cliente Phaser/Vue en CI
+
+El workflow `.github/workflows/portal-checks.yml` incorpora el trabajo `Cliente HTML5 Phaser + Vue`: ejecuta `npm ci --no-audit --no-fund` y `npm run build` en `client/` con Node.js 20 y exige `dist/index.html` junto con `dist/assets/`. Esto permite detectar errores de empaquetado, dependencias y recursos del cliente en cada pull request.
+
+**Alcance:** verifica compilación, **no** partida real, conexión Socket.IO, inventario, logins ni comunicación con MariaDB. Es un avance parcial de la tarea «Pruebas integrales del juego y todos los contenedores», que permanece pendiente hasta que existan pruebas reales con los servicios levantados.
+
