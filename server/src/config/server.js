@@ -40,10 +40,12 @@ module.exports = (port) => {
         authorizedBotTokens.add(token);
 
         // The token is valid for 30 seconds. After that, remove it.
-        setTimeout(() => {
+        const expiry = setTimeout(() => {
             authorizedBotTokens.delete(token);
             logger.log('Expired a short-lived bot token', 'info');
         }, 30000);
+        // Do not hold the Node process open just for an expired bot token.
+        expiry.unref?.();
 
         res.status(200).json({ success: true });
     });
