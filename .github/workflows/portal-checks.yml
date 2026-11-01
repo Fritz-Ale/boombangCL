@@ -16,6 +16,10 @@ on:
       - "api/.env.example"
       - "api/routes/web.php"
       - "api/app/Providers/AppServiceProvider.php"
+      - "api/app/Models/User.php"
+      - "api/app/Http/Middleware/EnsurePortalEmailVerified.php"
+      - "api/bootstrap/app.php"
+      - "api/database/migrations/2026_11_01_000000_add_portal_email_verification_flag_to_users.php"
       - ".github/workflows/portal-checks.yml"
       - ".github/workflows/pages-avances.yml"
   push:
@@ -25,6 +29,10 @@ on:
       - "api/app/Http/Controllers/Portal/**"
       - "api/routes/web.php"
       - "api/app/Providers/AppServiceProvider.php"
+      - "api/app/Models/User.php"
+      - "api/app/Http/Middleware/EnsurePortalEmailVerified.php"
+      - "api/bootstrap/app.php"
+      - "api/database/migrations/2026_11_01_000000_add_portal_email_verification_flag_to_users.php"
       - ".github/workflows/portal-checks.yml"
 
 permissions:
@@ -46,6 +54,10 @@ jobs:
         run: |
           php -l api/routes/web.php
           php -l api/app/Providers/AppServiceProvider.php
+          php -l api/bootstrap/app.php
+          php -l api/app/Models/User.php
+          php -l api/app/Http/Middleware/EnsurePortalEmailVerified.php
+          php -l api/database/migrations/2026_11_01_000000_add_portal_email_verification_flag_to_users.php
           php -l api/database/migrations/2026_10_31_220000_create_portal_tables.php
           php -l api/database/migrations/2026_10_31_221000_create_portal_social_tables.php
           php -l api/database/migrations/2026_10_31_222000_create_portal_reports_table.php
