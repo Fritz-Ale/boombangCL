@@ -17,7 +17,7 @@ test('public preview has a complete homepage, progress page and all 17 routable 
   const dir = await mkdtemp(join(tmpdir(),'boombangcl-public-'));
   try {
     const result = await buildPublicSite(dir);
-    assert.equal(result.pages.length,18);
+    assert.equal(result.pages.length,19);
     assert.equal(result.tasks,20);
     for (const page of result.pages) {
       assert.ok((await readFile(join(dir,page),'utf8')).includes('<main'), 'main in '+page);
@@ -25,6 +25,8 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     const homepage = await readFile(join(dir,'index.html'),'utf8');
     const dashboard = await readFile(join(dir,'avance.html'),'utf8');
     const searchPage = await readFile(join(dir,'buscar.html'),'utf8');
+    const galleryPage = await readFile(join(dir,'galeria.html'),'utf8');
+    const galleryJs = await readFile(join(dir,'site-gallery.js'),'utf8');
     const searchData = JSON.parse(await readFile(join(dir,'search-index.json'),'utf8'));
     const robots = await readFile(join(dir,'robots.txt'),'utf8');
     const sitemap = await readFile(join(dir,'sitemap.xml'),'utf8');
@@ -35,6 +37,15 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     assert.match(homepage, /href="index.html"/);
     assert.match(homepage, /href="comunidad.html"/);
     assert.match(homepage, /href="buscar.html"/);
+    assert.match(homepage, /href="galeria.html"/);
+    assert.match(homepage, /Ver capturas del juego/);
+    assert.match(galleryPage, /ARCHIVO VISUAL/);
+    assert.match(galleryPage, /site-gallery.css/);
+    assert.match(galleryPage, /data-gallery-filter="all"/);
+    assert.match(galleryPage, /captura completa/);
+    assert.equal((galleryPage.match(/class="gallery-card"/g) || []).length,9);
+    assert.match(galleryPage, /Imágenes de referencia, no del servidor en vivo/);
+    assert.doesNotMatch(galleryJs, /innerHTML|Authorization|api\.github\.com/);
     assert.match(homepage, /home-project-status/);
     assert.match(homepage, /11<small>\/20<\/small>/);
     assert.match(homepage, /rel="canonical"/);
@@ -43,6 +54,8 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     assert.match(searchPage, /data-search-results/);
     assert.equal(searchData.version,1);
     assert.equal(searchData.entries.filter(entry => entry.kind === 'task').length,20);
+    assert.ok(searchData.entries.some(entry => entry.url === 'galeria.html'));
+    assert.match(sitemap, /galeria\.html/);
     assert.ok(searchData.entries.some(entry => entry.title.includes('Amistades y clanes')));
     assert.match(robots, /Sitemap:/);
     assert.match(sitemap, /<loc>https:\/\/fritz-ale\.github\.io\/boombangCL\/<\/loc>/);
