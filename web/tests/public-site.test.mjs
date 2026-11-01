@@ -173,3 +173,14 @@ test('mobile navigation closes on keyboard focus leaving and viewport resize', a
   assert.match(script, /nav\.classList\.contains\('open'\)/);
   assert.match(script, /setAttribute\('aria-expanded', 'false'\)/);
 });
+
+test('island explorer supports keyboard navigation without a game server', async () => {
+  const script = await readFile(new URL('../site-game.js', import.meta.url), 'utf8');
+  assert.match(script, /addEventListener\('keydown'/);
+  assert.match(script, /ArrowRight/);
+  assert.match(script, /ArrowLeft/);
+  assert.match(script, /Home/);
+  assert.match(script, /End/);
+  assert.match(script, /target\.focus\(\)/);
+  assert.doesNotMatch(script, /fetch\(|WebSocket\(|Authorization/);
+});
