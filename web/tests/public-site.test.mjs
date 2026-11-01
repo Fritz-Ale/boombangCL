@@ -26,6 +26,16 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     const dashboard = await readFile(join(dir,'avance.html'),'utf8');
     const proCss = await readFile(join(dir,'site-professional.css'),'utf8');
     const homeTitle = await readFile(join(dir,'index.html'),'utf8');
+    // Style requirements: no platform emoji or ornamental ordinal numerals.
+    assert.doesNotMatch(homeTitle, /[\p{Emoji_Presentation}\uFE0F]/gu);
+    assert.doesNotMatch(homeTitle, /class="game-scene-number"|\b0[123] \/ (?:EXPLORACIÓN|COMUNIDAD|DIVERSIÓN)/);
+    assert.doesNotMatch(homeTitle, /data-game-scene-count>\\d/);
+    assert.match(homeTitle, /class="game-scene-marker"/);
+    for (const filename of built.pages) {
+      const content = await readFile(join(dir,filename),'utf8');
+      assert.doesNotMatch(content, /[\p{Emoji_Presentation}\uFE0F]/gu, filename + ': standard emoji are prohibited');
+    }
+
     assert.match(proCss, /\.pro-hero-grid/);
     assert.match(proCss, /prefers-reduced-motion/);
     assert.match(homeTitle, /href="site-professional.css"/);
