@@ -8,6 +8,7 @@ use App\Notifications\PortalPasswordResetNotification;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -75,6 +76,12 @@ class PortalPasswordController extends Controller
             // Revoke existing game Passport tokens as well as the reset token.
             // Clients holding prior access tokens must authenticate again.
             $user->tokens()->delete();
+            // Invalidate existing browser sessions when the database session
+            // driver is enabled, so old signed-in devices cannot stay logged in.
+            if (config('session.driver') === 'database') {
+                DB::table(config('session.table', 'sessions'))
+                    ->where('user_id', $user->id)->delete();
+            }
             event(new PasswordReset($user));
         });
 
