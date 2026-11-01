@@ -60,6 +60,8 @@ jobs:
               'href="https://github.com/Fritz-Ale/boombangCL"',
               html
           )
+          # The isolated Pages bundle serves the dashboard as index.html.
+          html = html.replace('href="avance.html"', 'href="./"')
           page.write_text(html, encoding='utf-8')
           PY
           touch _site/.nojekyll
