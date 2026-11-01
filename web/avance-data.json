@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAt": "2026-10-31",
+  "capturedAt": "2026-11-01",
   "project": "BoomBang CL",
   "scope": "Seguimiento de funcionalidades del portal HTML5. No mide el porcentaje de desarrollo total del juego ni su preparación para producción.",
   "branch": "feature/portal-comunidad-noticias-2026",
@@ -14,11 +14,11 @@
     "url": "https://github.com/Fritz-Ale/boombangCL/issues/2"
   },
   "ci": {
-    "testsPassed": 12,
-    "assertions": 57,
-    "runUrl": "https://github.com/Fritz-Ale/boombangCL/actions/runs/41258240936",
+    "testsPassed": 22,
+    "assertions": 118,
+    "runUrl": "https://github.com/Fritz-Ale/boombangCL/actions/runs/41293304577",
     "status": "success",
-    "note": "Última ejecución comprobada al capturar esta fotografía. Abre GitHub Actions para conocer el estado más reciente."
+    "note": "Fotografía del 1 de noviembre: 22 pruebas Laravel (118 aserciones), 25 pruebas web, transporte Socket.IO y compilación Phaser/Vue; cuatro trabajos aprobados. No implica pruebas integrales del juego ni despliegue del backend."
   },
   "phases": [
     {
@@ -155,6 +155,12 @@
     }
   ],
   "updates": [
+    {
+      "date": "2026-11-01",
+      "title": "Cuatro trabajos de integración aprobados",
+      "description": "GitHub Actions confirma 25 pruebas web, 22 Laravel (118 aserciones), prueba de transporte Node/Socket.IO y compilación Phaser/Vue. El multijugador público sigue pendiente.",
+      "kind": "test"
+    },
     {
       "date": "2026-10-31",
       "title": "Galería pública de imágenes del proyecto",
