@@ -5,6 +5,9 @@ name: Publicar panel de avances - GitHub Pages
 # y disponer de un plan que permita Pages para repositorios privados.
 on:
   workflow_dispatch:
+  schedule:
+    # Refresca la fotografía del estado al menos una vez al día tras fusionar a main.
+    - cron: '15 9 * * *'
   push:
     branches: [main]
     paths:
@@ -19,6 +22,9 @@ on:
 
 permissions:
   contents: read
+  issues: read
+  pull-requests: read
+  actions: read
   pages: write
   id-token: write
 
@@ -57,6 +63,11 @@ jobs:
           page.write_text(html, encoding='utf-8')
           PY
           touch _site/.nojekyll
+      - name: Generar fotografía de GitHub (sin publicar token)
+        env:
+          PROGRESS_GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node web/scripts/generate-progress-status.mjs _site/avance-github.json
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
