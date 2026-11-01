@@ -204,3 +204,13 @@ El workflow `.github/workflows/portal-checks.yml` incorpora el trabajo `Cliente 
 
 **Alcance:** verifica compilación, **no** partida real, conexión Socket.IO, inventario, logins ni comunicación con MariaDB. Es un avance parcial de la tarea «Pruebas integrales del juego y todos los contenedores», que permanece pendiente hasta que existan pruebas reales con los servicios levantados.
 
+
+### Ajuste de interfaz y continuación de tareas (1 de noviembre de 2026)
+
+Se ha adoptado el plan de rediseño directo al repositorio, recogido en [`DESIGN_GUIDE.md`](DESIGN_GUIDE.md). La portada elimina los números decorativos de las tarjetas, etiquetas y selector de salas, y los sustituye por elementos de CSS originales. El generador de páginas públicas elimina los emojis estándar de las vistas. Se mantiene la navegación, el explorador de capturas, las noticias, el buscador y el centrado de imágenes.
+
+**Trabajo previo verificado:** [GitHub Actions #41269387592](https://github.com/Fritz-Ale/boombangCL/actions/runs/41269387592) comprobó la verificación de correo del portal en Laravel, las pruebas estáticas y la compilación Phaser/Vue. La implementación del correo existe en código, pero el **registro público sigue desactivado** hasta configurar un servicio de email real, dominio/HTTPS y probar la entrega. No se han agregado assets oficiales de BoomBang.tv ni se ha resuelto la revisión de licencias.
+
+**Publicación:** los cambios del diseño también se han incorporado a la rama `gh-pages`, pero GitHub Pages ha devuelto un error de **despliegue simultáneo en curso**, incluso tras reintentar. No afirmar que la última versión está visible hasta que un despliegue finalice correctamente. [Ver acciones de Pages](https://github.com/Fritz-Ale/boombangCL/actions).
+
+**Estado:** 11 de 20 tareas implementadas en código, nueve pendientes; la PR permanece en borrador y `main` no se ha modificado.
