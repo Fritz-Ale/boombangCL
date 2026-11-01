@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Notifications\PortalPasswordResetNotification;
+use App\Notifications\PortalEmailVerificationNotification;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -270,6 +272,109 @@ class PortalFeatureTest extends TestCase
         }
         $this->postJson('/portal/forgot-password', $payload)->assertStatus(429);
         Notification::assertNothingSent();
+    }
+
+
+    public function test_new_portal_registration_requires_email_confirmation_before_social_writes(): void
+    {
+        Notification::fake();
+        config()->set('services.portal.frontend_url', 'http://localhost:8001');
+
+        $this->postJson('/portal/register', [
+            'username' => 'VerifyNew',
+            'email' => 'verifynew@example.test',
+            'password' => 'strong-pass-123',
+            'password_confirmation' => 'strong-pass-123',
+            'website' => '',
+        ])->assertCreated()
+            ->assertJsonPath('authenticated', true)
+            ->assertJsonPath('user.email_verified', false)
+            ->assertJsonPath('user.email_verification_required', true);
+
+        $user = User::query()->where('username', 'VerifyNew')->firstOrFail();
+        $this->assertNotNull($user->portal_email_verification_required_at);
+        $this->assertNull($user->email_verified_at);
+        Notification::assertSentTo($user, PortalEmailVerificationNotification::class);
+
+        $this->postJson('/portal/forum/threads', [
+            'title' => 'No autorizado', 'body' => 'Esta publicación debe bloquearse.',
+        ])->assertForbidden()->assertJsonPath('code', 'email_verification_required');
+        $this->postJson('/portal/friends', ['username' => 'OtroJugador'])
+            ->assertForbidden()->assertJsonPath('code', 'email_verification_required');
+
+        $email = Notification::sent($user, PortalEmailVerificationNotification::class)->first();
+        $this->assertStringContainsString('/portal/verify-email/', $email->url);
+        $this->assertStringContainsString('signature=', $email->url);
+
+        $this->getJson($email->url)->assertOk()->assertJsonStructure(['message']);
+        $this->assertNotNull($user->fresh()->email_verified_at);
+        $this->getJson('/portal/session')->assertOk()
+            ->assertJsonPath('user.email_verified', true);
+        $this->postJson('/portal/forum/threads', [
+            'title' => 'Ya verificado', 'body' => 'Publicación permitida después del correo.',
+        ])->assertCreated();
+    }
+
+    public function test_email_verification_rejects_tampered_and_expired_signed_links(): void
+    {
+        Notification::fake();
+        $this->postJson('/portal/register', [
+            'username' => 'VerifyOld',
+            'email' => 'verifyold@example.test',
+            'password' => 'strong-pass-123',
+            'password_confirmation' => 'strong-pass-123',
+        ])->assertCreated();
+
+        $user = User::query()->where('username', 'VerifyOld')->firstOrFail();
+        $email = Notification::sent($user, PortalEmailVerificationNotification::class)->first();
+        $this->getJson(str_replace('signature=', 'signature=invalid', $email->url))
+            ->assertForbidden();
+        $expired = URL::temporarySignedRoute('portal.verify-email', now()->subMinute(), [
+            'id' => $user->id,
+            'hash' => sha1($user->email),
+        ]);
+        $this->getJson($expired)->assertForbidden();
+        $wrongEmailHash = URL::temporarySignedRoute('portal.verify-email', now()->addMinutes(5), [
+            'id' => $user->id,
+            'hash' => sha1('wrong@example.test'),
+        ]);
+        $this->getJson($wrongEmailHash)->assertForbidden();
+        $this->assertNull($user->fresh()->email_verified_at);
+    }
+
+    public function test_unverified_user_can_resend_email_but_not_spam_resend_or_escape_with_login(): void
+    {
+        Notification::fake();
+        $this->postJson('/portal/register', [
+            'username' => 'ResendVerify',
+            'email' => 'resendverify@example.test',
+            'password' => 'strong-pass-123',
+            'password_confirmation' => 'strong-pass-123',
+        ])->assertCreated();
+        $user = User::query()->where('username', 'ResendVerify')->firstOrFail();
+        Notification::fake();
+        $this->postJson('/portal/resend-verification')->assertOk();
+        Notification::assertSentTo($user, PortalEmailVerificationNotification::class);
+        $this->postJson('/portal/resend-verification')->assertStatus(429);
+
+        $this->postJson('/portal/logout')->assertOk();
+        $this->postJson('/portal/login', [
+            'username' => 'ResendVerify',
+            'password' => 'strong-pass-123',
+        ])->assertOk()->assertJsonPath('user.email_verified', false);
+        $this->postJson('/portal/chat', [
+            'body' => 'No publicar antes de confirmar',
+        ])->assertForbidden()->assertJsonPath('code', 'email_verification_required');
+    }
+
+    public function test_existing_game_accounts_are_not_locked_out_by_portal_migration(): void
+    {
+        $legacy = $this->player('LegacyPortal');
+        $this->assertNull($legacy->portal_email_verification_required_at);
+        $this->actingAs($legacy, 'web')->postJson('/portal/forum/threads', [
+            'title' => 'Usuario antiguo',
+            'body' => 'La actualización no debe bloquear usuarios existentes.',
+        ])->assertCreated();
     }
 
     public function test_game_count_is_null_when_not_configured(): void
