@@ -45,7 +45,7 @@ export function galleryPage(nav) {
     '<meta name="theme-color" content="#0c3444"><title>Galería · BoomBang CL</title>'+
     '<meta name="description" content="Capturas de las islas, salas, personajes y minijuegos incluidos en BoomBang HTML5.">'+
     '<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="portal.css">'+
-    '<link rel="stylesheet" href="site-preview.css"><script defer src="script.js"></script>'+
+    '<link rel="stylesheet" href="site-preview.css"><link rel="stylesheet" href="site-gallery.css"><script defer src="script.js"></script>'+
     '<script defer src="site-gallery.js"></script></head><body class="portal-page">'+
     '<a class="skip-link" href="#principal">Saltar al contenido</a>'+
     '<div class="top-strip">✦ BoomBang CL · Recuerdos del proyecto HTML5</div>'+
