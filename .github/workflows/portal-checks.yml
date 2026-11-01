@@ -11,6 +11,8 @@ on:
       - "api/tests/Feature/PortalFeatureTest.php"
       - "server/src/config/server.js"
       - "api/config/services.php"
+      - "api/app/Notifications/**"
+      - "api/.env.example"
       - "api/routes/web.php"
       - ".github/workflows/portal-checks.yml"
   push:
@@ -42,7 +44,7 @@ jobs:
           php -l api/database/migrations/2026_10_31_220000_create_portal_tables.php
           php -l api/database/migrations/2026_10_31_221000_create_portal_social_tables.php
           php -l api/database/migrations/2026_10_31_222000_create_portal_reports_table.php
-          find api/app/Http/Controllers/Portal -name '*.php' -print0 | xargs -0 -n1 php -l
+          find api/app/Http/Controllers/Portal api/app/Notifications -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Validar configuración Nginx
         run: |
           docker run --rm -v "$PWD/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro" nginx:1.27-alpine nginx -t
