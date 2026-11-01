@@ -5,6 +5,7 @@ on:
     paths:
       - "README.md"
       - "web/**"
+      - "client/**"
       - "api/app/Http/Controllers/Portal/**"
       - "api/database/migrations/2026_10_31_220000_create_portal_tables.php"
       - "api/database/migrations/2026_10_31_221000_create_portal_social_tables.php"
@@ -26,6 +27,7 @@ on:
     branches: [main]
     paths:
       - "web/**"
+      - "client/**"
       - "api/app/Http/Controllers/Portal/**"
       - "api/routes/web.php"
       - "api/app/Providers/AppServiceProvider.php"
@@ -76,6 +78,31 @@ jobs:
       - name: Validar configuración Nginx
         run: |
           docker run --rm -v "$PWD/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro" nginx:1.27-alpine nginx -t
+
+  client-build:
+    name: Cliente HTML5 Phaser + Vue
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Instalar dependencias reproducibles
+        run: npm ci --no-audit --no-fund
+      - name: Compilar cliente HTML5 de producción
+        run: npm run build
+      - name: Comprobar artefactos del cliente
+        run: |
+          test -f dist/index.html
+          test -d dist/assets
+          echo "Cliente HTML5 compilado. No se ha probado conexión a Socket.IO."
 
   laravel-integration:
     name: API Laravel + MariaDB
