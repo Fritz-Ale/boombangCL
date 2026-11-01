@@ -10,6 +10,7 @@ Portal original y responsivo basado en los recursos del repositorio BoomBang HTM
 | `comunidad.html` | Salas ilustrativas y secciones sociales |
 | `noticias.html` | Noticias propias, gestionadas por administradores y filtrado editorial de presentación |
 | `cuenta.html` | Registro, inicio de sesión y cierre de sesión web |
+| `restablecer.html` | Recuperación de contraseña mediante enlace de correo de un solo uso |
 | `foro.html` | Temas y respuestas guardados en la base de datos |
 | `chat.html` | Mensajes persistentes para usuarios autenticados, con actualización cada 15 segundos |
 | `catalogo.html` | Consulta de artículos activos y disponibles para compra en el catálogo del juego (solo lectura) |
@@ -26,7 +27,7 @@ Las imágenes siguen procediendo de `doc/screenshots/` y no de sitios externos.
 
 1. Instala Git y Docker Desktop y clona el repositorio.
 2. Configura los cuatro archivos de entorno siguiendo el `README.md` raíz y crea la red externa `proxy-network`.
-3. Configura `APP_KEY`, base de datos y credenciales en `api/.env`. Si quieres mostrar el número de jugadores del juego, genera un secreto aleatorio largo y configúralo como `PORTAL_STATS_TOKEN` tanto en `api/.env` como en `server/.env`; nunca debe estar en el HTML o JavaScript. Para probar con `http://localhost:8001`, mantén `SESSION_DOMAIN=null` (sin dominio de terceros) y `SESSION_DRIVER=database`.
+3. Configura `APP_KEY`, base de datos y credenciales en `api/.env`. Para habilitar recuperación de contraseñas, añade `PORTAL_FRONTEND_URL` con el origen real de la web (obligatoriamente HTTPS en producción) y configura un servidor de correo SMTP u otro proveedor confiable en el `.env` de Laravel. Por defecto `MAIL_MAILER=log` sirve solo para desarrollo, no entrega correos reales. Si quieres mostrar el número de jugadores del juego, genera un secreto aleatorio largo y configúralo como `PORTAL_STATS_TOKEN` tanto en `api/.env` como en `server/.env`; nunca debe estar en el HTML o JavaScript. Para probar con `http://localhost:8001`, mantén `SESSION_DOMAIN=null` (sin dominio de terceros) y `SESSION_DRIVER=database`.
 4. Ejecuta el portal y sus dependencias:
 
 ```sh
@@ -49,6 +50,7 @@ El contenido del catálogo y del ranking no se genera automáticamente: depende 
 Las páginas llaman a rutas **del mismo origen**: Nginx reenvía `/portal/*` a las rutas de `api/routes/web.php` en Laravel. Así se utiliza el middleware web con sesiones y tokens CSRF. No se expone al navegador el token interno `EMULATOR_API_TOKEN` ni tokens de Passport.
 
 - Sesión: `GET /portal/session`, `POST /portal/register`, `POST /portal/login`, `POST /portal/logout`.
+- Recuperación: `POST /portal/forgot-password`, `POST /portal/reset-password`. Laravel usa el broker de contraseñas (tokens cifrados/hash en la base de datos, 60 minutos de duración, un solo uso y limitación de solicitudes). Los correos desconocidos reciben el mismo mensaje genérico. Se revocan los tokens Passport al cambiar la contraseña. El enlace utiliza un fragmento URL para que el token no aparezca en las peticiones HTTP.
 - Datos públicos: `GET /portal/news`, `/portal/catalog`, `/portal/ranking`, `/portal/status`, `/portal/forum/threads`.
 - Amistades y clanes: solicitudes, aceptación, invitaciones privadas, salida y disolución por propietario usando `/portal/friends` y `/portal/clan`.
 - Foro: lectura de un tema y creación/respuesta por usuarios autenticados.
@@ -74,7 +76,7 @@ El workflow de GitHub Actions `.github/workflows/portal-checks.yml` también ver
 
 ## Pendientes para producción
 
-- El portal registra usuarios en la misma tabla `users` del juego; requiere revisar protección contra bots, políticas de privacidad, verificación de correo, recuperación de contraseña y moderación continua antes de exponerlo a Internet.
+- El portal registra usuarios en la misma tabla `users` del juego; la recuperación de contraseñas está implementada y comprobada con notificaciones simuladas, pero se debe configurar **correo saliente real** y probarlo de extremo a extremo antes de publicar. Se mantienen pendientes la verificación de correo, medidas antispam avanzadas, políticas de privacidad y moderación continua.
 - El foro y el chat almacenan mensajes; antes de un lanzamiento público conviene agregar políticas de retención, denuncias, moderación de contenido y protección antispam avanzada.
 - No hay chat en tiempo real por WebSockets en este portal: se consulta periódicamente Laravel. El chat dentro de las salas pertenece al cliente y servidor HTML5.
 - Existe un endpoint de **jugadores autenticados reales** en Node.js: `/internal/portal-stats`. Laravel lo consulta con el token privado `PORTAL_STATS_TOKEN` configurado en ambos servicios. Nunca se publica el token al navegador y los bots se excluyen. Sin token o con el juego apagado se muestra «no disponible».
