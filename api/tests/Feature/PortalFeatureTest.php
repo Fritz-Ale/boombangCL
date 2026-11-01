@@ -389,13 +389,13 @@ class PortalFeatureTest extends TestCase
 
     public function test_production_registration_stays_closed_without_real_email_and_https(): void
     {
-        $oldEnvironment = $this->app->environment();
+        $oldEnvironment = config('app.env');
         $oldAppUrl = config('app.url');
         $oldFrontend = config('services.portal.frontend_url');
         $oldMailer = config('mail.default');
 
         try {
-            $this->app->instance('env', 'production');
+            config()->set('app.env', 'production');
             config()->set('mail.default', 'log');
             config()->set('app.url', 'http://localhost:8000');
             config()->set('services.portal.frontend_url', 'http://localhost:8001');
@@ -408,7 +408,7 @@ class PortalFeatureTest extends TestCase
             ])->assertStatus(503);
             $this->assertDatabaseMissing('users', ['username' => 'NoMailProd']);
         } finally {
-            $this->app->instance('env', $oldEnvironment);
+            config()->set('app.env', $oldEnvironment);
             config()->set('mail.default', $oldMailer);
             config()->set('app.url', $oldAppUrl);
             config()->set('services.portal.frontend_url', $oldFrontend);
