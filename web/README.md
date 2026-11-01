@@ -142,3 +142,9 @@ No confundas esta publicación estática con el cliente multijugador listo para 
 La [galería pública de BoomBang CL](https://fritz-ale.github.io/boombangCL/galeria.html) reúne **nueve capturas** ya existentes en `doc/screenshots/`: portada, lobby, salas, islas, personalización, Golden Ring, ranking y catálogo. Ofrece filtros por mundo, personajes y minijuegos, y permite abrir las imágenes originales. La navegación, el buscador, la portada y la página de comunidad enlazan a esta sección.
 
 **Alcance:** son ilustraciones del repositorio, **no** prueba de partidas activas ni de que exista un servidor multijugador desplegado. La revisión de licencias y activos de terceros sigue pendiente; no se han añadido archivos externos nuevos. El código fuente que reconstruye esta página es `web/scripts/build-gallery.mjs`, coordinado por `web/scripts/enhance-public-site.mjs`. El despliegue sigue aislado del backend y de los formularios de cuentas.
+
+### Bitácora pública de novedades del proyecto
+
+La página [Noticias](https://fritz-ale.github.io/boombangCL/noticias.html#hitos-reales) incluye una bitácora con fechas y filtros (sitio web, código y pruebas). Se genera automáticamente desde `web/avance-data.json` mediante `web/scripts/build-milestones.mjs`, sin copiar noticias oficiales de BoomBang.tv y sin depender de una API pública ni mostrar información privada. La [portada](https://fritz-ale.github.io/boombangCL/) resume los tres hitos más recientes.
+
+Esta bitácora documenta el **proyecto**, no eventos de un servidor de juego. Los enlaces se limitan a páginas internas conocidas o a referencias verificables de GitHub. `web/tests/news-milestones.test.mjs` verifica datos, salida HTML segura y navegación incluso sin JavaScript. Las tareas de lanzamiento siguen en **11 implementadas en código y 9 pendientes**.
