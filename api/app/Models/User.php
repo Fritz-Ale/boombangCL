@@ -24,6 +24,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'portal_email_verification_required_at',
         'lang',
         'password',
         'username',
@@ -78,6 +79,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'portal_email_verification_required_at' => 'datetime',
             'password' => 'hashed',
             'is_bot' => 'boolean',
             'bot_settings' => 'array',
