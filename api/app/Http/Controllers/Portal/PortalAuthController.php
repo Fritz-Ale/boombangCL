@@ -77,6 +77,7 @@ class PortalAuthController extends Controller
             'username' => $data['username'],
             'password' => $data['password'],
             'active' => true,
+            'is_bot' => false,
         ])) {
             return response()->json(['message' => 'Usuario o contraseña incorrectos.'], 422);
         }
