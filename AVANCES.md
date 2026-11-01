@@ -79,6 +79,10 @@ El archivo es una **fotografía editorial** de la rama, no un panel en vivo ni u
 
 ### Publicación de la página
 
-La ruta del panel dentro del portal es `/avance.html`, una vez desplegada la versión de la rama. El repositorio es **privado**, y GitHub no tiene un sitio público de Pages verificado en este momento. Por eso **no anunciamos una URL pública inventada**. Puedes consultar este archivo Markdown directamente en GitHub con acceso a tu cuenta.
+La ruta del panel dentro del portal es `/avance.html`, una vez desplegada la versión de la rama. El repositorio es público y la rama independiente `gh-pages` contiene una portada real y 17 páginas estáticas. La URL de GitHub Pages es **https://fritz-ale.github.io/boombangCL/** cuando la publicación de la rama está activada en Settings → Pages. El juego multijugador y Laravel todavía no están desplegados públicamente.
 
 **Actualización del tablero:** la issue #2 tiene las mismas 20 tareas que `web/avance-data.json`; al finalizar tareas, actualiza ambas. Una vez configurado GitHub Pages y activada expresamente la variable de repositorio `ENABLE_PROGRESS_PAGES=true`, un workflow de GitHub Actions generará un resumen mínimo de estado de PR, checks y issue, también con ejecución diaria. No expone el `GITHUB_TOKEN` al navegador ni muestra código privado. Sin Pages, el panel funciona con la fotografía editorial y los enlaces a GitHub.
+
+### Corrección de navegación (31 de octubre de 2026)
+
+La página «Inicio» de GitHub Pages ahora contiene la **portada real** en lugar del panel de avances y el menú enlaza a páginas HTML internas existentes. Las secciones que requieren Laravel muestran una explicación, sin formularios falsos. [Consultar las nueve dependencias de lanzamiento](https://fritz-ale.github.io/boombangCL/pendientes.html). Se mantienen **11 de 20** tareas con código y **9 pendientes**: reparar enlaces no completa automáticamente las tareas del backend.
