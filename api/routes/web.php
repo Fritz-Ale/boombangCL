@@ -24,6 +24,8 @@ Route::prefix('portal')->group(function () {
     Route::post('register', [\App\Http\Controllers\Portal\PortalAuthController::class, 'register'])->middleware('throttle:portal-register');
     Route::post('forgot-password', [\App\Http\Controllers\Portal\PortalPasswordController::class, 'requestLink'])->middleware('throttle:portal-recovery');
     Route::post('reset-password', [\App\Http\Controllers\Portal\PortalPasswordController::class, 'reset'])->middleware('throttle:5,1');
+    Route::get('verify-email/{id}/{hash}', [\App\Http\Controllers\Portal\PortalEmailVerificationController::class, 'verify'])
+        ->whereNumber('id')->where('hash', '[a-f0-9]{40}')->middleware(['signed','throttle:12,1'])->name('portal.verify-email');
 
     Route::get('news', [\App\Http\Controllers\Portal\PortalContentController::class, 'news']);
     Route::get('catalog', [\App\Http\Controllers\Portal\PortalContentController::class, 'catalog']);
@@ -34,6 +36,13 @@ Route::prefix('portal')->group(function () {
     Route::get('forum/threads/{id}', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'thread'])->whereNumber('id');
 
     Route::middleware(['auth:web'])->group(function () {
+        // Resending verification and logging out must work before email confirmation.
+        Route::post('resend-verification', [\App\Http\Controllers\Portal\PortalEmailVerificationController::class, 'resend'])
+            ->middleware('throttle:portal-resend-verification');
+        Route::post('logout', [\App\Http\Controllers\Portal\PortalAuthController::class, 'logout'])
+            ->middleware('throttle:20,1');
+
+        Route::middleware(['portal.verified'])->group(function () {
         Route::post('reports', [\App\Http\Controllers\Portal\PortalReportController::class, 'create'])->middleware('throttle:5,1');
         Route::get('reports', [\App\Http\Controllers\Portal\PortalReportController::class, 'index'])->middleware('throttle:30,1');
         Route::patch('reports/{id}', [\App\Http\Controllers\Portal\PortalReportController::class, 'review'])->whereNumber('id')->middleware('throttle:20,1');
@@ -51,7 +60,6 @@ Route::prefix('portal')->group(function () {
         Route::post('clan/leave', [\App\Http\Controllers\Portal\PortalSocialController::class, 'leaveClan'])->middleware('throttle:6,1');
         Route::delete('clan', [\App\Http\Controllers\Portal\PortalSocialController::class, 'disbandClan'])->middleware('throttle:3,1');
 
-        Route::post('logout', [\App\Http\Controllers\Portal\PortalAuthController::class, 'logout'])->middleware('throttle:20,1');
         Route::post('presence', [\App\Http\Controllers\Portal\PortalContentController::class, 'pulse'])->middleware('throttle:20,1');
 
         Route::post('news', [\App\Http\Controllers\Portal\PortalContentController::class, 'publish'])->middleware('throttle:6,1');
@@ -66,5 +74,6 @@ Route::prefix('portal')->group(function () {
         Route::delete('chat/{id}', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'removeChat'])->whereNumber('id')->middleware('throttle:12,1');
         Route::get('chat', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'chat'])->middleware('throttle:30,1');
         Route::post('chat', [\App\Http\Controllers\Portal\PortalCommunityController::class, 'sendChat'])->middleware('throttle:8,1');
+        });
     });
 });
