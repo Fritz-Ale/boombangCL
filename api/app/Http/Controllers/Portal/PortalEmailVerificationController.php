@@ -18,11 +18,22 @@ class PortalEmailVerificationController extends Controller
             return true;
         }
 
-        // Neither the log nor the array transport delivers real emails.
-        // Registration stays closed until both public origins are HTTPS.
-        $mailer = (string) config('mail.default');
-        return !in_array($mailer, ['log', 'array'], true)
-            && parse_url((string) config('app.url'), PHP_URL_SCHEME) === 'https'
+        // Explicit release gate: HTTPS and a plausible mailer are not proof
+        // of actual mail delivery. An operator must verify inbox delivery.
+        if (!filter_var(config('services.portal.mail_delivery_verified'), FILTER_VALIDATE_BOOLEAN)) {
+            return false;
+        }
+        $mailer = strtolower((string) config('mail.default'));
+        if (!in_array($mailer, ['smtp', 'ses', 'postmark', 'resend'], true)) {
+            return false;
+        }
+        $from = strtolower(trim((string) config('mail.from.address')));
+        if (!filter_var($from, FILTER_VALIDATE_EMAIL) ||
+            str_ends_with($from, '@example.com') ||
+            str_ends_with($from, '@localhost')) {
+            return false;
+        }
+        return parse_url((string) config('app.url'), PHP_URL_SCHEME) === 'https'
             && parse_url((string) config('services.portal.frontend_url'), PHP_URL_SCHEME) === 'https';
     }
 
