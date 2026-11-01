@@ -3,6 +3,7 @@ name: Portal web - chequeos
 on:
   pull_request:
     paths:
+      - "README.md"
       - "web/**"
       - "api/app/Http/Controllers/Portal/**"
       - "api/database/migrations/2026_10_31_220000_create_portal_tables.php"
