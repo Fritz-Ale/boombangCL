@@ -252,6 +252,13 @@
       "title": "Revisión y aprobación de la PR antes de fusionar",
       "description": "La rama main permanece intacta.",
       "tags": "pendiente por hacer"
+    },
+    {
+      "kind": "page",
+      "url": "galeria.html",
+      "title": "Galería",
+      "description": "Capturas de islas, salas, personajes y minijuegos del cliente HTML5",
+      "tags": "capturas, imágenes, salas, personajes, Golden Ring"
     }
   ]
 }
