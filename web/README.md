@@ -95,6 +95,8 @@ La web se desarrolló como portal propio e independiente de BoomBang.tv y no est
 - [Pull Request de desarrollo](https://github.com/Fritz-Ale/boombangCL/pull/1): historial real de cambios antes de fusionarlos a `main`.
 - [GitHub Actions](https://github.com/Fritz-Ale/boombangCL/actions): resultado actual de las pruebas ejecutadas.
 
+La issue #2 ahora contiene las mismas 20 tareas que `avance-data.json`. En GitHub Pages, el script `web/scripts/generate-progress-status.mjs` prepara una **fotografía de la PR #1, GitHub Actions y las casillas de la issue #2** sin revelar secretos, gracias al `GITHUB_TOKEN` del runner. El workflow incluye una ejecución diaria (tras habilitar Pages y fusionar la rama). No es una conexión instantánea ni un panel que exija pegar un token de GitHub.
+
 El panel calcula una proporción de **tareas de su propio listado**. No es el porcentaje total del videojuego y **no** significa que el código esté desplegado. El JSON se actualiza como parte de los cambios del proyecto; al tratarse de un repositorio privado no se consulta su API desde el navegador porque exigiría credenciales del usuario. No pegues tokens personales en la web. Una publicación con GitHub Pages necesitará habilitar Pages y verificar la visibilidad del sitio.
 
 ## Publicar únicamente el panel con GitHub Pages (opcional)
