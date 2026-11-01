@@ -1,0 +1,4 @@
+BoomBangCL — Cloudflare Pages
+Origen: Fritz-Ale/boombangCL, rama main, carpeta web/
+Este archivo no contiene secretos ni afecta el funcionamiento del juego.
+La portada se publica en Cloudflare Pages; Laravel, Socket.IO y MariaDB requieren un servidor independiente.
