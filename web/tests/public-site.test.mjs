@@ -45,7 +45,7 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     assert.equal(searchData.entries.filter(entry => entry.kind === 'task').length,20);
     assert.ok(searchData.entries.some(entry => entry.title.includes('Amistades y clanes')));
     assert.match(robots, /Sitemap:/);
-    assert.match(sitemap, /index/);
+    assert.match(sitemap, /<loc>https:\/\/fritz-ale\.github\.io\/boombangCL\/<\/loc>/);
     assert.doesNotMatch(sitemap, /cuenta\.html|restablecer\.html|buscar\.html/);
     assert.doesNotMatch(homepage, /href="http:\/\/play\.boombang\.com"/);
     assert.doesNotMatch(homepage, /portal-app\.js/);
