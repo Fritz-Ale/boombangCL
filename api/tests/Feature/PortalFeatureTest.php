@@ -346,12 +346,12 @@ class PortalFeatureTest extends TestCase
     {
         Notification::fake();
         $this->postJson('/portal/register', [
-            'username' => 'ResendVerify',
+            'username' => 'ResendVrfy',
             'email' => 'resendverify@example.test',
             'password' => 'strong-pass-123',
             'password_confirmation' => 'strong-pass-123',
         ])->assertCreated();
-        $user = User::query()->where('username', 'ResendVerify')->firstOrFail();
+        $user = User::query()->where('username', 'ResendVrfy')->firstOrFail();
         Notification::fake();
         $this->postJson('/portal/resend-verification')->assertOk();
         Notification::assertSentTo($user, PortalEmailVerificationNotification::class);
@@ -359,7 +359,7 @@ class PortalFeatureTest extends TestCase
 
         $this->postJson('/portal/logout')->assertOk();
         $this->postJson('/portal/login', [
-            'username' => 'ResendVerify',
+            'username' => 'ResendVrfy',
             'password' => 'strong-pass-123',
         ])->assertOk()->assertJsonPath('user.email_verified', false);
         $this->postJson('/portal/chat', [
