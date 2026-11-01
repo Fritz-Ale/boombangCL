@@ -1,0 +1,22 @@
+/* Readable gallery: images are archival references, not live game states. */
+.gallery-heading{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin:48px 0 23px}
+.gallery-heading h2{font-size:clamp(2rem,3.7vw,3.3rem);margin:10px 0 12px}
+.gallery-heading p{color:#5d7781;font-size:.98rem;margin:0}
+.gallery-filters{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 12px}
+.gallery-filters button{font:inherit;font-weight:900;font-size:.87rem;cursor:pointer;background:#fff;color:#275267;border:2px solid #d2e4db;border-radius:999px;min-height:45px;padding:9px 18px}
+.gallery-filters button.is-active,.gallery-filters button[aria-pressed="true"]{background:#076f83;border-color:#076f83;color:#fff}
+.gallery-count{font-weight:900;color:#467781;font-size:.86rem;margin:16px 0}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.gallery-card{min-width:0;margin:0;background:white;border:1px solid #dbe9df;box-shadow:0 14px 28px #154e5810;border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.gallery-card[hidden]{display:none!important}
+.gallery-card>a{display:block;position:relative;background:#dcece7;overflow:hidden}
+.gallery-card img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;transition:transform .25s ease}
+.gallery-card>a:hover img{transform:scale(1.035)}
+.gallery-open{position:absolute;bottom:12px;right:12px;border-radius:100px;background:#073b4de8;color:#fff;padding:8px 12px;font-size:.73rem;font-weight:900}
+.gallery-card figcaption{padding:22px 23px 24px}
+.gallery-card h2{font-size:1.28rem;line-height:1.3;margin:0 0 10px}
+.gallery-card p{font-size:.87rem;color:#647d83;line-height:1.7;margin:0}
+.gallery-disclaimer{font-size:.86rem;color:#6b7880;margin:30px 0 10px}
+@media(max-width:940px){.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-grid{grid-template-columns:1fr}.gallery-filters{gap:7px}.gallery-filters button{font-size:.78rem;padding:8px 12px}.gallery-heading{align-items:start}.gallery-card img{aspect-ratio:16/9}}
+@media(prefers-reduced-motion:reduce){.gallery-card img{transition:none}}
