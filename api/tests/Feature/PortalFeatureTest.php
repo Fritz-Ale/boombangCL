@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\PortalPasswordResetNotification;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class PortalFeatureTest extends TestCase
@@ -25,6 +27,62 @@ class PortalFeatureTest extends TestCase
             'active' => true,
             'is_bot' => false,
         ]);
+    }
+
+    public function test_password_reset_email_allows_single_use_and_revokes_old_password(): void
+    {
+        Notification::fake();
+        config()->set('services.portal.frontend_url', 'http://localhost:8001');
+
+        $user = $this->player('ResetUsr');
+        $this->postJson('/portal/forgot-password', ['email' => $user->email])
+            ->assertOk();
+        Notification::assertSentTo($user, PortalPasswordResetNotification::class);
+        $notification = Notification::sent($user, PortalPasswordResetNotification::class)->first();
+        $this->assertStringStartsWith('http://localhost:8001/restablecer.html#', $notification->url);
+        parse_str((string) parse_url($notification->url, PHP_URL_FRAGMENT), $args);
+        $this->assertSame($user->email, $args['email']);
+
+        $body = [
+            'email' => $user->email,
+            'token' => $args['token'],
+            'password' => 'my-new-password-123',
+            'password_confirmation' => 'my-new-password-123',
+        ];
+        $this->postJson('/portal/reset-password', $body)->assertOk();
+        $this->assertTrue(Hash::check('my-new-password-123', $user->fresh()->password));
+        $this->postJson('/portal/login', [
+            'username' => $user->username, 'password' => 'safe-password-123',
+        ])->assertUnprocessable();
+        $this->postJson('/portal/login', [
+            'username' => $user->username, 'password' => 'my-new-password-123',
+        ])->assertOk();
+        // The same link cannot be used twice.
+        $this->postJson('/portal/reset-password', $body)->assertUnprocessable();
+    }
+
+    public function test_recovery_does_not_reveal_unknown_emails_and_blocks_bot_login(): void
+    {
+        Notification::fake();
+        config()->set('services.portal.frontend_url', 'http://localhost:8001');
+        $this->postJson('/portal/forgot-password', ['email' => 'unknown@example.test'])
+            ->assertOk()->assertJsonStructure(['message']);
+        Notification::assertNothingSent();
+
+        $bot = $this->player('BotLogin');
+        $bot->forceFill(['is_bot' => true])->save();
+        $this->postJson('/portal/login', [
+            'username' => $bot->username, 'password' => 'safe-password-123',
+        ])->assertUnprocessable();
+        $this->postJson('/portal/forgot-password', ['email' => $bot->email])->assertOk();
+        Notification::assertNothingSent();
+    }
+
+    public function test_recovery_requires_configured_frontend_url(): void
+    {
+        config()->set('services.portal.frontend_url', null);
+        $this->postJson('/portal/forgot-password', ['email' => 'unknown@example.test'])
+            ->assertStatus(503);
     }
 
     public function test_session_is_anonymous_by_default_and_guest_may_not_publish(): void
