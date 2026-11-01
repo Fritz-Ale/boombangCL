@@ -199,6 +199,7 @@ export async function enhancePublicSite(directory,roadmap) {
    // Remove operating-system emoji glyphs from all visitor-facing pages.
    // Keep real labels, task counters and the original image assets intact.
    html=html.replace(/[\p{Emoji_Presentation}\uFE0F]/gu,'');
+   html=html.replace(/(<span class="brand-sun" aria-hidden="true">)✳(<\/span>)/g,'$1$2');
    html=html.replace(/(<div class="top-strip"[^>]*>)\s*✦\s*/g,'$1');
    if(!html.includes('href="site-professional.css"'))
      html=html.replace('</head>','<link rel="stylesheet" href="site-professional.css"></head>');
