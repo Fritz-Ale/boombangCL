@@ -98,3 +98,15 @@ La [galería pública de BoomBang CL](https://fritz-ale.github.io/boombangCL/gal
 La página [Noticias](https://fritz-ale.github.io/boombangCL/noticias.html#hitos-reales) incluye una bitácora con fechas y filtros (sitio web, código y pruebas). Se genera automáticamente desde `web/avance-data.json` mediante `web/scripts/build-milestones.mjs`, sin copiar noticias oficiales de BoomBang.tv y sin depender de una API pública ni mostrar información privada. La [portada](https://fritz-ale.github.io/boombangCL/) resume los tres hitos más recientes.
 
 Esta bitácora documenta el **proyecto**, no eventos de un servidor de juego. Los enlaces se limitan a páginas internas conocidas o a referencias verificables de GitHub. `web/tests/news-milestones.test.mjs` verifica datos, salida HTML segura y navegación incluso sin JavaScript. Las tareas de lanzamiento siguen en **11 implementadas en código y 9 pendientes**.
+
+### Rediseño editorial del sitio público
+
+La web de BoomBang CL adopta una identidad visual profesional centrada en el contenido real, no en una plantilla de elementos decorativos. La portada usa una jerarquía tipográfica sobria, una paleta limitada de azul petróleo, verdes apagados y tonos cálidos, fotografías del cliente HTML5 ya presentes en el proyecto y llamadas a la acción verificables.
+
+- Plantilla fuente: `web/pro-home.html`; CSS: `web/site-professional.css`; contador y últimas novedades desde el JSON versionado: `web/scripts/build-professional-home.mjs`.
+- `web/scripts/enhance-public-site.mjs` aplica el estilo común a todas las rutas y genera la portada. El workflow de Pages lo compila sin abrir el backend ni insertar secretos.
+- El sitio público publicado desde `gh-pages` mantiene enlaces a Comunidad, Galería, Noticias, Ayuda, Avances y las demás secciones.
+- Las métricas de portada se refieren exclusivamente a la lista de **20 tareas del portal** (11 implementadas en código, 9 pendientes); no al desarrollo completo ni al estado en producción del juego.
+- No se prometen jugadores en línea, cuentas registrables, compras ni partidas abiertas; la revisión de derechos de los recursos originales sigue pendiente.
+
+**URL pública:** https://fritz-ale.github.io/boombangCL/
