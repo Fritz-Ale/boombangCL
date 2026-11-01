@@ -49,6 +49,11 @@ return [
         'key' => env('GEMINI_API_KEY'),
     ],
 
+    'portal' => [
+        // Web origin used in recovery links; configure an HTTPS domain in production.
+        'frontend_url' => env('PORTAL_FRONTEND_URL'),
+    ],
+
     'portal_stats' => [
         'url' => env('PORTAL_GAME_SERVER_URL', 'http://server:3000'),
         'token' => env('PORTAL_STATS_TOKEN'),
