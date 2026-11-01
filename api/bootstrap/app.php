@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         
         $middleware->alias([
+            'portal.verified' => \App\Http\Middleware\EnsurePortalEmailVerified::class,
             'superadmin' => \App\Http\Middleware\EnsureUserIsSuperadmin::class,
         ]);
 
