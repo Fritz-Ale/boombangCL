@@ -24,6 +24,13 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     }
     const homepage = await readFile(join(dir,'index.html'),'utf8');
     const dashboard = await readFile(join(dir,'avance.html'),'utf8');
+    const proCss = await readFile(join(dir,'site-professional.css'),'utf8');
+    const homeTitle = await readFile(join(dir,'index.html'),'utf8');
+    assert.match(proCss, /\.pro-hero-grid/);
+    assert.match(proCss, /prefers-reduced-motion/);
+    assert.match(homeTitle, /href="site-professional.css"/);
+    assert.doesNotMatch(homeTitle, /🥳|🌴|Tu isla\.|¡Vamos a jugar!|¡Hey, hola!/);
+    assert.match(homeTitle, /El acceso al juego multijugador aún no está habilitado/);
     const searchPage = await readFile(join(dir,'buscar.html'),'utf8');
     const galleryPage = await readFile(join(dir,'galeria.html'),'utf8');
     const galleryJs = await readFile(join(dir,'site-gallery.js'),'utf8');
@@ -33,12 +40,12 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     const account = await readFile(join(dir,'cuenta.html'),'utf8');
     const news = await readFile(join(dir,'noticias.html'),'utf8');
     const blockers = await readFile(join(dir,'pendientes.html'),'utf8');
-    assert.match(homepage, /Tu isla\.|Tu aventura/i);
+    assert.match(homepage, /Un clásico social/);
     assert.match(homepage, /href="index.html"/);
     assert.match(homepage, /href="comunidad.html"/);
     assert.match(homepage, /href="buscar.html"/);
     assert.match(homepage, /href="galeria.html"/);
-    assert.match(homepage, /Ver capturas del juego/);
+    assert.match(homepage, /Ver las nueve capturas/);
     assert.match(galleryPage, /ARCHIVO VISUAL/);
     assert.match(galleryPage, /site-gallery.css/);
     assert.match(galleryPage, /data-gallery-filter="all"/);
@@ -46,8 +53,8 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     assert.equal((galleryPage.match(/class="gallery-card"/g) || []).length,9);
     assert.match(galleryPage, /Imágenes de referencia, no del servidor en vivo/);
     assert.doesNotMatch(galleryJs, /innerHTML|Authorization|api\.github\.com/);
-    assert.match(homepage, /home-project-status/);
-    assert.match(homepage, /11<small>\/20<\/small>/);
+    assert.match(homepage, /id="progress-title"/);
+    assert.match(homepage, /class="pro-stat-numbers"><strong>11<\/strong><span>\/ 20<\/span>/);
     assert.match(homepage, /rel="canonical"/);
     assert.match(homepage, /og:description/);
     assert.match(searchPage, /data-site-search/);
