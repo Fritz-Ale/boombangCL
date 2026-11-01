@@ -25,6 +25,8 @@ class PortalAuthController extends Controller
     private function snapshot(Request $request): array
     {
         $user = Auth::guard('web')->user();
+        // The account may have been verified through a signed link in another tab.
+        $user?->refresh();
 
         return [
             'csrf' => $request->session()->token(),
