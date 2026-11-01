@@ -54,6 +54,10 @@ return [
         'frontend_url' => env('PORTAL_FRONTEND_URL'),
     ],
 
+    'portal_bot' => [
+        'preauth_token' => env('BOT_PREAUTH_TOKEN'),
+    ],
+
     'portal_stats' => [
         'url' => env('PORTAL_GAME_SERVER_URL', 'http://server:3000'),
         'token' => env('PORTAL_STATS_TOKEN'),
