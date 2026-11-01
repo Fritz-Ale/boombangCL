@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0c3444"><meta name="description" content="Guía de acceso y estado técnico de BoomBang CL en macOS y desarrollo local.">
+<title>Cómo jugar · BoomBang CL</title>
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="portal.css">
+<script defer src="script.js"></script><script defer src="portal.js"></script>
+<link rel="stylesheet" href="site-preview.css"></head><body class="portal-page">
+<a class="skip-link" href="#principal">Saltar al contenido</a>
+<div class="top-strip"><span aria-hidden="true">✦</span> Proyecto independiente · Comunidad y cliente HTML5 en desarrollo</div>
+<header class="site-header"><div class="container header-inner">
+<a class="brand" href="index.html" aria-label="BoomBang CL, inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a>
+<button class="menu-button" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+<nav class="main-nav" id="main-nav" aria-label="Navegación principal"><a href="index.html">Inicio</a><a href="comunidad.html">Comunidad</a><a href="noticias.html">Noticias</a><a href="foro.html">Foro</a><a href="social.html">Amigos y clanes</a><a href="avance.html">Avances</a><a href="cuenta.html">Mi cuenta</a><a href="ayuda.html" aria-current="page">Ayuda</a></nav></div></header>
+<main id="principal"><div class="container portal-notice" role="note"><strong>Vista previa pública:</strong> la web está disponible para explorar, pero las cuentas, el foro, el chat y el cliente multijugador necesitan servidores para funcionar. <a href="pendientes.html">Consultar las 9 tareas pendientes →</a></div>
+<section class="portal-banner"><div class="container portal-banner-grid"><div><span class="eyebrow light">CENTRO DE AYUDA</span><h1>Prepara tu <em>aventura.</em></h1><p>Una guía clara para conocer el estado del portal, el cliente y los servicios del proyecto.</p><a class="button button-sun" href="#acceso">Ver pasos ↓</a></div><img src="screenshots/sala-publica.png" alt="Captura de una sala pública del cliente HTML5" loading="eager"></div></section>
+<div class="container portal-notice" role="note"><strong>Estado actual:</strong> el registro y las sesiones del portal, el foro, el chat, el catálogo y el ranking tienen rutas propias en Laravel. Requieren ejecutar las migraciones y los servicios. No hay pagos web, acceso como invitado ni conteos de jugadores del juego.</div>
+<section class="portal-section container" id="acceso"><div class="portal-heading"><span class="eyebrow orange">ANTES DE ENTRAR</span><h2>¿Cómo puedo jugar?</h2><p>La experiencia multijugador necesita que el cliente HTML5 se comunique con el servidor, la API y la base de datos del proyecto.</p></div>
+<ol class="portal-steps">
+<li><strong>Revisa los requisitos.</strong><p>Instala Git y Docker Desktop en tu Mac. El proyecto usa Docker Compose y servicios separados.</p></li>
+<li><strong>Configura el entorno.</strong><p>Clona el repositorio, crea los archivos <code>.env</code> desde los ejemplos y configura la red y los dominios de desarrollo que indica el README principal.</p></li>
+<li><strong>Inicia los servicios.</strong><p>Desde la raíz del repositorio, ejecuta los contenedores y configura la base de datos y Laravel Passport siguiendo la documentación técnica.</p></li>
+<li><strong>Abre el cliente.</strong><p>Con los dominios locales resueltos y todos los servicios activos, visita la URL de desarrollo del cliente.</p></li>
+</ol>
+<div class="portal-actionrow"><a class="button button-sun" href="ayuda.html">Consulta el estado del juego ↗</a><a class="button portal-button-alt" href="https://github.com/Fritz-Ale/boombangCL" target="_blank" rel="noopener noreferrer">Ver repositorio ↗</a></div>
+<p class="portal-fineprint">La dirección <code>play.boombang.com</code> es una ruta local usada por este proyecto. No es una dirección pública de BoomBang.tv ni garantiza que haya un servidor funcionando.</p></section>
+<section class="portal-section portal-surface"><div class="container"><div class="portal-heading"><span class="eyebrow orange">PREGUNTAS FRECUENTES</span><h2>Lo esencial</h2></div>
+<div class="portal-faq">
+<details><summary>¿Puedo crear una cuenta desde aquí?</summary><p>El portal incorpora <a href="cuenta.html">formularios de registro y acceso</a> con sesiones web y CSRF de Laravel. Funciona al configurar la API, las migraciones y la base de datos. Para entrar al cliente HTML5 todavía debes iniciar sesión dentro del juego.</p></details>
+<details><summary>¿Hay usuarios conectados ahora?</summary><p>El chat puede mostrar una estimación de usuarios activos del portal durante los últimos 5 minutos. Eso NO significa que estén conectados al juego: no hay una API verificada para ese contador.</p></details>
+<details><summary>¿Es una copia oficial de BoomBang.tv?</summary><p>No. Es una implementación original e independiente inspirada en las categorías generales de una comunidad de juego, basada en el repositorio BoomBang HTML5.</p></details>
+<details><summary>¿Funciona en Mac?</summary><p>La plataforma web y los servicios Docker pueden prepararse en macOS. El launcher de Electron documentado en la base está orientado a Windows, pero el cliente HTML5 es para navegador.</p></details>
+</div></div></section>
+</main>
+<footer class="site-footer"><div class="container"><div class="footer-top">
+<div><a class="brand footer-brand" href="index.html"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a><p>Un portal construido para el proyecto independiente BoomBang CL.<br>Sin afiliación con BoomBang.tv.</p></div>
+<nav aria-label="Enlaces de pie de página"><a href="index.html">Inicio</a><a href="foro.html">Foro</a><a href="chat.html">Chat</a><a href="catalogo.html">Catálogo</a><a href="ranking.html">Ranking</a><a href="ayuda.html">Ayuda</a><a href="https://github.com/Fritz-Ale/boombangCL">GitHub</a></nav></div>
+<div class="footer-bottom"><span>© <span id="year">2026</span> BoomBang CL · Proyecto no oficial.</span><span>Créditos y condiciones: <a href="https://github.com/Fritz-Ale/boombangCL/blob/main/LICENSE.txt">Licencia del repositorio</a></span></div></div></footer>
+</body></html>
