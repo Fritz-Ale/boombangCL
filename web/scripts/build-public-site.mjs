@@ -204,7 +204,7 @@ export async function buildPublicSite(targetDir) {
   // Add safe search, SEO, keyboard-friendly navigation and progress snapshot.
   const enriched = await enhancePublicSite(out,roadmap);
   console.log('Public BoomBang CL site prepared: ' + enriched.pages + ' pages / ' + tasks.length + ' tracked tasks');
-  return { pages:[...pages.keys(),'buscar.html'], tasks:tasks.length };
+  return { pages:[...pages.keys(),'buscar.html','galeria.html'], tasks:tasks.length };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
