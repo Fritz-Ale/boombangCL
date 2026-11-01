@@ -66,6 +66,7 @@ test('GitHub Pages workflow includes isolated build, safe snapshot and daily sch
   assert.match(workflow,/pull-requests: read/);
   assert.match(workflow,/actions: read/);
   assert.match(workflow,/\bpages: write/);
+  assert.match(workflow,/ENABLE_PROGRESS_PAGES == 'true'/);
   assert.ok(!workflow.includes('web/cuenta.html'));
   assert.ok(!workflow.includes('api/.env'));
 });
