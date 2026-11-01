@@ -178,6 +178,8 @@ export async function enhancePublicSite(directory,roadmap) {
  // emoji-heavy marketing homepage only after route and screenshot generation.
  await copyFile(join(web,'site-professional.css'),join(output,'site-professional.css'));
  await copyFile(join(web,'site-game.css'),join(output,'site-game.css'));
+ await copyFile(join(web,'site-image-center.css'),join(output,'site-image-center.css'));
+
  await copyFile(join(web,'site-game.js'),join(output,'site-game.js'));
  for(const filename of (await readdir(output)).filter(name=>name.endsWith('.html'))) {
    let html=filename==='index.html' ? addMetadata('index.html',await renderProfessionalHomepage(roadmap))
@@ -198,6 +200,9 @@ export async function enhancePublicSite(directory,roadmap) {
      html=html.replace('</head>','<link rel="stylesheet" href="site-professional.css"></head>');
    if(!html.includes('href="site-game.css"'))
      html=html.replace('</head>','<link rel="stylesheet" href="site-game.css"></head>');
+   // Load after all theme styles so image framing wins at every breakpoint.
+   if(!html.includes('href="site-image-center.css"'))
+     html=html.replace('</head>','<link rel="stylesheet" href="site-image-center.css"></head>');
    await writeFile(join(output,filename),html);
  }
 
