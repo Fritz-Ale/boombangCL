@@ -176,3 +176,15 @@ El registro de cuentas del portal también se protege con la configuración `POR
 **GitHub Pages:** el código público está en `gh-pages`, pero el último despliegue continúa bloqueado por una inconsistencia de GitHub entre «despliegue activo» y «despliegue finalizado». El intento autorizado de cancelación devolvió HTTP 400 porque el despliegue figura como terminado. Se abrió el [incidente #3](https://github.com/Fritz-Ale/boombangCL/issues/3) para que se revise desde GitHub sin despublicar el sitio ni cambiar `main`.
 
 El seguimiento conserva **11 de 20 tareas implementadas en código y nueve pendientes**.
+
+### Pruebas de transporte y protección interna del servidor
+
+La rama de desarrollo incluye ahora una prueba Node que inicia el servidor de juego en un puerto temporal y establece una conexión **Socket.IO real**, sin iniciar MariaDB ni inventar una partida. Comprueba que las estadísticas de jugadores excluyen bots y duplicados, requieren `X-Portal-Stats-Token`, y que la preautorización de bots rechaza accesos anónimos y tokens inválidos.
+
+La API Laravel y Node comparten una **clave independiente de preautorización**: `BOT_PREAUTH_TOKEN`. Hay que configurarla con el mismo valor privado y aleatorio en `api/.env` y `server/.env`, distinto de `EMULATOR_API_TOKEN` y `PORTAL_STATS_TOKEN`. Nunca debe insertarse en código de navegador, capturas, logs, documentación pública con su valor real o archivos del repositorio. Cuando falta o es un valor de ejemplo, la preautorización interna falla de forma segura. Los tokens efímeros generados para bots ya no se escriben en logs.
+
+**Pruebas comprobadas:** [GitHub Actions #41293115542](https://github.com/Fritz-Ale/boombangCL/actions/runs/41293115542) aprobó transporte Node/Socket.IO, cliente Phaser/Vue, pruebas estáticas y Laravel/MariaDB.
+
+**Aún pendiente:** pruebas extremo a extremo de autenticación del jugador, movimiento, salas, islas, minijuegos, inventario y reconexiones con todos los servicios activos. No se marca completa la tarea de pruebas integrales ni se activan bots o multijugador públicos.
+
+**GitHub Pages:** el bloqueo de publicación seguía originándose en un despliegue que GitHub describe contradictoriamente como completado y en curso. El intento de cancelación devolvió que el despliegue ya había finalizado; no se declara recuperado sin una publicación exitosa posterior.
