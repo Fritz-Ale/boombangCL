@@ -40,8 +40,9 @@ class PortalEmailVerificationController extends Controller
         if (!$request->expectsJson() && filter_var($frontend, FILTER_VALIDATE_URL) &&
             in_array(parse_url($frontend, PHP_URL_SCHEME), ['https', 'http'], true) &&
             (!app()->environment('production') || parse_url($frontend, PHP_URL_SCHEME) === 'https')) {
-            return redirect()->away($frontend . '/cuenta.html?email=verified')
-                ->header('Cache-Control', 'no-store');
+            $redirect = redirect()->away($frontend . '/cuenta.html?email=verified');
+            $redirect->headers->set('Cache-Control', 'no-store');
+            return $redirect;
         }
 
         return response()->json(['message' => 'Correo confirmado. Ya puedes utilizar el portal.'])
