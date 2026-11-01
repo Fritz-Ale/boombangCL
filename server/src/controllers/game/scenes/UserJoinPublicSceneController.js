@@ -38,7 +38,11 @@ class UserJoinPublicSceneController {
                 PublicScenesCollection.getByUid(data.sceneUuid) :
                 GameScenesCollection.getByUid(data.sceneUuid);
             if (!scene) {
-                throw new Error("Scene not found");
+                socket.emit(ResponseSocketsEnum.JOIN_PUBLIC_SCENE, {
+                    success: false,
+                    message: 'Scene not found'
+                });
+                return;
             }
             if (scene.containsUser(user) || user.currentArea) {
                 logger.log(`User ${user.username} already in area, skipping join request`, 'warn');
@@ -55,8 +59,8 @@ class UserJoinPublicSceneController {
 
             try {
                 // Agregar usuario a la escena de manera atómica
-                user.setArea(scene);
                 const added = scene.addUser(user);
+                if (added) user.setArea(scene);
                 
                 if (!added) {
                     logger.log(`Failed to add user ${user.username} to scene ${scene.name}, user already present`, 'warn');
