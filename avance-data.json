@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "capturedAt": "2026-10-31",
+  "project": "BoomBang CL",
+  "scope": "Seguimiento de funcionalidades del portal HTML5. No mide el porcentaje de desarrollo total del juego ni su preparación para producción.",
+  "branch": "feature/portal-comunidad-noticias-2026",
+  "pr": {
+    "number": 1,
+    "status": "draft",
+    "url": "https://github.com/Fritz-Ale/boombangCL/pull/1"
+  },
+  "issue": {
+    "number": 2,
+    "url": "https://github.com/Fritz-Ale/boombangCL/issues/2"
+  },
+  "ci": {
+    "testsPassed": 12,
+    "assertions": 57,
+    "runUrl": "https://github.com/Fritz-Ale/boombangCL/actions/runs/41258240936",
+    "status": "success",
+    "note": "Última ejecución comprobada al capturar esta fotografía. Abre GitHub Actions para conocer el estado más reciente."
+  },
+  "phases": [
+    {
+      "id": "experiencia",
+      "name": "Experiencia web",
+      "icon": "🌴",
+      "description": "Páginas de presentación, navegación y contenido del portal.",
+      "tasks": [
+        {
+          "name": "Portada tropical y diseño adaptable",
+          "status": "implemented",
+          "detail": "Incluido en la rama de desarrollo."
+        },
+        {
+          "name": "Secciones comunidad, noticias y ayuda",
+          "status": "implemented",
+          "detail": "Páginas y navegación creadas."
+        },
+        {
+          "name": "Catálogo de objetos, solo lectura",
+          "status": "implemented",
+          "detail": "Consulta la API; las compras web siguen desactivadas."
+        },
+        {
+          "name": "Clasificación de minijuegos",
+          "status": "implemented",
+          "detail": "Lee resultados disponibles en Laravel y respeta la visibilidad del usuario."
+        }
+      ]
+    },
+    {
+      "id": "comunidad",
+      "name": "Comunidad",
+      "icon": "💬",
+      "description": "Herramientas sociales nuevas del portal.",
+      "tasks": [
+        {
+          "name": "Registro, inicio y cierre de sesión",
+          "status": "implemented",
+          "detail": "Protegido por sesiones y CSRF de Laravel."
+        },
+        {
+          "name": "Foro, chat y noticias",
+          "status": "implemented",
+          "detail": "API con persistencia y permisos; necesita servicios operativos."
+        },
+        {
+          "name": "Amigos y clanes en el portal",
+          "status": "implemented",
+          "detail": "Solicitudes de amistad e invitaciones a clanes."
+        },
+        {
+          "name": "Reportes y panel de moderación",
+          "status": "implemented",
+          "detail": "Registro de reportes y controles de revisión."
+        },
+        {
+          "name": "Amistades y clanes dentro del cliente del juego",
+          "status": "pending",
+          "detail": "No están sincronizados con la interfaz Phaser."
+        }
+      ]
+    },
+    {
+      "id": "seguridad",
+      "name": "Seguridad y calidad",
+      "icon": "🛡️",
+      "description": "Funciones de cuenta y verificaciones de desarrollo.",
+      "tasks": [
+        {
+          "name": "Recuperar contraseña mediante correo",
+          "status": "implemented",
+          "detail": "Tokens de un solo uso; requiere configurar envío de emails para usuarios reales."
+        },
+        {
+          "name": "Contador de jugadores reales sin bots",
+          "status": "implemented",
+          "detail": "Ruta interna con secreto; sin servidor se indica no disponible."
+        },
+        {
+          "name": "Pruebas PHP, JS, Nginx y MariaDB",
+          "status": "implemented",
+          "detail": "Último resultado verificado en GitHub Actions."
+        },
+        {
+          "name": "Verificación de correo y antispam reforzado",
+          "status": "pending",
+          "detail": "Pendiente antes de abrir registros públicos."
+        },
+        {
+          "name": "Política de privacidad y retención definitivas",
+          "status": "pending",
+          "detail": "Requiere revisión legal y procedimientos operativos."
+        }
+      ]
+    },
+    {
+      "id": "lanzamiento",
+      "name": "Lanzamiento",
+      "icon": "🚀",
+      "description": "Configuración de infraestructura y validación del producto final.",
+      "tasks": [
+        {
+          "name": "Envío real de correos y dominio remitente",
+          "status": "pending",
+          "detail": "No hay credenciales de correo configuradas."
+        },
+        {
+          "name": "Dominio público, HTTPS y secretos seguros",
+          "status": "pending",
+          "detail": "No existe un despliegue público verificado."
+        },
+        {
+          "name": "Pruebas integrales del juego y todos los contenedores",
+          "status": "pending",
+          "detail": "Los tests automatizados no sustituyen una prueba real de navegador y sockets."
+        },
+        {
+          "name": "Revisión de activos, licencias y publicación",
+          "status": "pending",
+          "detail": "Verificar derechos y completar revisión antes de desplegar."
+        },
+        {
+          "name": "Decidir compras y VIP con seguridad transaccional",
+          "status": "pending",
+          "detail": "No se habilitarán pagos sin integración y verificación de servidor."
+        },
+        {
+          "name": "Revisión y aprobación de la PR antes de fusionar",
+          "status": "pending",
+          "detail": "La rama main permanece intacta."
+        }
+      ]
+    }
+  ],
+  "updates": [
+    {
+      "date": "2026-10-31",
+      "title": "Recuperación de cuentas",
+      "description": "Restablecimiento por correo de un solo uso y validación de enlaces caducados.",
+      "kind": "code"
+    },
+    {
+      "date": "2026-10-31",
+      "title": "Pruebas de integración",
+      "description": "12 pruebas y 57 aserciones aprobadas en Laravel + MariaDB para la rama de desarrollo.",
+      "kind": "test"
+    },
+    {
+      "date": "2026-10-31",
+      "title": "Funciones comunitarias",
+      "description": "Foro, chat, amistades, clanes, moderación, catálogo, ranking y contador de jugadores.",
+      "kind": "code"
+    },
+    {
+      "date": "2026-10-31",
+      "title": "Estado y hoja de ruta en GitHub",
+      "description": "Issue #2 creada para dar seguimiento desde el teléfono y esta página de avances.",
+      "kind": "code"
+    }
+  ]
+}

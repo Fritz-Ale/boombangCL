@@ -1,8 +1,0 @@
-Copyright © 2025 Evgeny Lyubeznyy
-Todos los derechos reservados.
-
-Este software y todo su contenido, incluyendo el código fuente, estructuras de base de datos, archivos de configuración, diseño y documentación, están protegidos por derechos de autor bajo la legislación internacional y española sobre propiedad intelectual.
-
-Este software se proporciona "tal cual", sin garantías de ningún tipo, expresas o implícitas, incluyendo pero no limitándose a garantías de comerciabilidad o idoneidad para un propósito en particular.
-
-Fecha de publicación: [28 de mayo de 2025]

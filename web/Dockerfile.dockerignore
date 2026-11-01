@@ -1,7 +1,0 @@
-# Mantener pequeño el contexto de construcción del portal estático.
-**
-!web
-!web/**
-!doc
-!doc/screenshots
-!doc/screenshots/**
