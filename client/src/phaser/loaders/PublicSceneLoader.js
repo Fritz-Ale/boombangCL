@@ -18,11 +18,18 @@ class PublicSceneLoader {
         }
     }
 
+    static #assetUrl(value, baseApiUrl, environment) {
+        if (typeof value !== 'string' || !value.trim()) return '';
+        if (/^(https?:|data:|blob:|\/\/)/i.test(value)) return value;
+        if (environment === 'local') return value;
+        return baseApiUrl + value.replace(/^\/+/, '');
+    }
+
     static #preload(areaId, assets, npc, gameScene, baseApiUrl) {
         const viteEnv = import.meta.env.VITE_APP_ENV;
         assets.forEach((asset, index) => {
             const spriteName = 'public_scene_' + areaId + '_item_' + index;
-            const assetSrc = viteEnv == 'local' ? asset.image : (baseApiUrl + asset.image);
+            const assetSrc = this.#assetUrl(asset.image, baseApiUrl, viteEnv);
             if (SceneUtils.isVideoFile(assetSrc)) {
                 gameScene.load.video(spriteName, assetSrc);
             } else {
@@ -31,7 +38,7 @@ class PublicSceneLoader {
         });
         if (npc && npc.active) {
             const spriteName = 'public_scene_' + areaId + '_npc_' + (npc.spriteName ?? npc.sprite_name ?? npc.stripeName);
-            const npcSrc = viteEnv == 'local' ? npc.image : (baseApiUrl + npc.image);
+            const npcSrc = this.#assetUrl(npc.image, baseApiUrl, viteEnv);
             if (SceneUtils.isVideoFile(npcSrc)) {
                 gameScene.load.video(spriteName, npcSrc);
             } else {
