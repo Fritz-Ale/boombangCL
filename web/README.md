@@ -178,3 +178,22 @@ La web pública utiliza `web/site-image-center.css` para centrar las imágenes c
 El backend Laravel usa ahora **límites de registro, inicio y recuperación tanto por IP como por dirección de correo/nombre de cuenta** (estos identificadores se usan convertidos en hash SHA-256 dentro de las claves de caché). Esto complementa CSRF, el campo antispam y la validación existente. Las pruebas automatizadas cubren el bloqueo de ráfagas, intentos de contraseña y honeypots. **No sustituye la verificación efectiva de correo**, que permanece pendiente junto con el proveedor de correo saliente real.
 
 El inventario preliminar de capturas y la revisión de derechos pendiente se encuentran en [`doc/PUBLIC_ASSET_REVIEW.md`](../doc/PUBLIC_ASSET_REVIEW.md). La licencia de código consultada no basta para confirmar los permisos de publicación de cada recurso gráfico.
+
+
+## Verificación de correo del portal (código, no envío productivo)
+
+Las cuentas **creadas por el portal** desde esta versión requieren validar su dirección de email antes de publicar mensajes o participar en amistades y clanes. El registro envía una notificación con un **enlace firmado por Laravel**, que vence después de **60 minutos**. El destino de verificación es una ruta `/portal/verify-email/{id}/{hash}` protegida con firma, caducidad, coincidencia del correo y límites de uso. La verificación cambia `email_verified_at` en MariaDB; un segundo dispositivo o pestaña reconoce el estado actualizado mediante `GET /portal/session`.
+
+Las rutas de escritura y lectura social bajo `portal.verified` exigen confirmación solo a usuarios marcados con `portal_email_verification_required_at`. Esta columna se añade como **nullable**, para no bloquear automáticamente cuentas antiguas del cliente BoomBang. Un usuario sin verificar puede iniciar sesión, cerrar sesión, consultar la cuenta y pedir otro enlace (`POST /portal/resend-verification`, limitado por IP y usuario), pero no publicar ni interactuar socialmente. Los enlaces manipulado, vencidos o destinados a bots/cuentas inactivas se rechazan. El portal no expone secretos en el navegador.
+
+**Configuración antes del despliegue real:**
+1. Ejecutar migraciones: `docker compose exec api php artisan migrate --force`.
+2. Configurar un dominio propio **HTTPS** para la API y `APP_URL` público, además de `PORTAL_FRONTEND_URL` apuntando al portal (HTTPS en producción).
+3. Configurar `MAIL_MAILER=smtp` o un proveedor transaccional válido y `MAIL_FROM_ADDRESS` de un dominio verificado, con secretos en el servidor.
+4. Verificar entregabilidad, expiración y reenvío con una casilla de correo real. La opción `log` en desarrollo o `array` en pruebas **no envía mensajes a personas**.
+5. Habilitar la página de cuenta **solo después** de completar HTTPS, cookies seguras, límites de registro, verificación y política de privacidad.
+
+**Pruebas:** `PortalFeatureTest.php` valida registro, bloqueo de publicaciones, enlace firmado, vencimiento, alteración del enlace, reenvío limitado, cambio de sesión y compatibilidad de usuarios antiguos.
+
+**Estado de hoja de ruta:** se completó la implementación base de verificación **en código**, pero «Verificación de correo y antispam reforzado» continúa pendiente como requisito de lanzamiento hasta demostrar entrega real y revisión de abusos. «Envío real de correos y dominio remitente» también permanece pendiente.
+
