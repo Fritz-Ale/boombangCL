@@ -23,11 +23,7 @@ class UserSyncController {
 
             // Reenviar información de posición de cada usuario
             areaUsers.forEach(areaUser => {
-                const userData = new UserResource().transform(areaUser);
-                // Other players must never receive another account's session
-                // token or privileged administrative configuration.
-                delete userData.authJwt;
-                delete userData.admin_tools;
+                const userData = UserResource.publicProfile(areaUser);
                 
                 socket.emit(ResponseSocketsEnum.USER_UPDATE_POSITION, {
                     user: userData,
