@@ -1,4 +1,4 @@
-# 📊 Avances de BoomBang CL
+# Avances de BoomBang CL
 
 > **Estado: en desarrollo (PR #1 en borrador).** Los cambios del portal aún no están en `main` ni se ha verificado un despliegue público del videojuego.
 
@@ -164,3 +164,15 @@ Se ha adoptado el plan de rediseño directo al repositorio, recogido en [`web/DE
 **Publicación:** los cambios del diseño también se han incorporado a la rama `gh-pages`, pero GitHub Pages ha devuelto un error de **despliegue simultáneo en curso**, incluso tras reintentar. No afirmar que la última versión está visible hasta que un despliegue finalice correctamente. [Ver acciones de Pages](https://github.com/Fritz-Ale/boombangCL/actions).
 
 **Estado:** 11 de 20 tareas implementadas en código, nueve pendientes; la PR permanece en borrador y `main` no se ha modificado.
+
+### Integración de servidor y control de salida a producción (noviembre de 2026)
+
+La validación de GitHub Actions incorpora un trabajo adicional de **transporte Node/Socket.IO**, mediante `server/tests/transport.test.cjs` y `.github/workflows/portal-checks.yml`. Arranca un servidor real en un puerto temporal, establece una conexión WebSocket, comprueba que las operaciones internas de bots no se puedan usar sin secreto válido y verifica que el contador protegido ignore bots y usuarios duplicados. No necesita un servidor público ni expone ningún token real.
+
+**Alcance:** este ensayo prueba el transporte y la seguridad básica de endpoints, **no** demuestra que funcionen el registro del cliente, la carga de islas, las partidas, el inventario o los minijuegos de extremo a extremo. La tarea de pruebas integrales permanece pendiente.
+
+El registro de cuentas del portal también se protege con la configuración `PORTAL_MAIL_DELIVERY_VERIFIED=false` por defecto, además de HTTPS, un remitente válido y un transporte de correo compatible. En producción solo debe cambiarse a `true` **después de comprobar manualmente que llega un enlace de confirmación real al buzón**. La prueba automatizada comprueba que un SMTP declarado no basta si todavía no se verificó la entrega. Esta implementación **no configura** el dominio ni el proveedor de correo.
+
+**GitHub Pages:** el código público está en `gh-pages`, pero el último despliegue continúa bloqueado por una inconsistencia de GitHub entre «despliegue activo» y «despliegue finalizado». El intento autorizado de cancelación devolvió HTTP 400 porque el despliegue figura como terminado. Se abrió el [incidente #3](https://github.com/Fritz-Ale/boombangCL/issues/3) para que se revise desde GitHub sin despublicar el sitio ni cambiar `main`.
+
+El seguimiento conserva **11 de 20 tareas implementadas en código y nueve pendientes**.
