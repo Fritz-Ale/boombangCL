@@ -55,6 +55,12 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinute(6)->by('portal-login-account:' . $fingerprint($request->input('username'))),
             ];
         });
+        RateLimiter::for('portal-resend-verification', static function (Request $request): array {
+            return [
+                Limit::perMinute(1)->by('portal-verify-ip:' . $request->ip()),
+                Limit::perHour(3)->by('portal-verify-user:' . ($request->user('web')?->id ?? $request->ip())),
+            ];
+        });
         RateLimiter::for('portal-recovery', static function (Request $request) use ($fingerprint): array {
             return [
                 Limit::perMinute(3)->by('portal-recovery-ip:' . $request->ip()),
