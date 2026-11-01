@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Http\Controllers\Portal\PortalEmailVerificationController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,6 +33,8 @@ class PortalAuthController extends Controller
                 'id' => $user->id,
                 'username' => $user->username,
                 'is_staff' => self::isStaff($user),
+                'email_verification_required' => $user->portal_email_verification_required_at !== null,
+                'email_verified' => $user->portal_email_verification_required_at === null || $user->email_verified_at !== null,
             ] : null,
         ];
     }
@@ -60,7 +63,9 @@ class PortalAuthController extends Controller
             'description' => '',
             'active' => true,
             'is_bot' => false,
+            'portal_email_verification_required_at' => now(),
         ]));
+        PortalEmailVerificationController::dispatch($user);
         Auth::guard('web')->login($user->refresh());
         $request->session()->regenerate();
 
