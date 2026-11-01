@@ -1,0 +1,257 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "kind": "page",
+      "url": "index.html",
+      "title": "Inicio",
+      "description": "Presentación del mundo y estado público del proyecto",
+      "tags": "portada, isla, jugar"
+    },
+    {
+      "kind": "page",
+      "url": "comunidad.html",
+      "title": "Comunidad",
+      "description": "Áreas, salas y actividades del portal",
+      "tags": "amigos, salas, islas"
+    },
+    {
+      "kind": "page",
+      "url": "noticias.html",
+      "title": "Noticias",
+      "description": "Bitácora editorial de BoomBang CL",
+      "tags": "actualizaciones, desarrollo"
+    },
+    {
+      "kind": "page",
+      "url": "ayuda.html",
+      "title": "Cómo jugar",
+      "description": "Guía para preparar el juego HTML5 en desarrollo",
+      "tags": "mac, docker, instalar"
+    },
+    {
+      "kind": "page",
+      "url": "normas.html",
+      "title": "Normas",
+      "description": "Reglas de convivencia de la comunidad",
+      "tags": "respeto, moderación"
+    },
+    {
+      "kind": "page",
+      "url": "privacidad.html",
+      "title": "Privacidad",
+      "description": "Información inicial sobre protección de datos",
+      "tags": "datos, política"
+    },
+    {
+      "kind": "page",
+      "url": "avance.html",
+      "title": "Avances",
+      "description": "Seguimiento de tareas y pruebas de GitHub",
+      "tags": "progreso, estado, pruebas"
+    },
+    {
+      "kind": "page",
+      "url": "pendientes.html",
+      "title": "Qué falta",
+      "description": "Tareas necesarias para el lanzamiento",
+      "tags": "pendientes, servidores"
+    },
+    {
+      "kind": "page",
+      "url": "foro.html",
+      "title": "Foro",
+      "description": "Foro aún sin servidor público",
+      "tags": "respuestas, temas"
+    },
+    {
+      "kind": "page",
+      "url": "chat.html",
+      "title": "Chat",
+      "description": "Chat en preparación",
+      "tags": "mensajes, comunicación"
+    },
+    {
+      "kind": "page",
+      "url": "social.html",
+      "title": "Amigos y clanes",
+      "description": "Funciones sociales que requieren integración",
+      "tags": "amigos, clanes"
+    },
+    {
+      "kind": "page",
+      "url": "catalogo.html",
+      "title": "Catálogo",
+      "description": "Objetos del juego, sin compras web activas",
+      "tags": "objetos, inventario"
+    },
+    {
+      "kind": "page",
+      "url": "ranking.html",
+      "title": "Rankings",
+      "description": "Resultados de minijuegos aún no disponibles en producción",
+      "tags": "puntuaciones, minijuegos"
+    },
+    {
+      "kind": "page",
+      "url": "moderacion.html",
+      "title": "Moderación",
+      "description": "Panel protegido, no disponible en la web estática",
+      "tags": "reportes, seguridad"
+    },
+    {
+      "kind": "page",
+      "url": "cuenta.html",
+      "title": "Mi cuenta",
+      "description": "Registro y sesiones aún sin API pública",
+      "tags": "iniciar sesión, registro"
+    },
+    {
+      "kind": "page",
+      "url": "restablecer.html",
+      "title": "Recuperar acceso",
+      "description": "Correo de recuperación aún no disponible",
+      "tags": "contraseña, correo"
+    },
+    {
+      "kind": "task",
+      "url": "avance.html",
+      "title": "Portada tropical y diseño adaptable",
+      "description": "Incluido en la rama de desarrollo.",
+      "tags": "implementado en código"
+    },
+    {
+      "kind": "task",
+      "url": "avance.html",
+      "title": "Secciones comunidad, noticias y ayuda",
+      "description": "Páginas y navegación creadas.",
+      "tags": "implementado en código"
+    },
+    {
+      "kind": "task",
+      "url": "avance.html",
+      "title": "Catálogo de objetos, solo lectura",
+      "description": "Consulta la API; las compras web siguen desactivadas.",
+      "tags": "implementado en código"
+    },
+    {
+      "kind": "task",
+      "url": "avance.html",
+      "title": "Clasificación de minijuegos",
+      "description": "Lee resultados disponibles en Laravel y respeta la visibilidad del usuario.",
+      "tags": "implementado en código"
+    },
+    {
+      "kind": "task",
+      "url": "avance.html",
+      "title": "Registro, inicio y cierre de sesión",
+      "description": "Protegido por sesiones y CSRF de Laravel.",
+      "tags": "implementado en código"
+    },
+    {
+      "kind": "task",
+      "url": "avance.html",
+      "title": "Foro, chat y noticias",
+      "description": "API con persistencia y permisos; necesita servicios operativos.",
+      "tags": "implementado en código"
+    },
+    {
+      "kind": "task",
+      "url": "avance.html",
+      "title": "Amigos y clanes en el portal",
+      "description": "Solicitudes de amistad e invitaciones a clanes.",
+      "tags": "implementado en código"
+    },
+    {
+      "kind": "task",
+      "url": "avance.html",
+      "title": "Reportes y panel de moderación",
+      "description": "Registro de reportes y controles de revisión.",
+      "tags": "implementado en código"
+    },
+    {
+      "kind": "task",
+      "url": "pendientes.html",
+      "title": "Amistades y clanes dentro del cliente del juego",
+      "description": "No están sincronizados con la interfaz Phaser.",
+      "tags": "pendiente por hacer"
+    },
+    {
+      "kind": "task",
+      "url": "avance.html",
+      "title": "Recuperar contraseña mediante correo",
+      "description": "Tokens de un solo uso; requiere configurar envío de emails para usuarios reales.",
+      "tags": "implementado en código"
+    },
+    {
+      "kind": "task",
+      "url": "avance.html",
+      "title": "Contador de jugadores reales sin bots",
+      "description": "Ruta interna con secreto; sin servidor se indica no disponible.",
+      "tags": "implementado en código"
+    },
+    {
+      "kind": "task",
+      "url": "avance.html",
+      "title": "Pruebas PHP, JS, Nginx y MariaDB",
+      "description": "Último resultado verificado en GitHub Actions.",
+      "tags": "implementado en código"
+    },
+    {
+      "kind": "task",
+      "url": "pendientes.html",
+      "title": "Verificación de correo y antispam reforzado",
+      "description": "Pendiente antes de abrir registros públicos.",
+      "tags": "pendiente por hacer"
+    },
+    {
+      "kind": "task",
+      "url": "pendientes.html",
+      "title": "Política de privacidad y retención definitivas",
+      "description": "Requiere revisión legal y procedimientos operativos.",
+      "tags": "pendiente por hacer"
+    },
+    {
+      "kind": "task",
+      "url": "pendientes.html",
+      "title": "Envío real de correos y dominio remitente",
+      "description": "No hay credenciales de correo configuradas.",
+      "tags": "pendiente por hacer"
+    },
+    {
+      "kind": "task",
+      "url": "pendientes.html",
+      "title": "Dominio público, HTTPS y secretos seguros",
+      "description": "No existe un despliegue público verificado.",
+      "tags": "pendiente por hacer"
+    },
+    {
+      "kind": "task",
+      "url": "pendientes.html",
+      "title": "Pruebas integrales del juego y todos los contenedores",
+      "description": "Los tests automatizados no sustituyen una prueba real de navegador y sockets.",
+      "tags": "pendiente por hacer"
+    },
+    {
+      "kind": "task",
+      "url": "pendientes.html",
+      "title": "Revisión de activos, licencias y publicación",
+      "description": "Verificar derechos y completar revisión antes de desplegar.",
+      "tags": "pendiente por hacer"
+    },
+    {
+      "kind": "task",
+      "url": "pendientes.html",
+      "title": "Decidir compras y VIP con seguridad transaccional",
+      "description": "No se habilitarán pagos sin integración y verificación de servidor.",
+      "tags": "pendiente por hacer"
+    },
+    {
+      "kind": "task",
+      "url": "pendientes.html",
+      "title": "Revisión y aprobación de la PR antes de fusionar",
+      "description": "La rama main permanece intacta.",
+      "tags": "pendiente por hacer"
+    }
+  ]
+}

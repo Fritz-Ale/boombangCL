@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://fritz-ale.github.io/boombangCL/sitemap.xml
