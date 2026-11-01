@@ -151,6 +151,7 @@ class UserCrudController extends CrudController
      */
     public function update()
     {
+        request()->validate(['username' => ['required', 'string', 'max:255']]);
         $this->crud->setRequest($this->crud->validateRequest());
         $this->crud->setRequest($this->handlePasswordInput($this->crud->getRequest()));
         $this->crud->unsetValidation(); // validation has already been run
