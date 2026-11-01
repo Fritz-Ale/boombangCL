@@ -35,6 +35,19 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     assert.equal((homeTitle.match(/data-game-scene="/g)||[]).length, 3);
     const gameCss = await readFile(join(dir,'site-game.css'),'utf8');
     const gameJs = await readFile(join(dir,'site-game.js'),'utf8');
+    const imageCss = await readFile(join(dir,'site-image-center.css'),'utf8');
+    assert.match(homepage, /href="site-image-center.css"/);
+    assert.match(imageCss, /object-fit:contain!important/);
+    assert.match(imageCss, /object-position:50% 50%!important/);
+    assert.match(imageCss, /\.game-explorer-image img/);
+    assert.match(imageCss, /\.gallery-card img/);
+    assert.match(imageCss, /@media \(max-width:560px\)/);
+    for (const page of result.pages) {
+      const html = await readFile(join(dir,page),'utf8');
+      const themeIndex = html.indexOf('href="site-game.css"');
+      const centeringIndex = html.indexOf('href="site-image-center.css"');
+      assert.ok(themeIndex >= 0 && centeringIndex > themeIndex, 'image centering CSS must load last: '+page);
+    }
     assert.match(gameCss, /\.game-hero/);
     assert.match(gameCss, /\.game-explorer/);
     assert.match(gameCss, /prefers-reduced-motion/);
