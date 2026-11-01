@@ -56,6 +56,47 @@
       holder.append(element('p', 'No hay tareas para el filtro seleccionado.', 'avance-fallback'));
     }
   }
+  const ghState = {
+    success: 'Pruebas aprobadas',
+    failure: 'Pruebas fallidas',
+    cancelled: 'Ejecución cancelada',
+    skipped: 'Ejecución omitida',
+    timed_out: 'Pruebas agotaron el tiempo',
+    neutral: 'Resultado neutral',
+    action_required: 'Requiere intervención',
+  };
+  async function readGithubSnapshot() {
+    try {
+      // Only the Pages build produces this file: no browser-to-GitHub private
+      // requests and no personal access token in JavaScript.
+      const response = await fetch('avance-github.json', { cache: 'no-store' });
+      if (!response.ok) return;
+      const snapshot = await response.json();
+      if (snapshot.version !== 1 || snapshot.origin !== 'github-actions-snapshot') return;
+      if (snapshot.pullRequest) {
+        const pr = snapshot.pullRequest;
+        put('[data-gh-pr]', pr.merged ? 'Fusionado' : pr.state === 'open' ? (pr.draft ? 'Borrador · abierto' : 'Abierto') : 'Cerrado');
+        if (Number.isSafeInteger(pr.changedFiles) && Number.isSafeInteger(pr.commits)) {
+          put('[data-gh-files]', pr.changedFiles + ' archivos · ' + pr.commits + ' commits');
+        }
+      }
+      if (snapshot.checks) {
+        const checks = snapshot.checks;
+        put('[data-gh-checks]', checks.status === 'completed' ? (ghState[checks.conclusion] || 'Finalizadas') : checks.status === 'in_progress' ? 'Pruebas en ejecución' : 'Pruebas pendientes');
+        put('[data-gh-run]', 'Estado de GitHub Actions al generar esta fotografía');
+      }
+      if (snapshot.issue && Number.isSafeInteger(snapshot.issue.total)) {
+        put('[data-gh-roadmap]', snapshot.issue.completed + '/' + snapshot.issue.total + ' tareas');
+        put('[data-gh-issue]', snapshot.issue.pending + ' pendientes en la issue #2 al publicar');
+      }
+      if (snapshot.generatedAt && !Number.isNaN(Date.parse(snapshot.generatedAt))) {
+        put('[data-gh-timestamp]', 'Fotografía de GitHub generada: ' + new Date(snapshot.generatedAt).toLocaleString('es-CL', { dateStyle:'medium', timeStyle:'short' }) + '. No es una conexión en tiempo real.');
+      }
+    } catch {
+      // Local Docker deployments work with the editorial roadmap only.
+    }
+  }
+
   async function init() {
     try {
       const response = await fetch('avance-data.json', { cache: 'no-store' });
@@ -77,5 +118,6 @@
     }
   }
   query('[data-filter]')?.addEventListener('change', render);
+  readGithubSnapshot();
   init();
 })();
