@@ -87,3 +87,48 @@ pruebas multijugador reales y revisión de permisos.
 - Prueba de compra en una base real con usuarios concurrentes.
 - Prueba de colocación de objetos grandes, muebles animados y ediciones LTD.
 - Unificar el trabajo de esta rama con los PR de seguridad y movimiento antes de fusionar.
+
+
+## Completar las fichas de referencia con sprites autorizados
+
+El comando anterior (`catalog:import-authorized`) es para **crear objetos nuevos**. Las
+fichas del seeder (por ejemplo `research_bbtv_eggzilla`) ya existen; para ellas
+se usa otro comando, `catalog:import-art`, que no crea duplicados y siempre
+deja desactivadas las ventas:
+
+```json
+{
+  "items": [{
+    "sprite_name": "research_bbtv_eggzilla",
+    "rights_status": "licensed",
+    "rights_evidence": "Contrato o permiso identificable conservado por la administración",
+    "image": "imagen-autorizada.png",
+    "width": 120,
+    "height": 140,
+    "scale": 1,
+    "map_size": [[0, 0], [1, 0]]
+  }]
+}
+```
+
+Las medidas de este JSON son **ficticias** y solo explican el formato. No se han
+verificado medidas ni derechos de Eggzilla. El manifiesto debe estar en la misma
+carpeta local que las imágenes o usar rutas relativas internas. Para atlas
+animados se indican además `spreadsheet` (PNG/WebP) y `atlas` (JSON).
+
+```bash
+cd api
+php artisan catalog:import-art /ruta/privada/manifest.json --dry-run
+php artisan catalog:import-art /ruta/privada/manifest.json
+```
+
+Las copias se guardan en `public/uploads/catalog/approved/` identificadas con SHA-256;
+deben quedar respaldadas por documentación de licencia real. Este importador no
+descarga recursos remotos ni publica objetos: tras verificar las imágenes,
+la escala, las colisiones y la autorización en el administrador, se habilitan
+`is_active` e `is_purchasable` individualmente. Un atlas puede dibujar su
+primer fotograma; **no implica** animación completa del objeto original.
+
+Ambos importadores funcionan sobre la base de datos de desarrollo después de
+ejecutar las migraciones de esta rama. No se debe ejecutar ninguno sobre un
+servidor público sin realizar una copia de seguridad y las pruebas de aceptación.
