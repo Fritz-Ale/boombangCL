@@ -12,7 +12,7 @@ test("bloqueo del servidor y tween del cliente duran 630 ms", () => {
   assert.equal(AnimationBlockTimerEnum.WALK, 630);
 
   const clientConfig = fs.readFileSync(path.join(clientRoot, "src/enums/AnimationsTimerEnum.js"), "utf8");
-  assert.match(clientConfig, /WALK:\\s*630/);
+  assert.ok(clientConfig.includes("WALK: 630"));
 });
 
 test("el procesador programa cada ciclo de inicio a inicio, sin sumar cálculo de rutas", async () => {
