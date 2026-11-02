@@ -7,7 +7,6 @@ import SceneResponseSockets from "./sockets/SceneResponseSockets"; // Controlado
 import OverheadChatAnimation from "./animations/OverheadChatAnimation"; // Animación de chat
 import MinigameSceneLoader from "./loaders/MinigameSceneLoader"; // Precargador de escena
 import CreateSceneController from "./controllers/scene/CreateSceneController"; // Controlador de creación de escena
-import RemovePhaserSocketsUtil from "../utils/RemovePhaserSocketsUtil"; // Utilidad para eliminar sockets
 import TintManager from "./managers/TintManager"; // Gestor de tintes
 import AvatarSystemController from "./controllers/AvatarSystemController.js"; // Sistema de avatares
 import earlyEventBuffer from "../utils/EarlyEventBuffer"; // Buffer de eventos tempranos
@@ -151,7 +150,6 @@ export default class MinigameScene extends Phaser.Scene {
         // Limpiar el buffer global de eventos tempranos
         earlyEventBuffer.clear();
         
-        RemovePhaserSocketsUtil.main(socket); // Eliminar eventos de socket
 
         if (this.chatManager) {
             this.chatManager.destroy();
