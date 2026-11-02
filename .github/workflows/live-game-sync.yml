@@ -14,6 +14,10 @@ on:
       - 'client/tests/live-game-sync.test.cjs'
       - 'server/src/controllers/game/scenes/UserJoinPublicSceneController.js'
       - 'server/src/tasks/RemoveUserFromSceneTask.js'
+      - 'server/src/models/PrivateSceneModel.js'
+      - 'server/src/controllers/game/lobby/UpdatePublicIslandsController.js'
+      - 'server/src/controllers/game/islands/GetPublicIslandsController.js'
+      - 'server/src/services/publicIslandsSnapshot.js'
       - '.github/workflows/live-game-sync.yml'
   workflow_dispatch:
 
