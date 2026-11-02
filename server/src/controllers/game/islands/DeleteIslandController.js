@@ -15,7 +15,7 @@ class DeleteIslandController {
                 return;
             }
 
-            const { islandId } = data;
+            const { islandId } = data || {};
 
             if (!islandId) {
                 socket.emit(ResponseSocketsEnum.ERROR_ISLAND_DELETE, {
@@ -115,7 +115,7 @@ class DeleteIslandController {
 
             socket.emit(ResponseSocketsEnum.ERROR_ISLAND_DELETE, {
                 message: errorMessage,
-                islandId: data.islandId
+                islandId: data?.islandId
             });
         }
     }
