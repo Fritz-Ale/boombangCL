@@ -14,6 +14,10 @@ on:
       - 'client/src/views/components/game/scenes/public/InventoryPublicSceneComponent.vue'
       - 'client/src/views/components/auth/LoginFormComponent.vue'
       - 'client/tests/live-state-sync.test.cjs'
+      - 'server/src/controllers/game/islands/GetPublicIslandsController.js'
+      - 'server/src/models/PrivateSceneModel.js'
+      - 'server/src/tasks/RemoveUserFromSceneTask.js'
+      - 'server/tests/live-island-presence.test.cjs'
       - '.github/workflows/live-state-sync.yml'
   workflow_dispatch:
 
@@ -33,6 +37,8 @@ jobs:
           cache-dependency-path: client/package-lock.json
       - name: Test subscriptions, inventory changes, and session recovery
         run: node --test client/tests/live-state-sync.test.cjs client/tests/inventory-realtime.test.cjs client/tests/scene-socket-subscriptions.test.cjs
+      - name: Verify server-side live island presence broadcasts
+        run: node --test server/tests/live-island-presence.test.cjs
       - name: Install HTML5 dependencies
         working-directory: client
         run: npm ci --no-audit --no-fund
