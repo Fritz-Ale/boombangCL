@@ -647,9 +647,20 @@ class AddUserController {
 
             // Reemplazar en el contenedor
             const containerIndex = user.containerUser.list.indexOf(user.spriteAvatar);
-            if (containerIndex !== -1) {
-                user.containerUser.removeAt(containerIndex);
-                user.containerUser.addAt(newSpriteAvatar, containerIndex);
+            if (containerIndex === -1) {
+                newSpriteAvatar.destroy();
+                return false;
+            }
+            user.containerUser.removeAt(containerIndex);
+            user.containerUser.addAt(newSpriteAvatar, containerIndex);
+
+            // Reubicar la etiqueta: la silueta temporal puede tener otra altura.
+            const nameBackground = user.containerUser.list[2];
+            const nameText = user.containerUser.list[3];
+            if (nameBackground?.visible && nameText?.visible && newSpriteAvatar.frame) {
+                const nameOffset = nameText.y - nameBackground.y;
+                nameBackground.y = -newSpriteAvatar.frame.height * newSpriteAvatar.scaleY + 3 * gameConfig.DPI;
+                nameText.y = nameBackground.y + nameOffset;
             }
 
             // Destruir sprite anterior
@@ -660,8 +671,6 @@ class AddUserController {
             user.currentAvatarId = newAvatarId;
             user.avatarId = newAvatarId;
             return true;
-
-            //console.log(`✅ Avatar actualizado exitosamente para ${user.username} a ${newAvatarId}`);
         } catch (error) {
             console.error("No se pudo actualizar el avatar de " + user.username, error);
             return false;
