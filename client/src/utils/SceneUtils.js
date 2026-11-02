@@ -31,10 +31,10 @@ class SceneUtils {
     * Detectar si un archivo es un video por su extensión
     */
     static isVideoFile(src) {
-        if (!src) return false;
-        const videoExtensions = ['.webm', '.mp4', '.ogg', '.mov'];
-        const extension = src.toLowerCase().substring(src.lastIndexOf('.'));
-        return videoExtensions.includes(extension);
+        if (typeof src !== 'string' || !src.trim()) return false;
+        // Tokens de CDN y fragmentos no cambian el tipo del archivo.
+        const pathname = src.split(/[?#]/, 1)[0].toLowerCase();
+        return /\.(webm|mp4|ogg|mov)$/.test(pathname);
     }
 
     static moveItem(gameScene, sprite) {
