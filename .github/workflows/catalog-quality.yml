@@ -16,6 +16,11 @@ on:
       - 'client/src/phaser/PrivateScene.js'
       - 'client/src/phaser/html/private-scene/InventoryPrivateSceneHtml.js'
       - 'client/src/views/components/game/scenes/**'
+      - 'server/src/controllers/game/private-scenes/**'
+      - 'server/src/services-api/PrivateSceneApiService.js'
+      - 'server/src/models/PrivateSceneModel.js'
+      - 'server/src/models/UserCatalogItemModel.js'
+      - 'server/tests/catalog-island.test.cjs'
       - '.github/workflows/catalog-quality.yml'
   workflow_dispatch:
 
@@ -67,3 +72,20 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         run: npm run build
+
+  island-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse Socket.IO island modules
+        run: |
+          node --check server/src/controllers/game/private-scenes/PutItemPrivateSceneController.js
+          node --check server/src/controllers/game/private-scenes/RemoveItemPrivateSceneController.js
+          node --check server/src/services-api/PrivateSceneApiService.js
+          node --check server/src/models/PrivateSceneModel.js
+          node --check server/src/models/UserCatalogItemModel.js
+      - name: Verify atomic decoration flows and collisions
+        run: node --test server/tests/catalog-island.test.cjs
