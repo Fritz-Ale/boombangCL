@@ -136,7 +136,10 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
             $validated = $request->validate([
                 'user_catalog_item_id' => 'required|integer|exists:user_catalog_items,id',
                 'private_scene_id' => 'required|integer|exists:private_scenes,id',
-                'occupied_tiles' => 'required|array|max:256',
+                'occupied_tiles' => 'required|array|min:1|max:256',
+                'occupied_tiles.*' => 'required|array|size:2',
+                'occupied_tiles.*.0' => 'required|integer|min:0',
+                'occupied_tiles.*.1' => 'required|integer|min:0',
             ]);
             $user = Auth::user();
             // Solo el propietario de la isla puede colocar decoración.
@@ -164,7 +167,10 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
         try {
             $validated = $request->validate([
                 'user_catalog_item_id' => 'required|integer|exists:user_catalog_items,id',
-                'occupied_tiles' => 'required|array|max:256',
+                'occupied_tiles' => 'required|array|min:1|max:256',
+                'occupied_tiles.*' => 'required|array|size:2',
+                'occupied_tiles.*.0' => 'required|integer|min:0',
+                'occupied_tiles.*.1' => 'required|integer|min:0',
             ]);
             $user = Auth::user();
             $responseUpdate = UserCatalogItem::where('id', $validated['user_catalog_item_id'])
