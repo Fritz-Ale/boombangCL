@@ -21,7 +21,14 @@ class VerifyEmulatorToken
         $token = $request->header('X-Emulator-Token');
         $validToken = config('app.emulator_api_token');
 
-        if ($token !== $validToken) {
+        // Fallar de forma segura: null === null en el código anterior permitía
+        // acceso sin token cuando la variable del servidor estaba vacía.
+        if (!is_string($validToken) || trim($validToken) === '' ||
+            $validToken === 'CHANGE_ME_EMULATOR_API_TOKEN') {
+            return response()->json(['message' => 'Service configuration unavailable.'], 503);
+        }
+
+        if (!is_string($token) || !hash_equals($validToken, $token)) {
             return response()->json(['message' => 'Unauthorized.'], 401);
         }
 
