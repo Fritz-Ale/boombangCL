@@ -72,6 +72,8 @@ export default class PrivateScene extends Phaser.Scene {
         this.selectedObject = null;     // Objeto actualmente seleccionado
         this.detailPanel = null;        // Panel de detalles del objeto seleccionado
         this.originalPositions = {};    // Guarda posiciones originales
+        this.pendingSceneItemMove = null;
+        this.sceneItemErrorHandler = null;
         // Inventario dinámico
         this.inventoryItemsList = [...this.backpackUserItems];
         this.inventoryPage = 0;
@@ -292,6 +294,28 @@ export default class PrivateScene extends Phaser.Scene {
     }
 
     handleSockets() {
+        this.sceneItemErrorHandler = (data) => {
+            const pending = this.pendingSceneItemMove;
+            if (pending) {
+                const item = this.sceneItems.find(i => i.id === pending.id);
+                if (item?.sprite && this.originalPositions[pending.id]) {
+                    this.returnObjectToOriginalPosition(item);
+                    this.markOccupiedTiles();
+                    this.renderSceneObjects();
+                }
+                this.pendingSceneItemMove = null;
+            }
+            // Aviso accesible y no bloqueante; evita dejar un objeto visualmente movido.
+            const toast = document.createElement('div');
+            toast.setAttribute('role', 'alert');
+            toast.textContent = typeof data?.message === 'string'
+                ? data.message
+                : 'No fue posible actualizar el objeto.';
+            toast.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:100000;max-width:min(90vw,460px);padding:12px 16px;background:#46252b;color:white;border-radius:10px;box-shadow:0 4px 18px #0005;';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        };
+        socket.on('scene_item_error', this.sceneItemErrorHandler);
         socket.on(ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY, (data) => {
             if (import.meta.env.VITE_APP_ENV === "local") {
                 //console.log('Socket event received:', ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY);
@@ -332,6 +356,9 @@ export default class PrivateScene extends Phaser.Scene {
                 //console.log('  Existing item?', existingItem ? 'YES (moving)' : 'NO (new item)');
 
                 if (existingItem) {
+                    if (this.pendingSceneItemMove?.id === data.item.id) {
+                        this.pendingSceneItemMove = null;
+                    }
                     // It's a move, just update the tiles
                     //console.log('  Updating existing item tiles');
                     existingItem.occupied_tiles = data.item.occupied_tiles;
@@ -824,8 +851,17 @@ export default class PrivateScene extends Phaser.Scene {
         const centerX = this.scale.width / 2;
 
         // Limpiar listeners previos para evitar duplicados
+        sprite.off('dragstart');
         sprite.off('drag');
         sprite.off('dragend');
+
+        sprite.on('dragstart', () => {
+            this.originalPositions[item.id] = {
+                x: sprite.x,
+                y: sprite.y,
+                occupied_tiles: item.occupied_tiles.map(tile => [...tile]),
+            };
+        });
 
         sprite.on('drag', (pointer) => {
             sprite.x = pointer.worldX;
@@ -844,7 +880,8 @@ export default class PrivateScene extends Phaser.Scene {
                 halfTileHeight
             );
 
-            if (this.isPositionValid(newTiles, item.id)) {
+            if (this.isPositionValid(newTiles, item.id) && !this.pendingSceneItemMove) {
+                this.pendingSceneItemMove = { id: item.id };
                 socket.emit(RequestSocketsEnum.SCENE_PUT_ITEM, {
                     user_catalog_item_id: item.id,
                     occupied_tiles: newTiles,
@@ -1219,6 +1256,11 @@ export default class PrivateScene extends Phaser.Scene {
         earlyEventBuffer.clear();
 
         RemovePhaserSocketsUtil.main(socket);
+        if (this.sceneItemErrorHandler) {
+            socket.off('scene_item_error', this.sceneItemErrorHandler);
+            this.sceneItemErrorHandler = null;
+        }
+        this.pendingSceneItemMove = null;
         if (this.chatManager) {
             this.chatManager.destroy();
             this.chatManager = null;
