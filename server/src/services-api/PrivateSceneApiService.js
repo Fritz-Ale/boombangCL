@@ -5,7 +5,7 @@ class PrivateSceneApiService {
         const response = await ApiService.post(route, data, user.authJwt);
         // ApiService transforms HTTP 4xx/5xx into a statusCode-bearing object.
         // Do not commit in-memory changes unless the database accepted the action.
-        if (response?.statusCode >= 400 || response?.success === false) {
+        if (response?.statusCode >= 400 || response?.success !== true) {
             throw new Error(response?.error || response?.message || 'No se pudo guardar el objeto en la isla');
         }
         return response;
