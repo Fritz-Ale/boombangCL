@@ -116,6 +116,36 @@ export default {
     ),
   },
   methods: {
+    handleMinigameJoin(response) {
+      if (!response?.success) return;
+      earlyEventBuffer.activate();
+      this.onJoinMinigameScene(response.sceneType, response.data);
+    },
+    handleMinigameNotification() {
+      this.showMinigameNotification = true;
+    },
+    handleJoinPublicResponse(response) {
+      if (!response?.success) return;
+      earlyEventBuffer.activate();
+      const sceneryType = response.data.scenery.type;
+      this.onJoinPublicScene(sceneryType, response.data);
+    },
+    handleJoinIslandResponse(response) {
+      if (response?.island) this.onJoinIsland(response.island);
+    },
+    handleJoinPrivateResponse(response) {
+      if (!response?.success) return;
+      earlyEventBuffer.activate();
+      this.onJoinPrivateScene(response.data.scenery.type, response.data);
+    },
+    handleJoinPrivateError(response) {
+      console.error("Error al unirse a la sala privada:", response);
+      alert("Error al unirse a la sala privada. Inténtalo nuevamente.");
+    },
+    handleIslandNotFound() {
+      this.showIslandErrorAlert = true;
+      this.islandErrorMessage = this.$t('island.error_island_not_found');
+    },
     onJoinPublicScene(sceneType, sceneData) {
       this.sceneData = sceneData;
       this.currentScreenType = sceneType;
@@ -170,76 +200,24 @@ export default {
     },
   },
   mounted() {
-    socket.off(ResponseSocketsEnum.MINIGAME_JOIN);
-    socket.on(ResponseSocketsEnum.MINIGAME_JOIN, (response) => {
-      if (response.success) {
-        // Activar el buffer INMEDIATAMENTE para capturar eventos tempranos
-        earlyEventBuffer.activate();
-        
-        this.onJoinMinigameScene(response.sceneType, response.data);
-      } else {
-        if (import.meta.env.VITE_APP_ENV === "local") {
-          console.log("Error al unirse a la sala.");
-        }
-      }
-    });
-
-    socket.off(ResponseSocketsEnum.MINIGAME_CALL_NOTIFICATION);
-    socket.on(ResponseSocketsEnum.MINIGAME_CALL_NOTIFICATION, () => {
-      this.showMinigameNotification = true;
-    });
-
-    socket.off(ResponseSocketsEnum.JOIN_PUBLIC_SCENE);
-    socket.on(ResponseSocketsEnum.JOIN_PUBLIC_SCENE, (response) => {
-      if (response.success) {
-        // Activar el buffer INMEDIATAMENTE para capturar eventos tempranos
-        earlyEventBuffer.activate();
-        
-        let sceneryType = response.data.scenery.type;
-        this.onJoinPublicScene(sceneryType, response.data);
-      } else {
-        if (import.meta.env.VITE_APP_ENV === "local") {
-          console.log("Error al unirse a la sala.");
-        }
-      }
-    });
-
-    socket.off(ResponseSocketsEnum.JOIN_ISLAND);
-    socket.on(ResponseSocketsEnum.JOIN_ISLAND, (response) => {
-      this.onJoinIsland(response.island);
-    });
-
-    socket.off(ResponseSocketsEnum.JOIN_PRIVATE_SCENE);
-    socket.on(ResponseSocketsEnum.JOIN_PRIVATE_SCENE, (response) => {
-      if (response.success) {
-        // Activar el buffer INMEDIATAMENTE para capturar eventos tempranos
-        earlyEventBuffer.activate();
-        
-        let sceneryType = response.data.scenery.type;
-        this.onJoinPrivateScene(sceneryType, response.data);
-      } else {
-        if (import.meta.env.VITE_APP_ENV === "local") {
-          console.log("Error al unirse a la sala privada.");
-        }
-      }
-    });
-
-    socket.off(ResponseSocketsEnum.JOIN_PRIVATE_SCENE_ERROR);
-    socket.on(ResponseSocketsEnum.JOIN_PRIVATE_SCENE_ERROR, (response) => {
-      console.error("Error al unirse a la sala privada:", response);
-      alert(
-        "Error al unirse a la sala privada. Por favor, inténtalo de nuevo."
-      );
-    });
-
-    socket.off(ResponseSocketsEnum.ERROR_ISLAND_NOT_FOUND);
-    socket.on(ResponseSocketsEnum.ERROR_ISLAND_NOT_FOUND, () => {
-      this.showIslandErrorAlert = true;
-      this.islandErrorMessage = this.$t('island.error_island_not_found');
-    });
+    // Las suscripciones del router pertenecen a esta instancia; no se deben
+    // borrar handlers de otros sistemas con socket.off(event).
+    this.socketRouteHandlers = [
+      [ResponseSocketsEnum.MINIGAME_JOIN, this.handleMinigameJoin],
+      [ResponseSocketsEnum.MINIGAME_CALL_NOTIFICATION, this.handleMinigameNotification],
+      [ResponseSocketsEnum.JOIN_PUBLIC_SCENE, this.handleJoinPublicResponse],
+      [ResponseSocketsEnum.JOIN_ISLAND, this.handleJoinIslandResponse],
+      [ResponseSocketsEnum.JOIN_PRIVATE_SCENE, this.handleJoinPrivateResponse],
+      [ResponseSocketsEnum.JOIN_PRIVATE_SCENE_ERROR, this.handleJoinPrivateError],
+      [ResponseSocketsEnum.ERROR_ISLAND_NOT_FOUND, this.handleIslandNotFound],
+    ];
+    for (const [event, handler] of this.socketRouteHandlers) socket.on(event, handler);
   },
   beforeUnmount() {
-    socket.off(ResponseSocketsEnum.ERROR_ISLAND_NOT_FOUND);
+    for (const [event, handler] of this.socketRouteHandlers || []) {
+      socket.off(event, handler);
+    }
+    this.socketRouteHandlers = [];
   },
 };
 </script>
