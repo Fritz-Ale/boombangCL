@@ -428,7 +428,7 @@ export default class PrivateScene extends Phaser.Scene {
             if (this.htmlDetailPanel?.enableButtons) this.htmlDetailPanel.enableButtons();
             const message = data?.message || 'No fue posible actualizar el objeto.';
             console.warn('[BoomBangCL] ' + message);
-            this.vueComponent?.$emit?.('sceneItemError', message);
+            this.vueComponent?.showSceneItemError?.(message);
         });
         listen(ResponseSocketsEnum.PRIVATE_SCENE_COLORS_UPDATED, (data) => {
             if (import.meta.env.VITE_APP_ENV === "local") {
