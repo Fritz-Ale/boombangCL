@@ -210,6 +210,8 @@ class SceneModel {
         // Validar coordenadas para evitar errores si una sesión aún se está
         // sincronizando o una reserva quedó fuera del mapa.
         const blockCell = (rawX, rawY) => {
+            if (rawX === null || rawX === undefined || rawY === null ||
+                rawY === undefined || rawX === '' || rawY === '') return;
             const x = Number(rawX);
             const y = Number(rawY);
             if (Number.isInteger(x) && Number.isInteger(y) &&
