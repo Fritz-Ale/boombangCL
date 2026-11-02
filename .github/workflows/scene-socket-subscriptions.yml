@@ -1,0 +1,35 @@
+name: Phaser scene socket subscriptions
+
+on:
+  pull_request:
+    paths:
+      - 'client/src/phaser/utils/sceneSocketSubscriptions.js'
+      - 'client/src/phaser/sockets/SceneResponseSockets.js'
+      - 'client/src/phaser/sockets/PublicSceneResponse.js'
+      - 'client/tests/scene-socket-subscriptions.test.cjs'
+      - '.github/workflows/scene-socket-subscriptions.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scene-sockets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Confirm scene listeners are removed without affecting Vue lobby listeners
+        run: node --test client/tests/scene-socket-subscriptions.test.cjs
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile Vue/Phaser game
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
