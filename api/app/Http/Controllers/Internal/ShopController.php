@@ -92,7 +92,9 @@ class ShopController extends Controller
         }
 
         // Verificar que el item está activo y es comprable
-        if (!$catalogItem->is_active || !$catalogItem->is_purchasable || $catalogItem->is_reference_only) {
+        if (!$catalogItem->is_active || !$catalogItem->is_purchasable ||
+            $catalogItem->is_reference_only ||
+            ($catalogItem->reference_source_url && !in_array($catalogItem->asset_rights_status, ['original', 'licensed'], true))) {
             return response()->json([
                 'success' => false,
                 'error' => 'Item is not available for purchase',
