@@ -61,3 +61,27 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         run: npm run build
+
+  audit-existing-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install image metadata reader
+        run: python -m pip install Pillow
+      - name: Audit existing archive and SQL catalog
+        run: |
+          python -m py_compile scripts/audit_catalog_assets.py
+          python scripts/audit_catalog_assets.py \
+            --sql boombang_api.sql \
+            --zip api/public/uploads.zip \
+            --out catalog-assets-report.json
+      - name: Save inventory audit without image files
+        uses: actions/upload-artifact@v4
+        with:
+          name: existing-catalog-metadata
+          path: catalog-assets-report.json
+          retention-days: 14
