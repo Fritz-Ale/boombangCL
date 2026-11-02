@@ -49,7 +49,7 @@ class StripeController extends Controller
         }
 
         // Verificar que el item está activo y es comprable
-        if (!$catalogItem->is_active || !$catalogItem->is_purchasable) {
+        if (!$catalogItem->is_active || !$catalogItem->is_purchasable || $catalogItem->is_reference_only) {
             return response()->json([
                 'success' => false,
                 'error' => 'Item is not available for purchase',
