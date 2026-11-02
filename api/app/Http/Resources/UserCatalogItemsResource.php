@@ -28,9 +28,9 @@ class UserCatalogItemsResource extends JsonResource
             'map_size' => $this->catalogItem->map_size,
             'occupied_tiles' => $this->occupied_tiles,
             'image' => $this->catalogItem->image,
-            'image_url' => urlDocker($this->catalogItem->image),
+            'image_url' => !empty($this->catalogItem->image) ? urlDocker($this->catalogItem->image) : null,
             'spreadsheet' => $this->catalogItem->spreadsheet,
-            'spreadsheet_url' => urlDocker($this->catalogItem->spreadsheet),
+            'spreadsheet_url' => !empty($this->catalogItem->spreadsheet) ? urlDocker($this->catalogItem->spreadsheet) : null,
             'atlas' => $this->catalogItem->atlas,
             'atlas_url' => !empty($this->catalogItem->atlas) ? urlDocker($this->catalogItem->atlas) : null,
             'width' => $this->catalogItem->width,
@@ -40,6 +40,8 @@ class UserCatalogItemsResource extends JsonResource
             'resized' => $this->resized,
             'type_of_behavior' => $this->catalogItem->type_of_behavior,
             'scale' => $this->catalogItem->scale,
+            'rarity_code' => $this->catalogItem->rarity_code,
+            'rarity_label' => \App\Support\CatalogRarity::label($this->catalogItem->rarity_code),
         ];
     }
 }

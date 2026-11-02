@@ -1,0 +1,92 @@
+name: Catalog items, island placement and assets
+
+on:
+  pull_request:
+    paths:
+      - 'api/app/Console/Commands/ImportAuthorizedCatalog.php'
+      - 'api/app/Support/CatalogRarity.php'
+      - 'api/app/Models/CatalogItem.php'
+      - 'api/app/Http/Controllers/Internal/ShopController.php'
+      - 'api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php'
+      - 'api/app/Http/Resources/**'
+      - 'api/app/Http/Requests/CatalogItemRequest.php'
+      - 'api/database/reference/**'
+      - 'api/database/seeders/CatalogReferenceSeeder.php'
+      - 'api/database/migrations/2026_11_02_150000_add_rarity_and_reference_fields_to_catalog_items.php'
+      - 'api/tests/Standalone/catalog-rarity.php'
+      - 'client/src/views/components/game/scenes/ShopComponent.vue'
+      - 'server/src/controllers/game/private-scenes/**'
+      - 'server/src/controllers/game/shop/**'
+      - 'server/src/models/UserCatalogItemModel.js'
+      - 'server/src/services-api/PrivateSceneApiService.js'
+      - 'server/tests/catalog-island.test.cjs'
+      - '.github/workflows/catalog-integrity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: Catalog PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: PHP syntax
+        run: |
+          php -l api/app/Support/CatalogRarity.php
+          php -l api/app/Console/Commands/ImportAuthorizedCatalog.php
+          php -l api/app/Models/CatalogItem.php
+          php -l api/app/Http/Requests/CatalogItemRequest.php
+          php -l api/app/Http/Controllers/Internal/ShopController.php
+          php -l api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php
+          php -l api/database/seeders/CatalogReferenceSeeder.php
+          php -l api/database/migrations/2026_11_02_150000_add_rarity_and_reference_fields_to_catalog_items.php
+          php -l api/app/Http/Resources/CatalogItemResource.php
+          php -l api/app/Http/Resources/UserCatalogItemsResource.php
+      - name: Verify classification ranges and reference data
+        run: php api/tests/Standalone/catalog-rarity.php
+
+  island:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Node syntax
+        run: |
+          node --check server/src/controllers/game/private-scenes/PutItemPrivateSceneController.js
+          node --check server/src/controllers/game/private-scenes/RemoveItemPrivateSceneController.js
+          node --check server/src/controllers/game/shop/PurchaseShopItemController.js
+          node --check server/src/models/UserCatalogItemModel.js
+          node --check server/src/services-api/PrivateSceneApiService.js
+      - name: Island persistence tests
+        run: node --test server/tests/catalog-island.test.cjs
+
+  client:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Install client
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Build Vue and Phaser game
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build

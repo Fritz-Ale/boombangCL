@@ -1,0 +1,117 @@
+name: Catalog rarity and island asset validation
+
+on:
+  pull_request:
+    paths:
+      - 'api/app/Support/CatalogRarity.php'
+      - 'api/app/Support/CatalogPurchasePricing.php'
+      - 'api/app/Support/PrivateScenePlacementValidator.php'
+      - 'api/app/Console/Commands/**'
+      - 'api/app/Models/CatalogItem.php'
+      - 'api/app/Http/Controllers/Internal/**'
+      - 'api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php'
+      - 'api/app/Http/Resources/*Catalog*'
+      - 'api/database/migrations/*rarity*'
+      - 'api/database/reference/**'
+      - 'api/database/seeders/CatalogReferenceSeeder.php'
+      - 'api/tests/Standalone/catalog-rarity.php'
+      - 'api/tests/Standalone/catalog-purchase-pricing.php'
+      - 'api/tests/Standalone/private-scene-placement.php'
+      - 'api/tests/Standalone/gashapon-autumn-reference.php'
+      - 'client/tests/**'
+      - 'scripts/install_catalog_assets_local.py'
+      - 'scripts/tests/**'
+      - 'client/src/phaser/PrivateScene.js'
+      - 'client/src/phaser/html/private-scene/InventoryPrivateSceneHtml.js'
+      - 'client/src/views/components/game/scenes/**'
+      - 'server/src/controllers/game/private-scenes/**'
+      - 'server/src/services-api/PrivateSceneApiService.js'
+      - 'server/src/models/PrivateSceneModel.js'
+      - 'server/src/models/UserCatalogItemModel.js'
+      - 'server/tests/catalog-island.test.cjs'
+      - '.github/workflows/catalog-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['8.2', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.version }}
+          coverage: none
+      - name: Parse catalog and island PHP files
+        run: |
+          php -l api/app/Support/CatalogRarity.php
+          php -l api/app/Support/CatalogPurchasePricing.php
+          php -l api/app/Support/PrivateScenePlacementValidator.php
+          php -l api/tests/Standalone/private-scene-placement.php
+          php -l api/app/Console/Commands/ImportLicensedCatalogArt.php
+          php -l api/app/Models/CatalogItem.php
+          php -l api/app/Http/Controllers/Internal/ShopController.php
+          php -l api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php
+          php -l api/app/Http/Resources/CatalogItemResource.php
+          php -l api/app/Http/Resources/UserCatalogItemsResource.php
+          php -l api/database/seeders/CatalogReferenceSeeder.php
+          php -l api/database/migrations/2026_11_02_150000_add_rarity_and_reference_fields_to_catalog_items.php
+      - name: Validate rarity boundaries and reference inventory
+        run: |
+          php api/tests/Standalone/catalog-rarity.php
+          php api/tests/Standalone/catalog-purchase-pricing.php
+          php api/tests/Standalone/private-scene-placement.php
+          php api/tests/Standalone/gashapon-autumn-reference.php
+
+  client:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Install dependency lockfile
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Regression tests for assets and dynamic atlas events
+        run: node --test client/tests/catalog-rendering.test.cjs
+      - name: Compile complete Phaser and Vue client
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
+
+  island-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse Socket.IO island modules
+        run: |
+          node --check server/src/controllers/game/private-scenes/PutItemPrivateSceneController.js
+          node --check server/src/controllers/game/private-scenes/RemoveItemPrivateSceneController.js
+          node --check server/src/services-api/PrivateSceneApiService.js
+          node --check server/src/models/PrivateSceneModel.js
+          node --check server/src/models/UserCatalogItemModel.js
+      - name: Verify atomic decoration flows and collisions
+        run: node --test server/tests/catalog-island.test.cjs
+
+  local-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect actual bundled ZIP without extracting files
+        run: python3 scripts/install_catalog_assets_local.py
+      - name: Validate optional local asset extraction security
+        run: python3 -m unittest discover -s scripts/tests -p 'test_install_catalog_assets_local.py' -v

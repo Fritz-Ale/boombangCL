@@ -72,6 +72,8 @@ export default class PrivateScene extends Phaser.Scene {
         this.selectedObject = null;     // Objeto actualmente seleccionado
         this.detailPanel = null;        // Panel de detalles del objeto seleccionado
         this.originalPositions = {};    // Guarda posiciones originales
+        this.pendingSceneItemMove = null;
+        this.sceneItemErrorHandler = null;
         // Inventario dinámico
         this.inventoryItemsList = [...this.backpackUserItems];
         this.inventoryPage = 0;
@@ -81,10 +83,17 @@ export default class PrivateScene extends Phaser.Scene {
      * Detectar si un archivo es un video por su extensión
      */
     isVideoFile(src) {
-        if (!src) return false;
-        const videoExtensions = ['.webm', '.mp4', '.ogg', '.mov'];
-        const extension = src.toLowerCase().substring(src.lastIndexOf('.'));
-        return videoExtensions.includes(extension);
+        if (typeof src !== 'string' || !src) return false;
+        const path = src.split(/[?#]/, 1)[0].toLowerCase();
+        return ['.webm', '.mp4', '.ogg', '.mov'].some(ext => path.endsWith(ext));
+    }
+
+    catalogItemSource(item) {
+        if (!item) return null;
+        const src = import.meta.env.VITE_APP_ENV === 'local'
+            ? [item.spreadsheet, item.image, item.spreadsheet_url, item.image_url]
+            : [item.spreadsheet_url, item.image_url, item.spreadsheet, item.image];
+        return src.find(value => typeof value === 'string' && value.trim()) || null;
     }
 
     preload() {
@@ -101,31 +110,38 @@ export default class PrivateScene extends Phaser.Scene {
         this.load.image("asset_accept_image", asset_accept_image);
         this.load.image("asset_reject_image", asset_reject_image);
 
-        if (this.sceneData.myScene) {
-            // Cargar dinámicamente los assets de inventario
-            this.backpackUserItems.forEach(item => {
-                let assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
-                // Detectar si es un video por la extensión
-                if (this.isVideoFile(assetSrc)) {
-                    this.load.video(item.sprite_name, assetSrc);
-                } else {
-                    this.load.image(item.sprite_name, assetSrc);
-                }
-            });
-        }
+        const catalogTexturesQueued = new Set();
+        const loadCatalogItem = (item) => {
+            const key = item?.sprite_name;
+            if (!key || catalogTexturesQueued.has(key) ||
+                this.textures.exists(key) || this.cache.video.exists(key)) return;
 
-        // Cargar objetos de escena existentes
-        this.sceneItems.forEach(item => {
-            if (!this.textures.exists(item.sprite_name) && !this.cache.video.exists(item.sprite_name)) {
-                let assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
-                // Detectar si es un video por la extensión
-                if (this.isVideoFile(assetSrc)) {
-                    this.load.video(item.sprite_name, assetSrc);
-                } else {
-                    this.load.image(item.sprite_name, assetSrc);
-                }
+            // Los objetos estáticos sin atlas deben poder usar image_url directamente.
+            // Antes se exigía spreadsheet_url y quedaban invisibles al colocarlos.
+            const local = import.meta.env.VITE_APP_ENV === 'local';
+            const sprite = local
+                ? (item.spreadsheet || item.image || item.spreadsheet_url || item.image_url)
+                : (item.spreadsheet_url || item.image_url || item.spreadsheet || item.image);
+            if (!sprite) {
+                console.warn('Objeto sin recurso gráfico:', key);
+                return;
             }
-        });
+
+            const atlas = local ? (item.atlas || item.atlas_url) : (item.atlas_url || item.atlas);
+            if (this.isVideoFile(sprite)) {
+                this.load.video(key, sprite);
+            } else if (atlas && (item.spreadsheet || item.spreadsheet_url)) {
+                this.load.atlas(key, sprite, atlas);
+            } else {
+                this.load.image(key, sprite);
+            }
+            catalogTexturesQueued.add(key);
+        };
+
+        if (this.sceneData.myScene) {
+            this.backpackUserItems.forEach(loadCatalogItem);
+        }
+        this.sceneItems.forEach(loadCatalogItem);
     }
 
     async create() {
@@ -278,6 +294,28 @@ export default class PrivateScene extends Phaser.Scene {
     }
 
     handleSockets() {
+        this.sceneItemErrorHandler = (data) => {
+            const pending = this.pendingSceneItemMove;
+            if (pending) {
+                const item = this.sceneItems.find(i => i.id === pending.id);
+                if (item?.sprite && this.originalPositions[pending.id]) {
+                    this.returnObjectToOriginalPosition(item);
+                    this.markOccupiedTiles();
+                    this.renderSceneObjects();
+                }
+                this.pendingSceneItemMove = null;
+            }
+            // Aviso accesible y no bloqueante; evita dejar un objeto visualmente movido.
+            const toast = document.createElement('div');
+            toast.setAttribute('role', 'alert');
+            toast.textContent = typeof data?.message === 'string'
+                ? data.message
+                : 'No fue posible actualizar el objeto.';
+            toast.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:100000;max-width:min(90vw,460px);padding:12px 16px;background:#46252b;color:white;border-radius:10px;box-shadow:0 4px 18px #0005;';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        };
+        socket.on('scene_item_error', this.sceneItemErrorHandler);
         socket.on(ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY, (data) => {
             if (import.meta.env.VITE_APP_ENV === "local") {
                 //console.log('Socket event received:', ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY);
@@ -318,6 +356,9 @@ export default class PrivateScene extends Phaser.Scene {
                 //console.log('  Existing item?', existingItem ? 'YES (moving)' : 'NO (new item)');
 
                 if (existingItem) {
+                    if (this.pendingSceneItemMove?.id === data.item.id) {
+                        this.pendingSceneItemMove = null;
+                    }
                     // It's a move, just update the tiles
                     //console.log('  Updating existing item tiles');
                     existingItem.occupied_tiles = data.item.occupied_tiles;
@@ -330,7 +371,7 @@ export default class PrivateScene extends Phaser.Scene {
                     // It's a new item from inventory
                     const item = data.item;
                     const textureName = item.sprite_name;
-                    const assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
+                    const assetSrc = this.catalogItemSource(item);
                     const isVideo = this.isVideoFile(assetSrc);
 
                     // Check if asset already exists (image or video)
@@ -342,6 +383,14 @@ export default class PrivateScene extends Phaser.Scene {
                     //    isVideo,
                     //    assetExists
                     //});
+
+                    if (!assetSrc && !assetExists) {
+                        // Mantener la colisión y el registro incluso si falta el sprite.
+                        this.sceneItems.push(item);
+                        this.markOccupiedTiles();
+                        this.renderSceneObjects();
+                        return;
+                    }
 
                     if (assetExists) {
                         //console.log('  ✅ Asset exists, adding item to scene');
@@ -366,8 +415,16 @@ export default class PrivateScene extends Phaser.Scene {
                                 }
                             });
                         } else {
-                            this.load.image(textureName, assetSrc);
-                            this.load.once(`filecomplete-image-${textureName}`, () => {
+                            const atlas = import.meta.env.VITE_APP_ENV === 'local'
+                                ? (item.atlas || item.atlas_url)
+                                : (item.atlas_url || item.atlas);
+                            if (atlas && (item.spreadsheet || item.spreadsheet_url)) {
+                                this.load.atlas(textureName, assetSrc, atlas);
+                            } else {
+                                this.load.image(textureName, assetSrc);
+                            }
+                            const type = atlas && (item.spreadsheet || item.spreadsheet_url) ? 'atlasjson' : 'image';
+                            this.load.once(`filecomplete-${type}-${textureName}`, () => {
                                 //console.log('  ✅ Image loaded, adding item to scene');
                                 this.sceneItems.push(item);
                                 this.markOccupiedTiles();
@@ -794,8 +851,17 @@ export default class PrivateScene extends Phaser.Scene {
         const centerX = this.scale.width / 2;
 
         // Limpiar listeners previos para evitar duplicados
+        sprite.off('dragstart');
         sprite.off('drag');
         sprite.off('dragend');
+
+        sprite.on('dragstart', () => {
+            this.originalPositions[item.id] = {
+                x: sprite.x,
+                y: sprite.y,
+                occupied_tiles: item.occupied_tiles.map(tile => [...tile]),
+            };
+        });
 
         sprite.on('drag', (pointer) => {
             sprite.x = pointer.worldX;
@@ -814,7 +880,8 @@ export default class PrivateScene extends Phaser.Scene {
                 halfTileHeight
             );
 
-            if (this.isPositionValid(newTiles, item.id)) {
+            if (this.isPositionValid(newTiles, item.id) && !this.pendingSceneItemMove) {
+                this.pendingSceneItemMove = { id: item.id };
                 socket.emit(RequestSocketsEnum.SCENE_PUT_ITEM, {
                     user_catalog_item_id: item.id,
                     occupied_tiles: newTiles,
@@ -1004,6 +1071,7 @@ export default class PrivateScene extends Phaser.Scene {
         const centerX = this.scale.width / 2;
 
         this.sceneItems.forEach((item, index) => {
+            if (!Array.isArray(item.occupied_tiles) || item.occupied_tiles.length === 0) return;
             //console.log(`  Rendering item ${index}:`, item.sprite_name, item.occupied_tiles);
             // Calcular la posición promedio
             let sumX = 0;
@@ -1024,8 +1092,7 @@ export default class PrivateScene extends Phaser.Scene {
             // Crear o actualizar sprite
             if (!item.sprite) {
                 // Determinar si es video o imagen
-                const assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
-                const isVideo = this.isVideoFile(assetSrc);
+                const isVideo = this.isVideoFile(this.catalogItemSource(item));
 
                 if (isVideo && this.cache.video.exists(item.sprite_name)) {
                     // Crear video sprite
@@ -1043,7 +1110,11 @@ export default class PrivateScene extends Phaser.Scene {
                 } else if (this.textures.exists(item.sprite_name)) {
                     // Crear imagen sprite
                     const baseScale = item.scale || this.dpiScale;
-                    item.sprite = this.add.image(avgX, y, item.sprite_name)
+                    const frameNames = (item.atlas || item.atlas_url)
+                        ? this.textures.get(item.sprite_name).getFrameNames()
+                        : [];
+                    const firstFrame = frameNames.find(frame => frame !== '__BASE') || undefined;
+                    item.sprite = this.add.image(avgX, y, item.sprite_name, firstFrame)
                         .setOrigin(0.5, 0.90)
                         .setScale(baseScale * this.sceneScaleFactor);
 
@@ -1185,6 +1256,11 @@ export default class PrivateScene extends Phaser.Scene {
         earlyEventBuffer.clear();
 
         RemovePhaserSocketsUtil.main(socket);
+        if (this.sceneItemErrorHandler) {
+            socket.off('scene_item_error', this.sceneItemErrorHandler);
+            this.sceneItemErrorHandler = null;
+        }
+        this.pendingSceneItemMove = null;
         if (this.chatManager) {
             this.chatManager.destroy();
             this.chatManager = null;

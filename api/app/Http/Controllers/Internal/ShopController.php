@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Internal;
 
 use App\Models\User;
 use App\Models\CatalogItem;
+use App\Support\CatalogPurchasePricing;
 use Illuminate\Http\Request;
 use App\Models\CatalogCategory;
 use App\Models\UserCatalogItem;
@@ -39,6 +40,11 @@ class ShopController extends Controller
         // Obtener todos los items activos y comprables
         $items = CatalogItem::where('is_active', true)
             ->where('is_purchasable', true)
+            ->where('is_reference_only', false)
+            ->where(function ($query) {
+                $query->whereNull('reference_source_url')
+                    ->orWhereIn('asset_rights_status', ['original', 'licensed']);
+            })
             ->with('category')
             ->orderBy('category_id', 'asc')
             ->orderBy('id', 'asc')
@@ -70,7 +76,7 @@ class ShopController extends Controller
 
         $request->validate([
             'catalog_item_id' => 'required|integer|exists:catalog_items,id',
-            'quantity' => 'integer|min:1',
+            'quantity' => 'integer|min:1|max:1000',
         ]);
 
         $catalogItemId = $request->input('catalog_item_id');
@@ -87,7 +93,9 @@ class ShopController extends Controller
         }
 
         // Verificar que el item está activo y es comprable
-        if (!$catalogItem->is_active || !$catalogItem->is_purchasable) {
+        if (!$catalogItem->is_active || !$catalogItem->is_purchasable ||
+            $catalogItem->is_reference_only ||
+            ($catalogItem->reference_source_url && !in_array($catalogItem->asset_rights_status, ['original', 'licensed'], true))) {
             return response()->json([
                 'success' => false,
                 'error' => 'Item is not available for purchase',
@@ -127,20 +135,27 @@ class ShopController extends Controller
             ], 400);
         }
 
-        // Calcular el precio total
-        $totalPrice = $catalogItem->price * $quantity;
-
-        // Aplicar descuento si existe
-        if ($catalogItem->discount > 0) {
-            $totalPrice = $totalPrice - ($totalPrice * ($catalogItem->discount / 100));
+        // No confiar solo en la validación del administrador: también pueden existir
+        // registros históricos o importaciones con monedas/precios inválidos.
+        try {
+            $totalPrice = CatalogPurchasePricing::total(
+                $catalogItem->price,
+                $catalogItem->discount ?? 0,
+                $quantity,
+                (string) $catalogItem->price_type
+            );
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Invalid catalog purchase configuration',
+            ], 422);
         }
-
-        // Redondear el precio total
-        $totalPrice = (int) round($totalPrice);
 
         DB::beginTransaction();
 
         try {
+            // Serializar compras concurrentes del mismo usuario: nunca gastar dos veces el mismo saldo.
+            $user = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
             // Verificar que el usuario tiene suficiente oro o plata según el tipo de precio
             if ($catalogItem->price_type === 'golden_coins') {
                 // Asegurar que user->gold_coins sea entero

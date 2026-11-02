@@ -83,6 +83,17 @@ class CatalogItemCrudController extends CrudController
             'model' => "App\Models\CatalogCategory",
         ]);
         $this->crud->addColumn([
+            'name' => 'rarity_code',
+            'label' => 'Rareza',
+            'type' => 'select_from_array',
+            'options' => \App\Support\CatalogRarity::labels(),
+        ]);
+        $this->crud->addColumn([
+            'name' => 'is_reference_only',
+            'label' => 'Solo referencia',
+            'type' => 'boolean',
+        ]);
+        $this->crud->addColumn([
             'name' => 'price',
             'label' => 'Precio',
             'type' => 'number',
@@ -276,8 +287,52 @@ class CatalogItemCrudController extends CrudController
                     4 => '4 Estrellas',
                     5 => '5 Estrellas',
                 ],
-                'hint' => 'Clasificación del artículo. Afecta su rareza y valor en el juego.',
+                'hint' => 'Valoración estética independiente de la rareza (no se calcula con estrellas).',
                 'tab' => 'Configuración'
+            ],
+            [
+                'name' => 'rarity_code',
+                'label' => 'Rareza',
+                'type' => 'select_from_array',
+                'options' => \App\Support\CatalogRarity::labels(),
+                'default' => 'comun',
+                'hint' => 'Clasificación de BoomBangCL; se revisa manualmente. Una edición LTD o Evento no depende del número de copias.',
+                'tab' => 'Configuración',
+            ],
+            [
+                'name' => 'is_reference_only',
+                'label' => 'Ficha documental (sin venta)',
+                'type' => 'checkbox',
+                'hint' => 'Mantener activado para objetos investigados sin sprite, dimensiones o derechos de uso verificados.',
+                'tab' => 'Configuración',
+            ],
+            [
+                'name' => 'reference_copy_count',
+                'label' => 'Copias observadas (fuente externa)',
+                'type' => 'number',
+                'attributes' => ['min' => 1],
+                'tab' => 'Configuración',
+            ],
+            [
+                'name' => 'reference_source_url',
+                'label' => 'URL de la fuente',
+                'type' => 'url',
+                'tab' => 'Configuración',
+            ],
+            [
+                'name' => 'asset_rights_status',
+                'label' => 'Derechos de arte',
+                'type' => 'select_from_array',
+                'options' => ['unverified' => 'Pendiente de verificar', 'licensed' => 'Licencia documentada', 'original' => 'Ilustración original de BoomBangCL'],
+                'default' => 'unverified',
+                'tab' => 'Configuración',
+            ],
+            [
+                'name' => 'asset_rights_evidence',
+                'label' => 'Evidencia de autoría o licencia',
+                'type' => 'textarea',
+                'hint' => 'Anotar autor, licencia y comprobante. No activar imágenes de terceros sin autorización.',
+                'tab' => 'Configuración',
             ],
             [
                 'name' => 'map_size',
@@ -313,9 +368,9 @@ class CatalogItemCrudController extends CrudController
                 'label' => 'Escala',
                 'type' => 'number',
                 'default' => 1,
-                'attributes' => ["step" => "1", "min" => "1"],
+                'attributes' => ['step' => '0.05', 'min' => '0.05', 'max' => '8'],
                 'wrapper' => ['class' => 'form-group col-md-4'],
-                'hint' => 'Factor de escala para el objeto en la escena. 1 = tamaño original, 2 = el doble de grande, etc.',
+                'hint' => 'Escala del objeto en Phaser (0.05–8); mantener la proporción de la textura original.',
                 'tab' => 'Configuración'
             ],
             [

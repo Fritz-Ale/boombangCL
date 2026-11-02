@@ -1,0 +1,93 @@
+name: Catalog rarity and purchases
+
+on:
+  pull_request:
+    paths:
+      - 'api/app/**'
+      - 'api/database/**'
+      - 'api/tests/Standalone/catalog-rarity.php'
+      - 'api/tests/Standalone/catalog-purchase-pricing.php'
+      - 'client/src/views/components/game/scenes/ShopComponent.vue'
+      - '.github/workflows/catalog-rarity-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php-catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Check PHP syntax
+        run: |
+          php -l api/app/Support/CatalogRarity.php
+          php -l api/app/Support/CatalogPurchasePricing.php
+          php -l api/app/Models/CatalogItem.php
+          php -l api/app/Http/Resources/CatalogItemResource.php
+          php -l api/app/Http/Resources/UserCatalogItemsResource.php
+          php -l api/app/Http/Controllers/Internal/ShopController.php
+          php -l api/app/Http/Controllers/Internal/StripeController.php
+          php -l api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php
+          php -l api/app/Http/Controllers/Admin/CatalogItemCrudController.php
+          php -l api/app/Http/Requests/CatalogItemRequest.php
+          php -l api/database/migrations/2026_11_02_150000_add_rarity_and_reference_fields_to_catalog_items.php
+          php -l api/database/seeders/CatalogReferenceSeeder.php
+      - name: Validate rarity thresholds and research input
+        run: |
+          php api/tests/Standalone/catalog-rarity.php
+          php api/tests/Standalone/catalog-purchase-pricing.php
+      - name: Check protected purchase and island contract
+        run: |
+          grep -q "lockForUpdate()" api/app/Http/Controllers/Internal/ShopController.php
+          grep -q "is_reference_only" api/app/Http/Controllers/Internal/StripeController.php
+          grep -Fq -- "->where('user_id', \$userId)" api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php
+          grep -Fq -- "PrivateScenePlacementValidator::assertValid" api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php
+          grep -Fq -- "->lockForUpdate()" api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php
+
+  vue-shop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+      - name: Install frontend dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile full Vue + Phaser client
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
+
+  audit-existing-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install image metadata reader
+        run: python -m pip install Pillow
+      - name: Audit existing archive and SQL catalog
+        run: |
+          python -m py_compile scripts/audit_catalog_assets.py
+          python scripts/audit_catalog_assets.py \
+            --sql boombang_api.sql \
+            --zip api/public/uploads.zip \
+            --out catalog-assets-report.json
+      - name: Save inventory audit without image files
+        uses: actions/upload-artifact@v4
+        with:
+          name: existing-catalog-metadata
+          path: catalog-assets-report.json
+          retention-days: 14

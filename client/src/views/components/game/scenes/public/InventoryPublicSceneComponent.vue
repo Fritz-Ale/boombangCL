@@ -52,6 +52,9 @@
             class="inventory__item-image"
             alt=""
           />
+          <span v-if="item" class="inventory__rarity" :title="'Rareza: ' + (item.rarity_label || 'Común')">
+            {{ item.rarity_label || 'Común' }}
+          </span>
           <span
             v-if="item && item.count > 1"
             class="inventory__item-count"
@@ -113,7 +116,7 @@ const currentPageItems = computed(() => {
 
 const getItemImage = (item) => {
   if (!item) return '';
-  return import.meta.env.VITE_APP_ENV === 'local' ? item.image : item.image_url;
+  return import.meta.env.VITE_APP_ENV === 'local' ? (item.image || item.image_url) : (item.image_url || item.image);
 };
 
 const getItemStyle = (item) => {
@@ -303,6 +306,22 @@ onMounted(() => {
   object-fit: contain;
 }
 
+.inventory__rarity {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  z-index: 1;
+  max-width: 95%;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(10, 54, 75, .89);
+  color: white;
+  font-size: 8px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
 .inventory__item-count {
   position: absolute;
   bottom: 2px;

@@ -36,6 +36,15 @@
             {{ activeCategory ? activeCategory.name : $t("shop.title") }}
           </div>
 
+          <div class="shop__filters" role="search" aria-label="Filtrar objetos">
+            <label for="shop-search">Buscar objeto</label>
+            <input id="shop-search" v-model.trim="searchTerm" type="search" maxlength="80" placeholder="Nombre del objeto" />
+            <label for="shop-rarity">Rareza</label>
+            <select id="shop-rarity" v-model="rarityFilter">
+              <option value="all">Todas las rarezas</option>
+              <option v-for="(label, code) in rarityLabels" :key="code" :value="code">{{ label }}</option>
+            </select>
+          </div>
           <!-- Grid de items -->
           <div class="shop__items-container">
             <div class="shop__items-grid" v-if="activeCategory">
@@ -57,11 +66,15 @@
                 @click="selectItem(item)"
               >
                 <img
+                  v-if="item.image_url"
                   :src="item.image_url"
                   :alt="item.name"
                   class="item-image"
+                  loading="lazy"
                   @error="onImageError"
                 />
+                <span v-else class="shop__no-image">Sin imagen</span>
+                <span class="shop__rarity">{{ item.rarity_label || 'Común' }}</span>
               </div>
             </div>
           </div>
@@ -73,6 +86,7 @@
             </button>
             <div class="item-details__image">
               <img
+                v-if="selectedItem.image_url"
                 :src="selectedItem.image_url"
                 :alt="selectedItem.name"
                 @error="onImageError"
@@ -80,7 +94,8 @@
             </div>
             <div class="item-details__info">
               <h3 class="item-name">{{ selectedItem.name }}</h3>
-              <div class="item-description" v-if="selectedItem.description" v-html="selectedItem.description"></div>
+              <p class="shop__rarity-detail">Rareza: {{ selectedItem.rarity_label || 'Común' }}</p>
+              <div class="item-description" v-if="selectedItem.description" v-text="selectedItem.description"></div>
 
               <!-- Selector de cantidad -->
               <div class="quantity-selector">
@@ -119,7 +134,7 @@
               <button
                 class="buy-button"
                 @click="purchaseItem"
-                :disabled="purchasing"
+                :disabled="purchasing || selectedItem.is_reference_only"
               >
                 <span v-if="!purchasing">{{ $t("shop.buy") }}</span>
                 <div v-else class="spinner-small"></div>
@@ -153,6 +168,15 @@ export default {
       activeCategory: null,
       selectedItem: null,
       selectedQuantity: 1,
+      searchTerm: '',
+      rarityFilter: 'all',
+      rarityLabels: {
+        singular: 'Singular', duo: 'Dúo', triada: 'Tríada',
+        casi_unico: 'Casi único', excepcional: 'Excepcional',
+        legendario: 'Legendario', reliquia: 'Reliquia',
+        muy_rare: 'Muy rare', rare: 'Rare', ltd: 'LTD', evento: 'Evento',
+        comun: 'Común',
+      },
 
       loadingCategories: false,
       loadingItems: false,
@@ -165,7 +189,12 @@ export default {
   computed: {
     categoryItems() {
       if (!this.activeCategory) return [];
-      return this.items.filter(item => item.category_id === this.activeCategory.id);
+      const text = this.searchTerm.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      return this.items.filter(item => {
+        if (item.category_id !== this.activeCategory.id || item.is_reference_only) return false;
+        if (this.rarityFilter !== 'all' && (item.rarity_code || 'comun') !== this.rarityFilter) return false;
+        return !text || String(item.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(text);
+      });
     },
     totalPrice() {
       if (!this.selectedItem) return 0;
@@ -185,10 +214,12 @@ export default {
       return Math.round(total);
     },
     quantityOptions() {
-      if (!this.selectedItem) return [1];
+      if (!this.selectedItem || this.selectedItem.is_multi_buy === false) return [1];
       
       const min = this.selectedItem.min_purchase_quantity || 1;
-      const max = this.selectedItem.max_purchase_quantity || 10;
+      const max = this.selectedItem.is_multi_buy
+        ? Math.min(this.selectedItem.max_purchase_quantity || 10, 50)
+        : 1;
       
       const options = [];
       for (let i = min; i <= max; i++) {
@@ -253,7 +284,7 @@ export default {
       this.selectedItem = item;
       // Ajustar cantidad según los límites del item
       const minQuantity = item.min_purchase_quantity || 1;
-      this.selectedQuantity = minQuantity;
+      this.selectedQuantity = item.is_multi_buy ? minQuantity : 1;
       this.purchaseMessage = null;
     },
 
@@ -270,7 +301,7 @@ export default {
     },
 
     purchaseItem() {
-      if (!this.selectedItem || this.purchasing) return;
+      if (!this.selectedItem || this.purchasing || this.selectedItem.is_reference_only) return;
 
       // Manejar pagos con Stripe
       if (this.selectedItem.price_type === 'stripe_payment') {
@@ -281,15 +312,6 @@ export default {
       // Manejar pagos normales (oro/plata)
       this.purchasing = true;
       this.purchaseMessage = null;
-
-      console.log('=== PURCHASE ATTEMPT (CLIENT) ===');
-      console.log('Item:', this.selectedItem.name);
-      console.log('Item ID:', this.selectedItem.id);
-      console.log('Item Price:', this.selectedItem.price);
-      console.log('Selected Quantity:', this.selectedQuantity);
-      console.log('Quantity Type:', typeof this.selectedQuantity);
-      console.log('Total Price:', this.totalPrice);
-      console.log('User Gold:', this.authUser.gold);
 
       socket.emit(RequestSocketsEnum.PURCHASE_SHOP_ITEM, {
         catalog_item_id: this.selectedItem.id,
@@ -491,13 +513,40 @@ export default {
     },
 
     onImageError(event) {
-      event.target.src = '/assets/game/default-item.png';
+      // No reintentar indefinidamente si también falta el recurso de respaldo.
+      event.target.style.visibility = 'hidden';
     },
   },
 };
 </script>
 
 <style scoped>
+.shop__filters {
+  display: grid;
+  grid-template-columns: auto minmax(100px, 1fr) auto minmax(115px, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  color: #19384b;
+  background: #f5fbfc;
+}
+.shop__filters label { font-weight: 700; font-size: 12px; }
+.shop__filters :is(input, select) {
+  min-width: 0; width: 100%; font: inherit;
+  padding: 7px 8px; border: 1px solid #7d9ea7; border-radius: 8px;
+  background: white; color: #19384b;
+}
+.shop__filters :is(input, select):focus-visible { outline: 3px solid #ffc65b; outline-offset: 2px; }
+.shop__rarity { display: block; font-size: 10px; color: #124e61; font-weight: 800; text-align: center; }
+.shop__rarity-detail { font-size: 12px; font-weight: 800; color: #095e72; }
+.shop__no-image { font-size: 11px; }
+.item-description { white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 650px) {
+  .shop { width: min(100%, 94vw); height: min(94vh, 750px); overflow-y: auto; }
+  .shop__filters { grid-template-columns: 1fr 1fr; }
+  .shop__filters label { grid-column: auto; }
+}
+
 .shop-overlay {
   position: absolute;
   top: 0;
