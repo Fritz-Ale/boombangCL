@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedInteger('reference_copy_count')->nullable();
             $table->string('reference_source_url', 500)->nullable();
             $table->string('asset_rights_status', 24)->default('unverified');
+            $table->text('asset_rights_evidence')->nullable();
         });
     }
 
