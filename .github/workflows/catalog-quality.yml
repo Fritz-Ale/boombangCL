@@ -17,6 +17,7 @@ on:
       - 'api/tests/Standalone/catalog-rarity.php'
       - 'api/tests/Standalone/catalog-purchase-pricing.php'
       - 'api/tests/Standalone/private-scene-placement.php'
+      - 'api/tests/Standalone/gashapon-autumn-reference.php'
       - 'client/tests/**'
       - 'scripts/install_catalog_assets_local.py'
       - 'scripts/tests/**'
@@ -66,6 +67,7 @@ jobs:
           php api/tests/Standalone/catalog-rarity.php
           php api/tests/Standalone/catalog-purchase-pricing.php
           php api/tests/Standalone/private-scene-placement.php
+          php api/tests/Standalone/gashapon-autumn-reference.php
 
   client:
     runs-on: ubuntu-latest
