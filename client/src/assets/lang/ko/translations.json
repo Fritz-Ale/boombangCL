@@ -372,7 +372,8 @@
     "tabs": {
       "areas": "지역",
       "games": "게임",
-      "islands": "섬"
+      "islands": "섬",
+      "search": "검색"
     },
     "my_islands": {
       "no_islands": "생성된 섬이 없습니다."
