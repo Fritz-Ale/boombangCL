@@ -11,8 +11,8 @@ const avatarNames = { 1: "boomer", 5: "gata", 12: "rasta" };
 
 function loadClass(filename, exportName, sandbox) {
   const source = fs.readFileSync(path.join(root, filename), "utf8")
-    .replace(/^import .*?;[ \\t]*$/gm, "")
-    .replace(/^export default .*?;[ \\t]*$/gm, `globalThis.TestedClass = ${exportName};`);
+    .replace(/^import .*?;.*$/gm, "")
+    .replace(/^export default .*?;.*$/gm, `globalThis.TestedClass = ${exportName};`);
   const context = vm.createContext({
     EventEmitter, AvatarEnum: avatarEnum, setInterval: () => 1,
     clearInterval: () => {}, setTimeout, Date, console, ...sandbox,
@@ -82,9 +82,9 @@ test("el cargador resuelve nombres de atlas y no usa IDs numéricos", async () =
 
 test("el listado inicial crea los sprites antes de marcar la escena lista", () => {
   const src = fs.readFileSync(path.join(root, "src/phaser/controllers/scene/CreateSceneController.js"), "utf8");
-  assert.match(src, /await AddUserController\\.processUser\\(gameScene, userData\\)/);
+  assert.ok(src.includes("await AddUserController.processUser(gameScene, userData)"));
   const controller = fs.readFileSync(path.join(root, "src/phaser/controllers/scene/AddUserController.js"), "utf8");
-  assert.match(controller, /const userId = user\\.socketId/);
-  assert.match(controller, /_isPlaceholderAvatar = true/);
-  assert.doesNotMatch(controller, /spriteAvatar\\.setVisible\\(false\\); \\/\\/ Ocultar hasta que se cargue/);
+  assert.ok(controller.includes("const userId = user.socketId;"));
+  assert.ok(controller.includes("_isPlaceholderAvatar = true"));
+  assert.ok(!controller.includes("spriteAvatar.setVisible(false)"));
 });
