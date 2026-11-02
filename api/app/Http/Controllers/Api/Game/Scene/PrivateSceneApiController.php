@@ -8,6 +8,8 @@ use App\Models\PrivateScene;
 use Illuminate\Http\Request;
 use App\Models\UserCatalogItem;
 use App\Models\PrivateSceneConfig;
+use App\Support\PrivateScenePlacementValidator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -140,77 +142,119 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
 
     public function putItem(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'user_catalog_item_id' => 'required|integer|exists:user_catalog_items,id',
-                'private_scene_id' => 'required|integer|exists:private_scenes,id',
-                'occupied_tiles' => 'required|array|min:1|max:256',
-                'occupied_tiles.*' => 'required|array|size:2',
-                'occupied_tiles.*.0' => 'required|integer|min:0',
-                'occupied_tiles.*.1' => 'required|integer|min:0',
-            ]);
-            $user = Auth::user();
-            // Solo el propietario de la isla puede colocar decoración.
-            PrivateScene::whereKey($validated['private_scene_id'])
-                ->where('user_id', $user->id)
-                ->firstOrFail();
-            $responseUpdate = UserCatalogItem::where('id', $validated['user_catalog_item_id'])
-                ->where('user_id', $user->id)
-                ->whereNull('private_scene_id')
-                ->update([
-                    'private_scene_id' => $validated['private_scene_id'],
-                    'occupied_tiles' => json_encode($validated['occupied_tiles'])
-                ]);
+        $validated = $request->validate([
+            'user_catalog_item_id' => 'required|integer|exists:user_catalog_items,id',
+            'private_scene_id' => 'required|integer|exists:private_scenes,id',
+            'occupied_tiles' => 'required|array|min:1|max:256',
+            'occupied_tiles.*' => 'required|array|size:2',
+            'occupied_tiles.*.0' => 'required|integer|min:0',
+            'occupied_tiles.*.1' => 'required|integer|min:0',
+        ]);
 
-            if ($responseUpdate == 0) {
-                throw new Exception('Item does not belong to the current user or does not exist.');
-            }
+        try {
+            $userId = Auth::id();
+            DB::transaction(function () use ($validated, $userId) {
+                // The room lock serializes concurrent placements including different items.
+                $scene = PrivateScene::with('privateSceneConfig')
+                    ->whereKey($validated['private_scene_id'])
+                    ->where('user_id', $userId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $item = UserCatalogItem::with('catalogItem')
+                    ->whereKey($validated['user_catalog_item_id'])
+                    ->where('user_id', $userId)
+                    ->whereNull('private_scene_id')
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                if (!$item->catalogItem || $item->catalogItem->is_reference_only) {
+                    throw new \InvalidArgumentException('El objeto todavía no está disponible para colocar.');
+                }
+                if ($scene->userCatalogItems()->count() >= 20) {
+                    throw new \InvalidArgumentException('Se alcanzó el límite de objetos en esta sala.');
+                }
+
+                PrivateScenePlacementValidator::assertValid(
+                    $validated['occupied_tiles'],
+                    $scene->privateSceneConfig?->map,
+                    $item->catalogItem->map_size,
+                    $this->placedSceneItems($scene),
+                    (int) $item->id,
+                    (string) ($item->catalogItem->type_of_behavior ?? 'normal')
+                );
+
+                $item->private_scene_id = $scene->id;
+                $item->occupied_tiles = json_encode($validated['occupied_tiles'], JSON_THROW_ON_ERROR);
+                $item->save();
+            });
             return response()->json(['success' => true]);
-        } catch (Exception $e) {
-            Log::warning('Error de inventario en escena privada: ' . $e->getMessage(), [
-                'user_id' => Auth::id(),
-                'operation' => 'putItem',
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo colocar un objeto en la sala privada', [
+                'user_id' => Auth::id(), 'error' => $e->getMessage(),
             ]);
-            return response()->json([
-                'success' => false,
-                'error' => 'No fue posible actualizar el objeto de la escena.',
-            ], 422);
+            return response()->json(['success' => false, 'error' => 'Posición o permiso de objeto no válido.'], 422);
         }
     }
 
     public function updateItemPosition(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'user_catalog_item_id' => 'required|integer|exists:user_catalog_items,id',
-                'occupied_tiles' => 'required|array|min:1|max:256',
-                'occupied_tiles.*' => 'required|array|size:2',
-                'occupied_tiles.*.0' => 'required|integer|min:0',
-                'occupied_tiles.*.1' => 'required|integer|min:0',
-            ]);
-            $user = Auth::user();
-            $responseUpdate = UserCatalogItem::where('id', $validated['user_catalog_item_id'])
-                ->where('user_id', $user->id)
-                ->whereNotNull('private_scene_id')
-                ->whereHas('privateScene', fn ($query) => $query->where('user_id', $user->id))
-                ->update([
-                    'occupied_tiles' => json_encode($validated['occupied_tiles'])
-                ]);
+        $validated = $request->validate([
+            'user_catalog_item_id' => 'required|integer|exists:user_catalog_items,id',
+            'occupied_tiles' => 'required|array|min:1|max:256',
+            'occupied_tiles.*' => 'required|array|size:2',
+            'occupied_tiles.*.0' => 'required|integer|min:0',
+            'occupied_tiles.*.1' => 'required|integer|min:0',
+        ]);
 
-            if ($responseUpdate == 0) {
-                throw new Exception('Item does not belong to the current user or does not exist.');
-            }
+        try {
+            $userId = Auth::id();
+            DB::transaction(function () use ($validated, $userId) {
+                $item = UserCatalogItem::with('catalogItem')
+                    ->whereKey($validated['user_catalog_item_id'])
+                    ->where('user_id', $userId)
+                    ->whereNotNull('private_scene_id')
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $scene = PrivateScene::with('privateSceneConfig')
+                    ->whereKey($item->private_scene_id)
+                    ->where('user_id', $userId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                if (!$item->catalogItem) {
+                    throw new \InvalidArgumentException('Objeto inexistente.');
+                }
+                PrivateScenePlacementValidator::assertValid(
+                    $validated['occupied_tiles'],
+                    $scene->privateSceneConfig?->map,
+                    $item->catalogItem->map_size,
+                    $this->placedSceneItems($scene),
+                    (int) $item->id,
+                    (string) ($item->catalogItem->type_of_behavior ?? 'normal')
+                );
+
+                $item->occupied_tiles = json_encode($validated['occupied_tiles'], JSON_THROW_ON_ERROR);
+                $item->save();
+            });
             return response()->json(['success' => true]);
-        } catch (Exception $e) {
-            Log::warning('Error de inventario en escena privada: ' . $e->getMessage(), [
-                'user_id' => Auth::id(),
-                'operation' => 'updateItemPosition',
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo mover un objeto de la sala privada', [
+                'user_id' => Auth::id(), 'error' => $e->getMessage(),
             ]);
-            return response()->json([
-                'success' => false,
-                'error' => 'No fue posible actualizar el objeto de la escena.',
-            ], 422);
+            return response()->json(['success' => false, 'error' => 'Movimiento de objeto no válido.'], 422);
         }
+    }
+
+    private function placedSceneItems(PrivateScene $scene): array
+    {
+        return $scene->userCatalogItems()->with('catalogItem')->get()
+            ->map(fn (UserCatalogItem $item): array => [
+                'id' => (int) $item->id,
+                'tiles' => $item->occupied_tiles,
+                'behavior' => (string) ($item->catalogItem?->type_of_behavior ?? 'normal'),
+            ])->all();
     }
 
     public function updateName(Request $request): JsonResource
