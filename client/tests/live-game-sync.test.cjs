@@ -99,3 +99,34 @@ test('server broadcasts live lobby visitors for public, game and minigame scenes
     assert.match(leave, /UpdateGameScenesController\.main\(\)/);
     assert.match(leave, /UpdatePublicScenesController\.main\(\)/);
 });
+
+test('public island snapshot groups active scenes and updates total concurrent visitors', () => {
+    const file = fs.readFileSync(path.join(root, '../server/src/services/publicIslandsSnapshot.js'), 'utf8');
+    const scenes = [
+        { island: { id: 17, name: 'Sur', visitors: 99 }, users: [{}, {}] },
+        { island: { id: 17, name: 'Sur', visitors: 99 }, users: [{}] },
+        { island: { id: 18, name: 'Norte' }, users: [{}] }
+    ];
+    const module = { exports: {} };
+    const dependencies = {
+        '../collections/PrivateScenesCollection': { getAll: () => scenes },
+        '../models/IslandModel': class IslandModel { constructor(row) { Object.assign(this, row); } },
+        '../resources/IslandResource': { collection: arr => arr }
+    };
+    vm.runInNewContext(file, {
+        module,
+        require: name => {
+            assert.ok(Object.prototype.hasOwnProperty.call(dependencies, name), 'Unexpected dependency: ' + name);
+            return dependencies[name];
+        }
+    });
+    const snapshot = module.exports;
+    assert.deepEqual(Array.from(snapshot(), island => [island.id, island.visitors]), [[17, 3], [18, 1]]);
+    scenes.length = 0;
+    assert.equal(snapshot().length, 0);
+    const privateScene = fs.readFileSync(path.join(root, '../server/src/models/PrivateSceneModel.js'), 'utf8');
+    const leave = fs.readFileSync(path.join(root, '../server/src/tasks/RemoveUserFromSceneTask.js'), 'utf8');
+    assert.match(privateScene, /UpdatePublicIslandsController\.main\(\)/);
+    assert.match(leave, /scene\.scene_type == SceneTypesEnum\.PRIVATE_SCENE/);
+    assert.match(leave, /UpdatePublicIslandsController\.main\(\)/);
+});
