@@ -42,7 +42,7 @@ docker compose up --build web
 # Comprobaciones: node --test web/tests/*.test.cjs
 ```
 
-El enlace del juego `http://play.boombang.com` apunta al **cliente de desarrollo local**, no a un servidor público. No se anuncia un lanzamiento activo, un chat web conectado ni cifras de jugadores en línea.
+El enlace de «Cómo jugar» dirige a las instrucciones y el código del cliente en GitHub; no abre un juego público ni un host local de terceros. No se anuncia un lanzamiento activo, un chat web conectado ni cifras de jugadores en línea.
 
 ## Preparación del futuro dominio .cl
 
@@ -59,3 +59,25 @@ No se añaden credenciales ni URL de producción ficticias. **No publicar direcc
 Priorizar informes privados de abuso y moderación, sesión única entre web y juego, directorio seguro de salas, novedades con editor administrativo, y calendario con revisión previa. Antes de implementar intercambio, comercio o perfiles públicos, diseñar autorización, límites de uso, auditoría, seguridad para menores y recuperación de cuentas.
 
 Consulta `../LICENSE.txt` y la [investigación de funcionalidades](../doc/research/boombang-cl-comunidad-chile-2026.md).
+
+## Validación de experiencia y accesibilidad
+
+La portada, comunidad y hoja de ruta comparten header sticky, menú móvil accesible por teclado,
+marcado de página activa y pie con enlaces de navegación, ayuda técnica pública y normas de convivencia.
+La página conserva contenido visible aunque IntersectionObserver no esté disponible y respeta
+`prefers-reduced-motion`. El cliente Vue usa estilos globales propios, pestañas de lobby con
+botones nativos y recuperación ante rechazos/timeout de entrada a salas.
+
+Comprobar desde la raíz del repositorio:
+
+```sh
+node --test web/tests/*.test.cjs client/tests/area-discovery.test.cjs
+node --check web/script.js
+node --check web/comunidad.js
+cd client && npm ci && npm run build
+```
+
+Antes de publicar deben verificarse en navegador real los anchos de 320, 375, 768 y 1440 píxeles,
+la navegación con Tab/Shift+Tab/Escape, contraste, lectores de pantalla, errores de conexión
+y transiciones de Lobby → área → Lobby con el servidor Socket.IO funcionando.
+Estas pruebas no implican que el juego ni los servicios estén desplegados.
