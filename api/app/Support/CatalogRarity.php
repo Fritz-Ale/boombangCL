@@ -4,7 +4,7 @@ namespace App\Support;
 
 /**
  * Etiquetas editoriales compatibles con la clasificación anunciada por BoomBang
- * el 2026-10-29. No implica afiliación ni sincronización de sus inventarios.
+ * en 2026. No implica afiliación ni sincronización de sus inventarios.
  *
  * Números de copias = ejemplares en circulación en el catálogo de referencia,
  * nunca una promesa de escasez dentro de BoomBangCL.
