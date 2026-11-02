@@ -76,7 +76,8 @@ class ImportAuthorizedCatalog extends Command
                 $footprint = [];
                 foreach ($map as $tile) {
                     if (!is_array($tile) || count($tile) !== 2 ||
-                        !is_int($tile[0]) || !is_int($tile[1])) {
+                        !is_int($tile[0]) || !is_int($tile[1]) ||
+                        $tile[0] < 0 || $tile[1] < 0) {
                         throw new InvalidArgumentException('Las casillas deben ser pares de enteros.');
                     }
                     $footprint[$tile[0] . ',' . $tile[1]] = true;
