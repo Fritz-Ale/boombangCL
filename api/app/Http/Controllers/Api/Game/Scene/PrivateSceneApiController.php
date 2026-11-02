@@ -110,33 +110,41 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
 
     public function removeItem(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'user_catalog_item_id' => 'required|integer|exists:user_catalog_items,id',
-            ]);
-            $user = Auth::user();
-            $responseUpdate = UserCatalogItem::where('id', $validated['user_catalog_item_id'])
-                ->where('user_id', $user->id)
-                ->whereNotNull('private_scene_id')
-                ->whereHas('privateScene', fn ($query) => $query->where('user_id', $user->id))
-                ->update([
-                    'private_scene_id' => null,
-                    'occupied_tiles' => '[]'
-                ]);
+        $validated = $request->validate([
+            'user_catalog_item_id' => 'required|integer|exists:user_catalog_items,id',
+        ]);
 
-            if ($responseUpdate == 0) {
-                throw new Exception('Item does not belong to the current private scene or does not exist.');
-            }
+        try {
+            $userId = Auth::id();
+            DB::transaction(function () use ($validated, $userId) {
+                // Read the room ID, then lock room before item in every operation.
+                $sceneId = UserCatalogItem::whereKey($validated['user_catalog_item_id'])
+                    ->where('user_id', $userId)
+                    ->value('private_scene_id');
+
+                if (!$sceneId) {
+                    throw new \InvalidArgumentException('El objeto ya está en el inventario.');
+                }
+                $scene = PrivateScene::whereKey($sceneId)
+                    ->where('user_id', $userId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+                $item = UserCatalogItem::whereKey($validated['user_catalog_item_id'])
+                    ->where('user_id', $userId)
+                    ->where('private_scene_id', $scene->id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $item->private_scene_id = null;
+                $item->occupied_tiles = '[]';
+                $item->save();
+            });
             return response()->json(['success' => true]);
-        } catch (Exception $e) {
-            Log::warning('Error de inventario en escena privada: ' . $e->getMessage(), [
-                'user_id' => Auth::id(),
-                'operation' => 'removeItem',
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo retirar un objeto de la sala privada', [
+                'user_id' => Auth::id(), 'error' => $e->getMessage(),
             ]);
-            return response()->json([
-                'success' => false,
-                'error' => 'No fue posible actualizar el objeto de la escena.',
-            ], 422);
+            return response()->json(['success' => false, 'error' => 'No fue posible retirar el objeto.'], 422);
         }
     }
 
