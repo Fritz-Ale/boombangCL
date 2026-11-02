@@ -1,55 +1,47 @@
+/**
+ * Exclusión mutua FIFO por escena.
+ *
+ * La versión anterior registraba múltiples .then() sobre una misma promesa:
+ * al liberarse podían despertar dos solicitudes a la vez y romper la exclusión.
+ * Mantener la interfaz: const release = await sceneMutex.acquire(sceneId);
+ */
 class SceneMutex {
     constructor() {
-        this.locks = new Map(); // sceneId -> Promise
-        this.queues = new Map(); // sceneId -> Array of resolvers
+        this.queues = new Map();
     }
 
-    async acquire(sceneId) {
-        // Si no hay lock para esta escena, crear uno inmediatamente
-        if (!this.locks.has(sceneId)) {
-            const resolver = { resolve: null, promise: null };
-            resolver.promise = new Promise(resolve => {
-                resolver.resolve = resolve;
-            });
-            this.locks.set(sceneId, resolver.promise);
-            return resolver.resolve;
-        }
-
-        // Si ya hay un lock, esperar en cola
-        const currentLock = this.locks.get(sceneId);
-        
-        return new Promise((resolve) => {
-            if (!this.queues.has(sceneId)) {
-                this.queues.set(sceneId, []);
+    acquire(sceneId) {
+        return new Promise(resolve => {
+            let queue = this.queues.get(sceneId);
+            if (!queue) {
+                queue = [];
+                this.queues.set(sceneId, queue);
             }
-            this.queues.get(sceneId).push(resolve);
-            
-            // Cuando el lock actual se libere, procesar la cola
-            currentLock.then(() => {
-                const queue = this.queues.get(sceneId);
-                if (queue && queue.length > 0) {
-                    const nextResolver = queue.shift();
-                    
-                    // Crear nuevo lock para el siguiente en la cola
-                    const newResolver = { resolve: null, promise: null };
-                    newResolver.promise = new Promise(resolve => {
-                        newResolver.resolve = resolve;
-                    });
-                    this.locks.set(sceneId, newResolver.promise);
-                    
-                    // Dar el control al siguiente
-                    nextResolver(newResolver.resolve);
-                } else {
-                    // No hay más en cola, limpiar
-                    this.locks.delete(sceneId);
-                    this.queues.delete(sceneId);
-                }
-            });
+
+            let released = false;
+            const grantLock = () => {
+                resolve(() => {
+                    // Evitar liberar dos veces y entregar el lock por error.
+                    if (released) return;
+                    released = true;
+
+                    // Solo quien ocupa la cabeza de la cola puede liberar.
+                    if (queue[0] !== grantLock) return;
+                    queue.shift();
+
+                    if (queue.length === 0) {
+                        this.queues.delete(sceneId);
+                    } else {
+                        // Despertar exactamente a un solicitante.
+                        queue[0]();
+                    }
+                });
+            };
+
+            queue.push(grantLock);
+            if (queue.length === 1) grantLock();
         });
     }
 }
 
-// Singleton global para toda la aplicación
-const sceneMutex = new SceneMutex();
-
-module.exports = sceneMutex;
+module.exports = new SceneMutex();
