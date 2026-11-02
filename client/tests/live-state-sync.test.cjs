@@ -168,7 +168,12 @@ test('login form preserves third-party authentication listeners and avoids force
   let anotherListener = 0;
   socket.on('login_success', () => anotherListener++);
   options.mounted.call(ctx);
-  assert.ok(sent.some(([event, data]) => event === 'jwt_auto_login' && data.authJwt === old.value));
+  assert.equal(sent.filter(([event]) => event === 'jwt_auto_login').length, 0, 'never emit auth on disconnected transport');
+  socket.connected = true;
+  socket.emit('connect');
+  assert.equal(sent.filter(([event, data]) => event === 'jwt_auto_login' && data.authJwt === old.value).length, 1);
+  socket.emit('connect');
+  assert.equal(sent.filter(([event]) => event === 'jwt_auto_login').length, 1, 'duplicate connect must not repeat JWT request');
   socket.emit('invalid_jwt');
   assert.equal(ctx.loading, false);
   assert.equal(token, null);
