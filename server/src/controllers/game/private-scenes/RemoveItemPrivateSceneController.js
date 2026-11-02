@@ -42,19 +42,10 @@ class RemoveItemPrivateSceneController {
             }, user);
             if (user.currentArea !== scene) return;
 
-            // Free up the tiles in the base navigation map
-            if (userCatalogItem.occupied_tiles && user.currentArea.navigationMapBase) {
-                userCatalogItem.occupied_tiles.forEach(tile => {
-                    const [x, y] = tile;
-                    if (user.currentArea.navigationMapBase[y] && user.currentArea.navigationMapBase[y][x] !== undefined) {
-                        user.currentArea.navigationMapBase[y][x] = 0; // Mark as walkable
-                    }
-                });
-            }
-
             // Remove item from the scene and add it to the user's inventory
             user.currentArea.objects = user.currentArea.objects.filter(item => item.id != userCatalogItemId);
             user.inventory.push(userCatalogItem);
+            scene.rebuildObjectNavigationMap();
 
             // Update item properties
             userCatalogItem.private_scene_id = null;
