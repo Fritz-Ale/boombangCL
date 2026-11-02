@@ -83,7 +83,9 @@ test('lobby applies pushed area/island updates without recreating component', ()
   socket.on(events.UPDATE_PUBLIC_SCENES, () => thirdPartyEvents++);
   const options = loadComponent('src/views/screens/game/LobbyScreen.vue', {
     socket, RequestSocketsEnum: request, ResponseSocketsEnum: events,
-    useLobbyStore: () => ({ activeTab: 'areas' }), mapActions: () => ({}), mapState: () => ({})
+    useLobbyStore: () => ({ activeTab: 'areas' }), mapActions: () => ({}), mapState: () => ({}),
+    UiElementsComponent: {}, LobbyTabs: {}, AreasTab: {}, GamesTab: {}, IslandsTab: {},
+    SearchTab: {}, ErrorAlertPopup: {}, LobbyTutorialComponent: {}
   });
   const ctx = instance(options);
   options.created.call(ctx);
@@ -108,7 +110,7 @@ test('games and public-island panels release their own listeners', () => {
     const { socket, sent } = mockSocket();
     const options = loadComponent(file, {
       socket, RequestSocketsEnum: request, ResponseSocketsEnum: events,
-      MenuTypeEnum: { GAME_SCENE: 1 }
+      MenuTypeEnum: { GAME_SCENE: 1 }, SpinnerComponent: {}
     });
     const ctx = instance(options);
     options.created.call(ctx);
