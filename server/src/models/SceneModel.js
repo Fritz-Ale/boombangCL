@@ -207,18 +207,29 @@ class SceneModel {
         // Clonar la copia base del mapa
         let navigationMap = JSON.parse(JSON.stringify(this.navigationMapBase));
 
+        // Validar coordenadas para evitar errores si una sesión aún se está
+        // sincronizando o una reserva quedó fuera del mapa.
+        const blockCell = (rawX, rawY) => {
+            const x = Number(rawX);
+            const y = Number(rawY);
+            if (Number.isInteger(x) && Number.isInteger(y) &&
+                y >= 0 && y < navigationMap.length &&
+                x >= 0 && x < (navigationMap[y]?.length ?? 0)) {
+                navigationMap[y][x] = 1;
+            }
+        };
+
         // Marcar las posiciones actuales de los demás usuarios
         this.users.forEach(user => {
-            if (user.id !== excludeUserId) {
-                const pos = user.currentAreaPosition;
-                navigationMap[pos.y][pos.x] = 1;
+            if (user.id !== excludeUserId && user.currentAreaPosition) {
+                blockCell(user.currentAreaPosition.x, user.currentAreaPosition.y);
             }
         });
 
         // Marcar las casillas reservadas
-        for (let key in this.reservedTiles) {
-            const [x, y] = key.split(',').map(Number);
-            navigationMap[y][x] = 1;
+        for (const key of Object.keys(this.reservedTiles)) {
+            const [x, y] = key.split(',');
+            blockCell(x, y);
         }
 
         return navigationMap;
