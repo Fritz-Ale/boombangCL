@@ -39,4 +39,7 @@ test('un fallo de entrada no deja los controles bloqueados', () => {
   assert.match(lobby, /resetSceneJoin\(message/);
   assert.match(screens, /ref="lobbyScreen"/);
   assert.match(screens, /resetSceneJoin\(/);
+  assert.match(screens, /socketListeners\.forEach/);
+  assert.match(screens, /response\?\.island/);
+  assert.doesNotMatch(screens, /socket\.off\(ResponseSocketsEnum\.JOIN_PUBLIC_SCENE\)/);
 });
