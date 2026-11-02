@@ -418,7 +418,8 @@
     "tabs": {
       "areas": "Áreas",
       "games": "Juegos",
-      "islands": "Islas"
+      "islands": "Islas",
+      "search": "Buscar"
     },
     "my_islands": {
       "no_islands": "No tienes islas creadas."
