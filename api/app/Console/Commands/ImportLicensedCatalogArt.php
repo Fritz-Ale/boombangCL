@@ -50,6 +50,10 @@ class ImportLicensedCatalogArt extends Command
                 $seen[$key] = true;
 
                 $rights = $entry['rights_status'] ?? null;
+                $rightsEvidence = trim((string) ($entry['rights_evidence'] ?? ''));
+                if (mb_strlen($rightsEvidence) < 8) {
+                    throw new \InvalidArgumentException("El objeto {$key} requiere evidencia documental de derechos.");
+                }
                 if (!in_array($rights, ['original', 'licensed'], true)) {
                     throw new \InvalidArgumentException("Debe declarar derechos válidos para {$key}.");
                 }
@@ -96,7 +100,7 @@ class ImportLicensedCatalogArt extends Command
                     throw new \InvalidArgumentException("{$key}: hay casillas repetidas.");
                 }
 
-                $validated[] = compact('item', 'key', 'rights', 'files', 'width', 'height', 'scale', 'tiles');
+                $validated[] = compact('item', 'key', 'rights', 'rightsEvidence', 'files', 'width', 'height', 'scale', 'tiles');
             }
 
             if ($this->option('dry-run')) {
@@ -123,6 +127,7 @@ class ImportLicensedCatalogArt extends Command
                     $item->scale = $entry['scale'];
                     $item->map_size = json_encode($entry['tiles'], JSON_THROW_ON_ERROR);
                     $item->asset_rights_status = $entry['rights'];
+                    $item->asset_rights_evidence = $entry['rightsEvidence'];
                     $item->is_reference_only = false;
                     // La publicación y venta quedan bajo control del administrador.
                     $item->is_active = false;
