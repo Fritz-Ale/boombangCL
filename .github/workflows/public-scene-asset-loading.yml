@@ -6,6 +6,9 @@ on:
       - 'client/src/phaser/loaders/PublicSceneLoader.js'
       - 'client/src/utils/SceneUtils.js'
       - 'client/tests/public-scene-assets.test.cjs'
+      - 'api/app/Support/PublicSceneAssetInspector.php'
+      - 'api/app/Console/Commands/AuditPublicSceneAssets.php'
+      - 'api/tests/Standalone/public-scene-asset-inspector.php'
       - 'scripts/audit_public_scene_assets.py'
       - 'scripts/install_public_scene_assets_local.py'
       - 'scripts/tests/test_install_public_scene_assets_local.py'
@@ -58,3 +61,22 @@ jobs:
           name: public-scene-asset-metadata
           path: public-scene-assets-report.json
           retention-days: 14
+
+  laravel-runtime:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.2', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: Validate Artisan command syntax
+        run: |
+          php -l api/app/Support/PublicSceneAssetInspector.php
+          php -l api/app/Console/Commands/AuditPublicSceneAssets.php
+      - name: Test live-public-filesystem inspection logic without a database
+        run: php api/tests/Standalone/public-scene-asset-inspector.php
