@@ -68,8 +68,10 @@ class ImportLicensedCatalogArt extends Command
                         $files[$field] = $this->validatedPath($root, $entry[$field], $field === 'atlas');
                     }
                 }
-                if (isset($files['spreadsheet']) !== isset($files['atlas'])) {
-                    throw new \InvalidArgumentException("{$key} requiere atlas y spreadsheet juntos.");
+                // Una textura PNG/WebP independiente es válida sin atlas.
+                // Si existe un JSON de atlas, sí se necesita su hoja de sprites.
+                if (isset($files['atlas']) && !isset($files['spreadsheet'])) {
+                    throw new \InvalidArgumentException("{$key}: el atlas requiere su spreadsheet PNG/WebP.");
                 }
 
                 // Las dimensiones de una miniatura no tienen por qué coincidir
