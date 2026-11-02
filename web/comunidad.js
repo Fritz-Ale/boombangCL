@@ -18,12 +18,15 @@
         return response.json();
       })
       .then(data => {
-        if (!Array.isArray(data)) return;
+        if (!Array.isArray(data)) throw new Error('Formato de agenda no válido');
         const valid = data.filter(event => {
+          // La agenda se edita manualmente: ignorar objetos nulos, fechas ambiguas y textos incorrectos.
+          if (!event || typeof event !== 'object' || Array.isArray(event)) return false;
+          if (typeof event.fecha_utc !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(?::\\d{2}(?:\\.\\d{1,3})?)?Z$/.test(event.fecha_utc)) return false;
           const date = Date.parse(event.fecha_utc);
           return Number.isFinite(date) && date >= Date.now() &&
-            typeof event.titulo === 'string' && event.titulo.trim() &&
-            typeof event.descripcion === 'string';
+            typeof event.titulo === 'string' && event.titulo.trim().length > 0 &&
+            typeof event.descripcion === 'string' && event.descripcion.trim().length > 0;
         }).sort((a, b) => Date.parse(a.fecha_utc) - Date.parse(b.fecha_utc)).slice(0, 12);
         if (!valid.length) return;
         events.replaceChildren();
@@ -41,7 +44,15 @@
           events.append(card);
         });
       })
-      .catch(() => { /* Mantener mensaje estático; no inventar eventos */ });
+      .catch(() => {
+        // No afirmar que no hay eventos cuando en realidad falló la conexión.
+        events.replaceChildren();
+        const error = document.createElement('p');
+        error.className = 'cl-empty';
+        error.setAttribute('role', 'status');
+        error.textContent = 'No fue posible consultar la agenda. Intenta actualizar la página.';
+        events.append(error);
+      });
   }
   const form = document.getElementById('idea-form');
   if (form) form.addEventListener('submit', event => {
