@@ -39,6 +39,7 @@ class ShopController extends Controller
         // Obtener todos los items activos y comprables
         $items = CatalogItem::where('is_active', true)
             ->where('is_purchasable', true)
+            ->where('is_reference_only', false)
             ->with('category')
             ->orderBy('category_id', 'asc')
             ->orderBy('id', 'asc')
@@ -87,7 +88,7 @@ class ShopController extends Controller
         }
 
         // Verificar que el item está activo y es comprable
-        if (!$catalogItem->is_active || !$catalogItem->is_purchasable) {
+        if (!$catalogItem->is_active || !$catalogItem->is_purchasable || $catalogItem->is_reference_only) {
             return response()->json([
                 'success' => false,
                 'error' => 'Item is not available for purchase',
@@ -141,6 +142,8 @@ class ShopController extends Controller
         DB::beginTransaction();
 
         try {
+            // Serializar compras concurrentes del mismo usuario: nunca gastar dos veces el mismo saldo.
+            $user = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
             // Verificar que el usuario tiene suficiente oro o plata según el tipo de precio
             if ($catalogItem->price_type === 'golden_coins') {
                 // Asegurar que user->gold_coins sea entero
