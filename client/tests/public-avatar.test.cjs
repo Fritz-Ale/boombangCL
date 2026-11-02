@@ -201,3 +201,29 @@ test('el cargador se reanuda al entrar a otra sala tras cleanup', async () => {
     assert.equal(Background.isPaused, false);
     assert.equal(started, true);
 });
+
+test('el atlas real sustituye el provisional dentro del contenedor', () => {
+    const smart = new EventEmitter();
+    smart.isAvatarAvailable = () => true;
+    const Controller = loadAddUser(smart);
+    const scene = fakeScene(new Set(['cholo_atlas']));
+    const previous = scene.add.sprite(0, 0, '__MISSING');
+    const bg = { visible: true, y: -20 };
+    const label = { y: -34 };
+    const container = {
+        list: [{}, previous, bg, label],
+        removeAt(i) { this.list.splice(i, 1); },
+        addAt(obj, i) { this.list.splice(i, 0, obj); }
+    };
+    const user = {
+        socketId: 'abc', originalAvatarId: 3, avatarId: 12,
+        position: { z: 2 }, spriteAvatar: previous, containerUser: container
+    };
+    assert.equal(Controller.updateUserAvatarSmart(scene, user, 3), true);
+    assert.equal(user.spriteAvatar.texture.key, 'cholo_atlas');
+    assert.equal(user.avatarId, 3);
+    assert.equal(user.isFallbackAvatar, false);
+    assert.equal(container.list[1], user.spriteAvatar);
+    assert.equal(previous.active, false);
+    assert.ok(bg.y < -20);
+});
