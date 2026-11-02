@@ -51,7 +51,6 @@ class CatalogItemResource extends JsonResource
             'min_purchase_quantity' => $this->min_purchase_quantity,
             'max_purchase_quantity' => $this->max_purchase_quantity,
             'is_multi_buy' => (bool) $this->is_multi_buy,
-            'is_multi_buy' => (bool) $this->is_multi_buy,
         ];
 
         if (debug_backtrace()[1]['function'] == "toDTO") {
