@@ -81,10 +81,17 @@ export default class PrivateScene extends Phaser.Scene {
      * Detectar si un archivo es un video por su extensión
      */
     isVideoFile(src) {
-        if (!src) return false;
-        const videoExtensions = ['.webm', '.mp4', '.ogg', '.mov'];
-        const extension = src.toLowerCase().substring(src.lastIndexOf('.'));
-        return videoExtensions.includes(extension);
+        if (typeof src !== 'string' || !src) return false;
+        const path = src.split(/[?#]/, 1)[0].toLowerCase();
+        return ['.webm', '.mp4', '.ogg', '.mov'].some(ext => path.endsWith(ext));
+    }
+
+    catalogItemSource(item) {
+        if (!item) return null;
+        const src = import.meta.env.VITE_APP_ENV === 'local'
+            ? [item.spreadsheet, item.image, item.spreadsheet_url, item.image_url]
+            : [item.spreadsheet_url, item.image_url, item.spreadsheet, item.image];
+        return src.find(value => typeof value === 'string' && value.trim()) || null;
     }
 
     preload() {
@@ -337,7 +344,7 @@ export default class PrivateScene extends Phaser.Scene {
                     // It's a new item from inventory
                     const item = data.item;
                     const textureName = item.sprite_name;
-                    const assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
+                    const assetSrc = this.catalogItemSource(item);
                     const isVideo = this.isVideoFile(assetSrc);
 
                     // Check if asset already exists (image or video)
@@ -349,6 +356,14 @@ export default class PrivateScene extends Phaser.Scene {
                     //    isVideo,
                     //    assetExists
                     //});
+
+                    if (!assetSrc && !assetExists) {
+                        // Mantener la colisión y el registro incluso si falta el sprite.
+                        this.sceneItems.push(item);
+                        this.markOccupiedTiles();
+                        this.renderSceneObjects();
+                        return;
+                    }
 
                     if (assetExists) {
                         //console.log('  ✅ Asset exists, adding item to scene');
@@ -373,8 +388,16 @@ export default class PrivateScene extends Phaser.Scene {
                                 }
                             });
                         } else {
-                            this.load.image(textureName, assetSrc);
-                            this.load.once(`filecomplete-image-${textureName}`, () => {
+                            const atlas = import.meta.env.VITE_APP_ENV === 'local'
+                                ? (item.atlas || item.atlas_url)
+                                : (item.atlas_url || item.atlas);
+                            if (atlas && (item.spreadsheet || item.spreadsheet_url)) {
+                                this.load.atlas(textureName, assetSrc, atlas);
+                            } else {
+                                this.load.image(textureName, assetSrc);
+                            }
+                            const type = atlas && (item.spreadsheet || item.spreadsheet_url) ? 'atlas' : 'image';
+                            this.load.once(`filecomplete-${type}-${textureName}`, () => {
                                 //console.log('  ✅ Image loaded, adding item to scene');
                                 this.sceneItems.push(item);
                                 this.markOccupiedTiles();
@@ -1011,6 +1034,7 @@ export default class PrivateScene extends Phaser.Scene {
         const centerX = this.scale.width / 2;
 
         this.sceneItems.forEach((item, index) => {
+            if (!Array.isArray(item.occupied_tiles) || item.occupied_tiles.length === 0) return;
             //console.log(`  Rendering item ${index}:`, item.sprite_name, item.occupied_tiles);
             // Calcular la posición promedio
             let sumX = 0;
@@ -1031,8 +1055,7 @@ export default class PrivateScene extends Phaser.Scene {
             // Crear o actualizar sprite
             if (!item.sprite) {
                 // Determinar si es video o imagen
-                const assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
-                const isVideo = this.isVideoFile(assetSrc);
+                const isVideo = this.isVideoFile(this.catalogItemSource(item));
 
                 if (isVideo && this.cache.video.exists(item.sprite_name)) {
                     // Crear video sprite
