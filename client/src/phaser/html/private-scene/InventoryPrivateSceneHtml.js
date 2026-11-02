@@ -480,7 +480,9 @@ class InventoryPrivateSceneHtml {
         const grouped = this.getGroupedItems();
         const totalPages = Math.max(1, Math.ceil(grouped.length / 9));
 
-        this.scene.inventoryPage = Phaser.Math.Clamp(this.scene.inventoryPage, 0, totalPages - 1);
+        // Este componente HTML no importa Phaser: la actualización debe funcionar
+        // sin depender de una variable global del motor del juego.
+        this.scene.inventoryPage = Math.max(0, Math.min(this.scene.inventoryPage || 0, totalPages - 1));
 
         // Update navigation
         const pageText = container.querySelector('#inventory-page');

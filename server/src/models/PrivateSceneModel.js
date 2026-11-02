@@ -7,6 +7,7 @@ const PrivateSceneResource = require('../resources/PrivateSceneResource');
 const ResponseSocketsEnum = require('../enums/ResponseSocketsEnum');
 const CatalogItemTypeOfBehaviorEnum = require('../enums/CatalogItemTypeOfBehaviorEnum');
 const sceneMutex = require('../utils/SceneMutex');
+const GetPublicIslandsController = require('../controllers/game/islands/GetPublicIslandsController');
 
 class PrivateSceneModel extends SceneModel {
     constructor(uuid, row) {
@@ -23,6 +24,23 @@ class PrivateSceneModel extends SceneModel {
         this.island = new IslandModel(row.island); // Isla asociada a la escena
         this.island_id = row.island_id; // ID de la isla a la que pertenece la escena
         this.user_id = row.user_id; // ID del usuario propietario de la escena
+        this.rebuildObjectNavigationMap();
+    }
+
+    rebuildObjectNavigationMap() {
+        this.navigationMapBase = this.game_map.map(row => [...row]);
+        for (const object of this.objects) {
+            if (object.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE ||
+                object.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE_OVERLAY) continue;
+            for (const tile of object.occupied_tiles || []) {
+                if (!Array.isArray(tile) || tile.length !== 2) continue;
+                const [x, y] = tile;
+                if (Number.isInteger(x) && Number.isInteger(y) &&
+                    this.navigationMapBase[y] && this.navigationMapBase[y][x] === 0) {
+                    this.navigationMapBase[y][x] = 1;
+                }
+            }
+        }
     }
 
     /**
@@ -92,9 +110,10 @@ class PrivateSceneModel extends SceneModel {
             }, user);
 
         } finally {
-            // Liberar el mutex
+            // Liberar el mutex antes de notificar al lobby.
             release();
         }
+        GetPublicIslandsController.broadcastToLobby();
     }
 }
 

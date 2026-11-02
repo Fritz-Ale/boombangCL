@@ -1,0 +1,83 @@
+name: HTML5 live game state regression
+
+on:
+  pull_request:
+    paths:
+      - 'client/src/App.vue'
+      - 'client/src/phaser/PrivateScene.js'
+      - 'client/src/views/screens/game/scenes/PrivateSceneScreen.vue'
+      - 'client/src/sockets/socket.js'
+      - 'client/src/views/screens/game/GameScreens.vue'
+      - 'client/src/views/screens/game/LobbyScreen.vue'
+      - 'client/src/views/screens/game/island/IslandCreateScreen.vue'
+      - 'client/src/views/screens/game/island/IslandSceneCreateScreen.vue'
+      - 'client/src/views/components/game/lobby/GamesTabComponent.vue'
+      - 'client/src/views/components/game/lobby/PublicIslandsComponent.vue'
+      - 'client/src/views/components/game/scenes/public/InventoryPublicSceneComponent.vue'
+      - 'client/src/views/components/auth/LoginFormComponent.vue'
+      - 'client/tests/live-state-sync.test.cjs'
+      - 'server/src/controllers/game/islands/GetPublicIslandsController.js'
+      - 'server/src/controllers/game/islands/UpdateIslandNameController.js'
+      - 'server/src/controllers/game/islands/UpdateIslandDescriptionController.js'
+      - 'server/src/models/PrivateSceneModel.js'
+      - 'server/src/tasks/RemoveUserFromSceneTask.js'
+      - 'server/tests/live-island-presence.test.cjs'
+      - 'server/tests/live-purchase-decoration.test.cjs'
+      - 'server/tests/live-purchase-concurrency.test.cjs'
+      - 'server/tests/scene-exit-persistence.test.cjs'
+      - 'server/tests/scene-object-id-consistency.test.cjs'
+      - 'server/tests/island-deletion-db-first.test.cjs'
+      - 'server/tests/island-delete-lobby-refresh.test.cjs'
+      - 'server/tests/private-scenes-id-normalization.test.cjs'
+      - 'server/src/collections/PrivateScenesCollection.js'
+      - 'server/src/controllers/game/islands/DeleteIslandController.js'
+      - 'server/src/controllers/game/private-scenes/DeletePrivateSceneController.js'
+      - 'server/src/controllers/game/inventory/GetPublicInventoryController.js'
+      - 'server/src/controllers/game/shop/PurchaseShopItemController.js'
+      - 'server/src/controllers/game/private-scenes/PutItemPrivateSceneController.js'
+      - 'server/src/controllers/game/private-scenes/RemoveItemPrivateSceneController.js'
+      - 'server/src/services-api/PrivateSceneApiService.js'
+      - 'server/src/models/PrivateSceneModel.js'
+      - '.github/workflows/live-state-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Test subscriptions, inventory changes, and session recovery
+        run: node --test client/tests/live-state-sync.test.cjs client/tests/inventory-realtime.test.cjs client/tests/scene-socket-subscriptions.test.cjs
+      - name: Verify server-side live island presence broadcasts
+        run: node --test server/tests/live-island-presence.test.cjs
+      - name: Test purchased inventory and database-confirmed island object mutations
+        run: node --test server/tests/live-purchase-decoration.test.cjs
+      - name: Test concurrent purchases and inventory API error handling
+        run: node --test server/tests/live-purchase-concurrency.test.cjs
+      - name: Test owner leaving while decoration is persisted
+        run: node --test server/tests/scene-exit-persistence.test.cjs
+      - name: Verify normalized item IDs during placement and movement
+        run: node --test server/tests/scene-object-id-consistency.test.cjs
+      - name: Verify database-first island and room deletions
+        run: node --test server/tests/island-deletion-db-first.test.cjs
+      - name: Verify lobby refresh after island removal
+        run: node --test server/tests/island-delete-lobby-refresh.test.cjs
+      - name: Test room ID matching and island cleanup
+        run: node --test server/tests/private-scenes-id-normalization.test.cjs
+      - name: Install HTML5 dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Build Phaser and Vue
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build

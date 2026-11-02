@@ -2,6 +2,7 @@ const ResponseSocketsEnum = require('../../../enums/ResponseSocketsEnum');
 const ConnectedUsersCollection = require('../../../collections/ConnectedUsersCollection');
 const IslandApiService = require('../../../services-api/IslandApiService');
 const PrivateScenesCollection = require('../../../collections/PrivateScenesCollection');
+const GetPublicIslandsController = require('./GetPublicIslandsController');
 
 class DeleteIslandController {
     static async main(socket, io, data) {
@@ -14,12 +15,22 @@ class DeleteIslandController {
                 return;
             }
 
-            const { islandId } = data;
+            const { islandId } = data || {};
 
             if (!islandId) {
                 socket.emit(ResponseSocketsEnum.ERROR_ISLAND_DELETE, {
                     message: 'Island ID is required',
                     islandId: islandId
+                });
+                return;
+            }
+
+            // La base de datos debe autorizar y confirmar la eliminación ANTES
+            // de expulsar jugadores o borrar escenas de memoria.
+            const response = await IslandApiService.delete({ islandId }, user);
+            if (response?.statusCode >= 400 || response?.success !== true) {
+                socket.emit(ResponseSocketsEnum.ERROR_ISLAND_DELETE, {
+                    message: response?.message || 'Failed to delete island', islandId
                 });
                 return;
             }
@@ -71,10 +82,8 @@ class DeleteIslandController {
                 });
             }
 
-            // Llamar a la API para eliminar la isla (incluye cascade delete de escenas e items)
-            const response = await IslandApiService.delete({
-                islandId: islandId
-            }, user);
+            // Refrescar la ocupación y eliminar del lobby la isla borrada.
+            GetPublicIslandsController.broadcastToLobby();
 
             if (response.success) {
                 // Notificar a todos los usuarios viendo la isla
@@ -106,7 +115,7 @@ class DeleteIslandController {
 
             socket.emit(ResponseSocketsEnum.ERROR_ISLAND_DELETE, {
                 message: errorMessage,
-                islandId: data.islandId
+                islandId: data?.islandId
             });
         }
     }

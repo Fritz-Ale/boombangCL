@@ -1,3 +1,4 @@
+import sceneSocketSubscriptions from "../utils/sceneSocketSubscriptions.js";
 import socket from "../../sockets/socket"; // Conexión Socket.io
 import ResponseSocketsEnum from "../../enums/ResponseSocketsEnum"; // Enum de respuestas
 import ItemSpawnPublicSceneController from "../controllers/public-scene/ItemSpawnPublicSceneController"; // Controlador de aparición de items
@@ -6,15 +7,16 @@ import ItemCollectPublicSceneController from "../controllers/public-scene/ItemCo
 
 class PublicSceneResponse {
     static main(gameScene) {
-        socket.on(ResponseSocketsEnum.SCENE_OBJECT_SPAWNED, (data) => {
+        const { listen } = sceneSocketSubscriptions(gameScene, socket);
+        listen(ResponseSocketsEnum.SCENE_OBJECT_SPAWNED, (data) => {
             ItemSpawnPublicSceneController.main(gameScene, data);
         });
 
-        socket.on(ResponseSocketsEnum.SCENE_OBJECT_REMOVED, (data) => {
+        listen(ResponseSocketsEnum.SCENE_OBJECT_REMOVED, (data) => {
             RemoveItemPublicSceneController.main(gameScene, data);
         });
 
-        socket.on(ResponseSocketsEnum.SCENE_OBJECT_COLLECTED, (data) => {
+        listen(ResponseSocketsEnum.SCENE_OBJECT_COLLECTED, (data) => {
             ItemCollectPublicSceneController.main(gameScene, data);
         });
     }

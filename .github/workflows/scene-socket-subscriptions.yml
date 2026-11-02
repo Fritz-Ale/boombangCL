@@ -1,0 +1,42 @@
+name: Phaser scene socket subscriptions
+
+on:
+  pull_request:
+    paths:
+      - 'client/src/phaser/utils/sceneSocketSubscriptions.js'
+      - 'client/src/phaser/sockets/SceneResponseSockets.js'
+      - 'client/src/phaser/sockets/PublicSceneResponse.js'
+      - 'client/src/phaser/PublicScene.js'
+      - 'client/src/phaser/PrivateScene.js'
+      - 'client/src/phaser/html/private-scene/InventoryPrivateSceneHtml.js'
+      - 'client/tests/inventory-realtime.test.cjs'
+      - 'client/src/phaser/MinigameScene.js'
+      - 'client/tests/scene-socket-subscriptions.test.cjs'
+      - '.github/workflows/scene-socket-subscriptions.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scene-sockets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Confirm scene listeners are removed without affecting Vue lobby listeners
+        run: node --test client/tests/scene-socket-subscriptions.test.cjs
+      - name: Verify real-time backpack updates after removing island items
+        run: node --test client/tests/inventory-realtime.test.cjs
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile Vue/Phaser game
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build

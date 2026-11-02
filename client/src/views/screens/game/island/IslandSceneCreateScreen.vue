@@ -137,12 +137,7 @@ export default {
         name: this.sceneName,
         type: this.currentScene.uuid,
       });
-      socket.off(ResponseSocketsEnum.PRIVATE_SCENE_CREATE_ERROR);
-      socket.on(ResponseSocketsEnum.PRIVATE_SCENE_CREATE_ERROR, (response) => {
-        this.errorCreateScene = true;
-        this.errorMessage = response.message;
-        this.isCreating = false;
-      });
+
     },
     handleImageLoad() {
       if (this.imagesLoaded) return;
@@ -180,10 +175,8 @@ export default {
       socket.emit(RequestSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND, {
         island_config_id: this.sceneData.type,
       });
-
-      // Escuchar respuesta exitosa
-      socket.off(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_SUCCESS);
-      socket.on(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_SUCCESS, (response) => {
+    },
+    handleSceneConfigSuccess(response) {
         this.dataLoaded = true;
         if (response.private_scene_configs && response.private_scene_configs.length > 0) {
           this.scenes = response.private_scene_configs.map((config) => ({
@@ -205,23 +198,30 @@ export default {
           this.scenes = [];
           this.$emit("updateLoading", false);
         }
-      });
-
-      // Escuchar respuesta de error
-      socket.off(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_ERROR);
-      socket.on(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_ERROR, (response) => {
-        console.error(
-          `IslandSceneCreateScreen: Error al obtener escenas - ${response.message}`
-        );
-        this.dataLoaded = true;
-        this.scenes = [];
-        this.$emit("updateLoading", false);
-      });
+    },
+    handleSceneConfigError(response) {
+      console.error(`IslandSceneCreateScreen: Error al obtener escenas - ${response.message}`);
+      this.dataLoaded = true;
+      this.scenes = [];
+      this.$emit("updateLoading", false);
+    },
+    handleSceneCreateError(response) {
+      this.errorCreateScene = true;
+      this.errorMessage = response?.message || 'No fue posible crear la sala.';
+      this.isCreating = false;
     },
   },
   created() {
+    socket.on(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_SUCCESS, this.handleSceneConfigSuccess);
+    socket.on(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_ERROR, this.handleSceneConfigError);
+    socket.on(ResponseSocketsEnum.PRIVATE_SCENE_CREATE_ERROR, this.handleSceneCreateError);
     this.$emit("updateLoading", true);
     this.loadScenes();
+  },
+  beforeUnmount() {
+    socket.off(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_SUCCESS, this.handleSceneConfigSuccess);
+    socket.off(ResponseSocketsEnum.GET_PRIVATE_SCENE_CONFIG_BY_ISLAND_ERROR, this.handleSceneConfigError);
+    socket.off(ResponseSocketsEnum.PRIVATE_SCENE_CREATE_ERROR, this.handleSceneCreateError);
   },
   mounted() {
     this.$nextTick(() => {

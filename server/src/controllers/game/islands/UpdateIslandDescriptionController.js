@@ -1,6 +1,8 @@
 const ResponseSocketsEnum = require('../../../enums/ResponseSocketsEnum');
 const ConnectedUsersCollection = require('../../../collections/ConnectedUsersCollection');
 const IslandApiService = require('../../../services-api/IslandApiService');
+const PrivateScenesCollection = require('../../../collections/PrivateScenesCollection');
+const GetPublicIslandsController = require('./GetPublicIslandsController');
 
 class UpdateIslandDescriptionController {
     static async main(socket, io, data) {
@@ -38,6 +40,15 @@ class UpdateIslandDescriptionController {
             }, user);
 
             if (response.success) {
+                // Mantener el estado en memoria consistente con Laravel.
+                // Los espectadores del lobby reciben el snapshot actualizado
+                // en lugar de esperar a que recarguen o vuelvan a entrar.
+                for (const scene of PrivateScenesCollection.getAll()) {
+                    if (String(scene.island_id) === String(islandId) && scene.island) {
+                        scene.island.description = trimmedDescription || null;
+                    }
+                }
+                GetPublicIslandsController.broadcastToLobby();
                 socket.emit(ResponseSocketsEnum.ISLAND_DESCRIPTION_UPDATED, {
                     success: true,
                     islandId: islandId,

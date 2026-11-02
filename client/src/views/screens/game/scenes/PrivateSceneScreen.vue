@@ -14,6 +14,7 @@
       @close-coconuts-info="hideCoconutsInfoCard"
     />
     <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" />
+    <div v-if="sceneItemError" class="scene-item-error" role="alert">{{ sceneItemError }}</div>
     <AvatarSelectionPopup
       v-if="isAvatarSelectionVisible"
       :authUser="sceneData.authUser"
@@ -62,6 +63,8 @@ export default {
       isAvatarSelectionVisible: false,
       isRankingsVisible: false,
       isShopVisible: false,
+      sceneItemError: "",
+      sceneItemErrorTimer: null,
     };
   },
   created() {
@@ -77,6 +80,14 @@ export default {
     ShopComponent,
   },
   methods: {
+    showSceneItemError(message) {
+      this.sceneItemError = message;
+      if (this.sceneItemErrorTimer) clearTimeout(this.sceneItemErrorTimer);
+      this.sceneItemErrorTimer = setTimeout(() => {
+        this.sceneItemError = "";
+        this.sceneItemErrorTimer = null;
+      }, 4500);
+    },
     /**
      * Cierra todos los paneles abiertos (Vue y HTML de Phaser)
      */
@@ -208,6 +219,7 @@ export default {
     socket.on(ResponseSocketsEnum.FORCE_LOBBY_REDIRECT, this.handleForceLobbyRedirect);
   },
   beforeUnmount() {
+    if (this.sceneItemErrorTimer) clearTimeout(this.sceneItemErrorTimer);
     // Remover listener al desmontar el componente
     socket.off(ResponseSocketsEnum.FORCE_LOBBY_REDIRECT, this.handleForceLobbyRedirect);
   },
@@ -215,6 +227,21 @@ export default {
 </script>
 
 <style>
+.scene-item-error {
+  position: absolute;
+  left: 50%;
+  top: 35px;
+  transform: translateX(-50%);
+  z-index: 10010;
+  max-width: 70%;
+  padding: 9px 14px;
+  background: rgba(80, 22, 19, 0.94);
+  color: white;
+  border: 2px solid #efc56a;
+  border-radius: 6px;
+  pointer-events: none;
+  text-align: center;
+}
 .game-container {
   width: 1012px;
   height: 657px;
