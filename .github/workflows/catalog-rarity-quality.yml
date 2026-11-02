@@ -41,7 +41,9 @@ jobs:
         run: |
           grep -q "lockForUpdate()" api/app/Http/Controllers/Internal/ShopController.php
           grep -q "is_reference_only" api/app/Http/Controllers/Internal/StripeController.php
-          grep -q "where('user_id', \$user->id)" api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php
+          grep -Fq -- "->where('user_id', \$userId)" api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php
+          grep -Fq -- "PrivateScenePlacementValidator::assertValid" api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php
+          grep -Fq -- "->lockForUpdate()" api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php
 
   vue-shop:
     runs-on: ubuntu-latest
