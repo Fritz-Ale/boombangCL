@@ -609,7 +609,8 @@ class AddUserController {
                 return;
             }
 
-            // Crear nuevo sprite de avatar con el atlas correcto
+            // Preparar las animaciones si el atlas llegó desde caché.
+            avatarManager.createAvatarAnimations(gameScene, newAvatarId);
             const newSpriteAvatar = gameScene.add.sprite(currentX, currentY, atlasKey);
             newSpriteAvatar._avatarId = newAvatarId;
             newSpriteAvatar._z = currentZ;
@@ -629,9 +630,21 @@ class AddUserController {
 
             // Reemplazar en el contenedor
             const containerIndex = user.containerUser.list.indexOf(user.spriteAvatar);
-            if (containerIndex !== -1) {
-                user.containerUser.removeAt(containerIndex);
-                user.containerUser.addAt(newSpriteAvatar, containerIndex);
+            if (containerIndex === -1) {
+                newSpriteAvatar.destroy();
+                return false;
+            }
+            user.containerUser.removeAt(containerIndex);
+            user.containerUser.addAt(newSpriteAvatar, containerIndex);
+
+            // Reajustar el rótulo por encima del nuevo avatar, ya a tamaño real.
+            const labelBg = user.containerUser.list[2];
+            const labelText = user.containerUser.list[3];
+            if (labelBg?.visible && labelText) {
+                const offset = labelText.y - labelBg.y;
+                labelBg.y = -(newSpriteAvatar.frame?.height || newSpriteAvatar.height) *
+                    newSpriteAvatar.scaleY + 3 * gameConfig.DPI;
+                labelText.y = labelBg.y + offset;
             }
 
             // Destruir sprite anterior
