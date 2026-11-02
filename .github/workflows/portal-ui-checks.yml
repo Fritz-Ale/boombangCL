@@ -1,0 +1,48 @@
+name: Portal and client UI checks
+
+on:
+  pull_request:
+    paths:
+      - 'web/**'
+      - 'client/index.html'
+      - 'client/src/style.css'
+      - 'client/src/views/**'
+      - 'client/src/assets/lang/**'
+      - '.github/workflows/portal-ui-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-ui:
+    name: Static UX and accessibility tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check web scripts
+        run: |
+          node --check web/script.js
+          node --check web/comunidad.js
+      - name: Test portal, navigation, footer and lobby
+        run: node --test web/tests/*.test.cjs client/tests/area-discovery.test.cjs
+
+  client-build:
+    name: Compile Vue and Phaser client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile client bundle
+        working-directory: client
+        run: npm run build
