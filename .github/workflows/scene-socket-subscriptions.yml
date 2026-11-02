@@ -6,6 +6,9 @@ on:
       - 'client/src/phaser/utils/sceneSocketSubscriptions.js'
       - 'client/src/phaser/sockets/SceneResponseSockets.js'
       - 'client/src/phaser/sockets/PublicSceneResponse.js'
+      - 'client/src/phaser/PublicScene.js'
+      - 'client/src/phaser/PrivateScene.js'
+      - 'client/src/phaser/MinigameScene.js'
       - 'client/tests/scene-socket-subscriptions.test.cjs'
       - '.github/workflows/scene-socket-subscriptions.yml'
   workflow_dispatch:
