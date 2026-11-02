@@ -24,5 +24,7 @@ jobs:
           node --check server/src/utils/SceneMutex.js
           node --check server/src/models/SceneModel.js
           node --check server/src/controllers/game/scenes/SendUserToSceneController.js
+          node --check server/src/resources/UserResource.js
+          node --check server/src/sockets/connectionSockets.js
       - name: Test concurrency, doors and navigation bounds
-        run: node --test server/tests/scene-mutex.test.cjs server/tests/scene-transition.test.cjs server/tests/navigation-boundaries.test.cjs
+        run: node --test server/tests/scene-mutex.test.cjs server/tests/scene-transition.test.cjs server/tests/navigation-boundaries.test.cjs server/tests/public-user-safety.test.cjs
