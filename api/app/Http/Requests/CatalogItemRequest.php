@@ -29,7 +29,7 @@ class CatalogItemRequest extends FormRequest
             'category_id' => 'required|exists:catalog_categories,id',
             'description' => 'required',
             'sprite_name' => 'required|unique:catalog_items,sprite_name,' . $this->route('id') . ',id',
-            'image' => 'required',
+            'image' => 'required_unless:is_reference_only,1',
             'atlas' => 'nullable|json',
             'rarity_code' => ['sometimes', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Support\CatalogRarity::labels()))],
             'is_reference_only' => 'sometimes|boolean',
