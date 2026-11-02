@@ -58,7 +58,7 @@ class PutItemPrivateSceneController {
                 });
             } else {
                 // Logic for placing a new item from inventory
-                const userCatalogItemIndex = user.inventory.findIndex(item => item.id == user_catalog_item_id);
+                const userCatalogItemIndex = user.inventory.findIndex(item => String(item.id) === String(user_catalog_item_id));
                 if (userCatalogItemIndex === -1) {
                     throw new Error('Item not found in user inventory');
                 }
@@ -86,7 +86,9 @@ class PutItemPrivateSceneController {
                 // Move item from inventory to scene
                 const inventoryIndex = user.inventory.findIndex(item => String(item.id) === String(user_catalog_item_id));
                 if (inventoryIndex !== -1) user.inventory.splice(inventoryIndex, 1);
-                scene.objects.push(userCatalogItem);
+                if (!scene.objects.some(item => String(item.id) === String(user_catalog_item_id))) {
+                    scene.objects.push(userCatalogItem);
+                }
 
                 scene.rebuildObjectNavigationMap();
 
@@ -133,9 +135,9 @@ class PutItemPrivateSceneController {
         // Find the item being placed, whether it's from inventory or being moved
         let itemBeingPlaced = null;
         if (isMove) {
-            itemBeingPlaced = sceneObjects.find(obj => obj.id === userCatalogItemId);
+            itemBeingPlaced = sceneObjects.find(obj => String(obj.id) === String(userCatalogItemId));
         } else if (userCatalogItemId) {
-            itemBeingPlaced = user.inventory.find(item => item.id === userCatalogItemId);
+            itemBeingPlaced = user.inventory.find(item => String(item.id) === String(userCatalogItemId));
         }
 
         // La huella debe conservar exactamente las celdas que define el
@@ -170,7 +172,7 @@ class PutItemPrivateSceneController {
             // 3. Check for collision with OTHER objects
             for (const sceneObject of sceneObjects) {
                 // If moving an item, skip collision check with itself
-                if (isMove && sceneObject.id === userCatalogItemId) {
+                if (isMove && String(sceneObject.id) === String(userCatalogItemId)) {
                     continue;
                 }
 
