@@ -502,7 +502,10 @@ class InventoryPrivateSceneHtml {
 
             if (group) {
                 this.inventorySlots[index] = { group };
-                let imageSrc = import.meta.env.VITE_APP_ENV == 'local' ? group.image : group.image_url;
+                slot.title = `${group.display_name || group.sprite_name} · ${group.rarity_label || 'Común'}`;
+                let imageSrc = import.meta.env.VITE_APP_ENV == 'local'
+                    ? (group.image || group.image_url)
+                    : (group.image_url || group.image);
                 icon.src = imageSrc;
                 icon.style.display = 'block';
 
@@ -554,6 +557,7 @@ class InventoryPrivateSceneHtml {
                 slot.style.cursor = 'grab';
             } else {
                 this.inventorySlots[index] = null;
+                slot.removeAttribute('title');
                 icon.style.display = 'none';
                 count.style.display = 'none';
                 slot.style.cursor = 'default';
