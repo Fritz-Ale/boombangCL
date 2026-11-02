@@ -32,16 +32,22 @@ final class CatalogPurchasePricing
             throw new InvalidArgumentException('Precio o descuento fuera de rango.');
         }
 
+        // En PHP de 64 bits (float) PHP_INT_MAX se redondea a 2^63.
+        // Usar '>' permitiría que el cast final produzca PHP_INT_MIN,
+        // convirtiendo un cargo extremo en un número negativo.
+        $maxExclusive = (float) PHP_INT_MAX;
         $gross = $unitPrice * $quantity;
-        if (!is_finite($gross) || $gross > PHP_INT_MAX) {
+        if (!is_finite($gross) || $gross >= $maxExclusive) {
             throw new InvalidArgumentException('Precio total fuera del rango permitido.');
         }
 
         $total = $gross * (1 - $percent / 100);
-        if (!is_finite($total) || $total < 0 || $total > PHP_INT_MAX) {
+        $rounded = round($total);
+        if (!is_finite($total) || $total < 0 ||
+            !is_finite($rounded) || $rounded >= $maxExclusive) {
             throw new InvalidArgumentException('Precio total inválido.');
         }
 
-        return (int) round($total);
+        return (int) $rounded;
     }
 }
