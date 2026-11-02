@@ -12,21 +12,28 @@ const logger = new ConsoleLogger();
 class SendUserToSceneController {
     static async main(user, arrow) {
         try {
-            RemoveUserFromSceneTask.main(user.currentArea, user);
-
+            // Primero validar el destino: una puerta obsoleta no debe expulsar al jugador.
             let scene = PublicScenesCollection.getById(arrow.public_scene_id);
             if (!scene) {
                 scene = GameScenesCollection.getById(arrow.public_scene_id);
             }
 
             if (!scene) {
+                logger.log(`Ignoring invalid destination scene ${arrow.public_scene_id}`, 'warn');
                 return;
             }
+
+            // No retirar al usuario de su sala si el destino es el mismo.
+            if (scene === user.currentArea) return;
 
             // Usar el mutex global para sincronizar el acceso a la escena
             const release = await sceneMutex.acquire(scene.id);
 
             try {
+                // Desconectar de la sala origen solo una vez validado el destino.
+                if (user.currentArea) {
+                    RemoveUserFromSceneTask.main(user.currentArea, user);
+                }
                 // Agregar usuario a la escena de manera atómica
                 user.setArea(scene);
                 const added = scene.addUser(user, {
