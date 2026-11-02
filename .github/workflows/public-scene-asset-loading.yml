@@ -6,6 +6,9 @@ on:
       - 'client/src/phaser/loaders/PublicSceneLoader.js'
       - 'client/src/utils/SceneUtils.js'
       - 'client/tests/public-scene-assets.test.cjs'
+      - 'scripts/audit_public_scene_assets.py'
+      - 'boombang_api.sql'
+      - 'api/public/uploads.zip'
       - '.github/workflows/public-scene-asset-loading.yml'
   workflow_dispatch:
 
@@ -32,3 +35,19 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         run: npm run build
+
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check syntax of SQL-to-ZIP auditor
+        run: python3 -m py_compile scripts/audit_public_scene_assets.py
+      - name: Check original UFO background actually exists in uploads.zip
+        run: python3 scripts/audit_public_scene_assets.py --require-ufo
+      - name: Keep only asset metadata, not copyrighted artwork
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-scene-asset-metadata
+          path: public-scene-assets-report.json
+          retention-days: 14
