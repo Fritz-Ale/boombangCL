@@ -9,7 +9,8 @@
         <option value="nombre">Nombre A-Z</option>
       </select>
     </div>
-    <div class="lobby__scenes-list" ref="scrollContainer">
+    <p v-if="joinError" class="join-error" role="alert">{{ joinError }}</p>
+    <div class="lobby__scenes-list" ref="scrollContainer" :aria-busy="isJoining">
       <SpinnerComponent v-if="isLoading" />
       <p v-else-if="!filteredScenes.length" class="no-scenes" role="status">No encontramos salas con ese nombre.</p>
       <div v-else v-for="publicScene in filteredScenes" :key="publicScene.uuid" class="scene-item">
@@ -45,6 +46,8 @@ export default {
     return {
       MenuTypeEnum,
       isJoining: false,
+      joinTimer: null,
+      joinError: "",
       searchTerm: "",
       sortBy: "popular",
     };
@@ -74,10 +77,24 @@ export default {
     const { initScrollbars } = useOverlayScrollbars();
     initScrollbars(this.$refs.scrollContainer);
   },
+  beforeUnmount() {
+    clearTimeout(this.joinTimer);
+  },
   methods: {
+    resetJoining(message = "") {
+      clearTimeout(this.joinTimer);
+      this.joinTimer = null;
+      this.isJoining = false;
+      this.joinError = message;
+    },
     handleClick(sceneUuid, menuType) {
       if (this.isJoining) return;
+      this.joinError = "";
       this.isJoining = true;
+      // Si Socket.IO nunca responde, el usuario debe poder reintentar.
+      this.joinTimer = setTimeout(() => {
+        this.resetJoining("La sala no respondió. Revisa tu conexión e inténtalo otra vez.");
+      }, 10000);
       this.$emit("join-scene", sceneUuid, menuType);
     },
   },
@@ -90,6 +107,7 @@ export default {
 .scene-tools :is(input,select):focus-visible{outline:2px solid #ffdc76;outline-offset:1px}
 .visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .no-scenes{font-size:13px;color:#fff;text-align:center;padding:12px 3px}
+.join-error{font-size:12px;line-height:1.4;background:#ffe6dc;color:#762600;padding:8px;border-radius:6px;margin:5px 0}
 
 .lobby__scenes-list {
   margin-top: 5px;
