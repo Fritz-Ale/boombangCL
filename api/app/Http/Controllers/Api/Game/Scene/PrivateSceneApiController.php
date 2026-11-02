@@ -116,6 +116,7 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
             $responseUpdate = UserCatalogItem::where('id', $validated['user_catalog_item_id'])
                 ->where('user_id', $user->id)
                 ->whereNotNull('private_scene_id')
+                ->whereHas('privateScene', fn ($query) => $query->where('user_id', $user->id))
                 ->update([
                     'private_scene_id' => null,
                     'occupied_tiles' => '[]'
@@ -135,9 +136,13 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
             $validated = $request->validate([
                 'user_catalog_item_id' => 'required|integer|exists:user_catalog_items,id',
                 'private_scene_id' => 'required|integer|exists:private_scenes,id',
-                'occupied_tiles' => 'required|array',
+                'occupied_tiles' => 'required|array|max:256',
             ]);
             $user = Auth::user();
+            // Solo el propietario de la isla puede colocar decoración.
+            PrivateScene::whereKey($validated['private_scene_id'])
+                ->where('user_id', $user->id)
+                ->firstOrFail();
             $responseUpdate = UserCatalogItem::where('id', $validated['user_catalog_item_id'])
                 ->where('user_id', $user->id)
                 ->whereNull('private_scene_id')
@@ -159,12 +164,13 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
         try {
             $validated = $request->validate([
                 'user_catalog_item_id' => 'required|integer|exists:user_catalog_items,id',
-                'occupied_tiles' => 'required|array',
+                'occupied_tiles' => 'required|array|max:256',
             ]);
             $user = Auth::user();
             $responseUpdate = UserCatalogItem::where('id', $validated['user_catalog_item_id'])
                 ->where('user_id', $user->id)
                 ->whereNotNull('private_scene_id')
+                ->whereHas('privateScene', fn ($query) => $query->where('user_id', $user->id))
                 ->update([
                     'occupied_tiles' => json_encode($validated['occupied_tiles'])
                 ]);
