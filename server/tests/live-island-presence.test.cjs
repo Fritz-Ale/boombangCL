@@ -83,3 +83,44 @@ test('server notifies lobby when private room users join or leave', () => {
   assert.match(privateScene, /GetPublicIslandsController\.broadcastToLobby\(\)/);
   assert.match(removeUser, /SceneTypesEnum\.PRIVATE_SCENE[\s\S]*?GetPublicIslandsController\.broadcastToLobby\(\)/);
 });
+
+test('renaming and describing an island refreshes its cached data and lobby listeners', async () => {
+  const island = { id: 8, name: 'Anterior', description: 'Antes' };
+  const scenes = [{ island_id: 8, island, users: [] }];
+  const watcher = viewer('lobby-1');
+  const broadcasts = [];
+  const user = { id: 7 };
+  for (const [fileName, call, updatedProperty, updatedValue] of [
+    ['UpdateIslandNameController.js', 'updateName', 'name', 'Nombre nuevo'],
+    ['UpdateIslandDescriptionController.js', 'updateDescription', 'description', 'Descripción nueva']
+  ]) {
+    const deps = {
+      '../../../enums/ResponseSocketsEnum': {
+        ISLAND_NAME_UPDATED: 'island_name_updated', ISLAND_DESCRIPTION_UPDATED: 'island_description_updated'
+      },
+      '../../../collections/ConnectedUsersCollection': { getBySocketId: () => user },
+      '../../../services-api/IslandApiService': { [call]: async () => ({ success: true }) },
+      '../../../collections/PrivateScenesCollection': { getAll: () => scenes },
+      './GetPublicIslandsController': { broadcastToLobby: () => broadcasts.push(island[updatedProperty]) }
+    };
+    const sandbox = {
+      module: { exports: {} },
+      require: name => {
+        if (!deps[name]) throw new Error('Missing mock ' + name);
+        return deps[name];
+      },
+      console
+    };
+    vm.runInNewContext(file('src/controllers/game/islands/' + fileName), sandbox);
+    const events = [];
+    const socket = {
+      id: watcher.socket.id,
+      emit: (name, payload) => events.push([name, payload]),
+      to: () => ({ emit() {} })
+    };
+    await sandbox.module.exports.main(socket, {}, { islandId: '8', [updatedProperty]: updatedValue });
+    assert.equal(island[updatedProperty], updatedValue, 'cached island metadata reflects confirmed DB change');
+    assert.equal(broadcasts.at(-1), updatedValue, 'all lobby viewers are notified');
+    assert.equal(events.length, 1, 'requester receives an acknowledgement');
+  }
+});
