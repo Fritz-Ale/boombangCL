@@ -27,10 +27,19 @@ export default {
       isLoading: true,
     };
   },
-  async created() {
+  created() {
+    socket.on(ResponseSocketsEnum.UPDATE_PUBLIC_ISLANDS, this.handleIslandsUpdate);
     this.loadIslands();
   },
+  beforeUnmount() {
+    socket.off(ResponseSocketsEnum.UPDATE_PUBLIC_ISLANDS, this.handleIslandsUpdate);
+  },
   methods: {
+    handleIslandsUpdate(data) {
+      if (!Array.isArray(data?.islands)) return;
+      this.islands = data.islands;
+      this.isLoading = false;
+    },
     handleClick(islandId) {
       if (this.isJoining) return;
       this.isJoining = true;
@@ -39,11 +48,6 @@ export default {
     loadIslands() {
       this.isLoading = true;
       socket.emit(RequestSocketsEnum.GET_PUBLIC_ISLANDS);
-      socket.off(ResponseSocketsEnum.UPDATE_PUBLIC_ISLANDS);
-      socket.on(ResponseSocketsEnum.UPDATE_PUBLIC_ISLANDS, (data) => {
-        this.islands = data.islands;
-        this.isLoading = false;
-      });
     },
   },
 };
