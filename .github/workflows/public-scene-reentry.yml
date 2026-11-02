@@ -1,0 +1,36 @@
+name: Public scene reentry and avatar event regression
+
+on:
+  pull_request:
+    paths:
+      - 'client/src/phaser/PublicScene.js'
+      - 'client/src/phaser/utils/drainSceneEntryEvents.js'
+      - 'client/tests/public-scene-reentry.test.cjs'
+      - '.github/workflows/public-scene-reentry.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scene-reentry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Verify event queue and public room lifecycle
+        run: node --test client/tests/public-scene-reentry.test.cjs
+      - name: Verify avatar visibility regressions
+        run: node --test client/tests/avatar-visibility.test.cjs
+      - name: Install frontend dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile complete Vue + Phaser client
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
