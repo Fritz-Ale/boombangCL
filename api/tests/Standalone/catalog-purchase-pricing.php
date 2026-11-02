@@ -13,7 +13,7 @@ $valid = [
     [100, 100, 1, 'silver_coins', 0],
     [1, 0, 1000, 'golden_coins', 1000],
     // Un total grande que sigue siendo representable como entero.
-    [PHP_INT_MAX - 8192, 0, 1, 'golden_coins', PHP_INT_MAX - 8192],
+    [PHP_INT_MAX - 8191, 0, 1, 'golden_coins', PHP_INT_MAX - 8191],
 ];
 foreach ($valid as [$price, $discount, $quantity, $currency, $expected]) {
     $actual = Pricing::total($price, $discount, $quantity, $currency);
