@@ -1,0 +1,35 @@
+name: Phaser room creation and day-night rendering
+
+on:
+  pull_request:
+    paths:
+      - 'client/src/phaser/controllers/scene/CreateSceneController.js'
+      - 'client/src/utils/DarkeningUtils.js'
+      - 'client/tests/phaser-public-scene-imports.test.cjs'
+      - '.github/workflows/phaser-scene-module-imports.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  html5-scenes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Simulate room grid and scene darkening
+        run: node --test client/tests/phaser-public-scene-imports.test.cjs
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile HTML5 game
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
