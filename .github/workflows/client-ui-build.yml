@@ -1,0 +1,33 @@
+name: Client UI and build
+
+on:
+  push:
+    branches:
+      - fix/client-ui-lobby-ux-2026
+  pull_request:
+    paths:
+      - 'client/**'
+      - '.github/workflows/client-ui-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: UI and locale regression tests
+        run: node --test client/tests/area-discovery.test.cjs client/tests/ui-accessibility.test.cjs
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile production client
+        working-directory: client
+        run: npm run build
