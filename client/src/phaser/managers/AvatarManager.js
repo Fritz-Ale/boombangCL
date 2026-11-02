@@ -117,7 +117,9 @@ class AvatarManager {
      */
     loadPriorityAvatars(scene) {
         this.priorityAvatars.forEach(avatarId => {
-            this.loadAvatar(scene, avatarId);
+            this.loadAvatar(scene, avatarId).catch(error => {
+                console.warn("No se pudo precargar el avatar prioritario:", avatarId, error);
+            });
         });
     }
 
@@ -237,7 +239,7 @@ class AvatarManager {
      * Crea las animaciones para un avatar específico
      */
     createAvatarAnimations(scene, avatarId) {
-        const config = window.avatars_config[avatarId];
+        const config = window.avatars_config?.[avatarId];
         if (!config) {
             return;
         }
