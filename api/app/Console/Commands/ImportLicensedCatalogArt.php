@@ -72,14 +72,28 @@ class ImportLicensedCatalogArt extends Command
                     throw new \InvalidArgumentException("{$key} requiere atlas y spreadsheet juntos.");
                 }
 
-                [$imageWidth, $imageHeight] = getimagesize($files['image']);
-                $width = $entry['width'] ?? $imageWidth;
-                $height = $entry['height'] ?? $imageHeight;
+                // Las dimensiones de una miniatura no tienen por qué coincidir
+                // con el sprite renderizado en Phaser.
+                $renderTexture = $files['spreadsheet'] ?? $files['image'];
+                [$textureWidth, $textureHeight] = getimagesize($renderTexture);
+                if (isset($files['atlas'])) {
+                    // Una hoja de atlas no equivale al tamaño de un fotograma.
+                    // Exigir las dimensiones de ese objeto al importador.
+                    if (!isset($entry['width'], $entry['height'])) {
+                        throw new \InvalidArgumentException("{$key}: un atlas requiere width y height explícitos del sprite.");
+                    }
+                }
+                $width = $entry['width'] ?? $textureWidth;
+                $height = $entry['height'] ?? $textureHeight;
                 $scale = $entry['scale'] ?? 1;
-                foreach (['width' => $width, 'height' => $height, 'scale' => $scale] as $name => $value) {
+                foreach (['width' => $width, 'height' => $height] as $name => $value) {
                     if (!is_int($value) || $value < 1 || $value > 10000) {
                         throw new \InvalidArgumentException("{$key}: {$name} debe ser un entero positivo.");
                     }
+                }
+                if (!is_int($scale) && !is_float($scale) ||
+                    !is_finite((float) $scale) || $scale < 0.05 || $scale > 8) {
+                    throw new \InvalidArgumentException("{$key}: scale debe estar entre 0.05 y 8.");
                 }
 
                 $tiles = $entry['map_size'] ?? [[0, 0]];
@@ -147,7 +161,8 @@ class ImportLicensedCatalogArt extends Command
 
     private function validatedPath(string $root, mixed $relative, bool $isAtlas): string
     {
-        if (!is_string($relative) || $relative === '' || str_starts_with($relative, '/')) {
+        if (!is_string($relative) || $relative === '' ||
+            str_starts_with($relative, '/') || str_contains($relative, "\0")) {
             throw new \InvalidArgumentException('Las rutas de recursos deben ser relativas al manifiesto.');
         }
         $resolved = realpath($root . DIRECTORY_SEPARATOR . $relative);
