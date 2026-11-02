@@ -22,7 +22,7 @@
         const valid = data.filter(event => {
           // La agenda se edita manualmente: ignorar objetos nulos, fechas ambiguas y textos incorrectos.
           if (!event || typeof event !== 'object' || Array.isArray(event)) return false;
-          if (typeof event.fecha_utc !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(?::\\d{2}(?:\\.\\d{1,3})?)?Z$/.test(event.fecha_utc)) return false;
+          if (typeof event.fecha_utc !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?Z$/.test(event.fecha_utc)) return false;
           const date = Date.parse(event.fecha_utc);
           return Number.isFinite(date) && date >= Date.now() &&
             typeof event.titulo === 'string' && event.titulo.trim().length > 0 &&
