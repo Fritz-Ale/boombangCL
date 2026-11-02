@@ -2,6 +2,7 @@ const ResponseSocketsEnum = require('../../../enums/ResponseSocketsEnum');
 const ConnectedUsersCollection = require('../../../collections/ConnectedUsersCollection');
 const IslandApiService = require('../../../services-api/IslandApiService');
 const PrivateScenesCollection = require('../../../collections/PrivateScenesCollection');
+const GetPublicIslandsController = require('./GetPublicIslandsController');
 
 class DeleteIslandController {
     static async main(socket, io, data) {
@@ -80,6 +81,9 @@ class DeleteIslandController {
                     PrivateScenesCollection.remove(privateScene.id);
                 });
             }
+
+            // Refrescar la ocupación y eliminar del lobby la isla borrada.
+            GetPublicIslandsController.broadcastToLobby();
 
             if (response.success) {
                 // Notificar a todos los usuarios viendo la isla
