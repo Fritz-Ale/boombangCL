@@ -423,7 +423,8 @@
     "tabs": {
       "areas": "Areas",
       "games": "Games",
-      "islands": "Islands"
+      "islands": "Islands",
+      "search": "Search"
     },
     "my_islands": {
       "no_islands": "You have no created islands."
