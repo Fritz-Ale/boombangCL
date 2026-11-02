@@ -86,6 +86,7 @@
             </button>
             <div class="item-details__image">
               <img
+                v-if="selectedItem.image_url"
                 :src="selectedItem.image_url"
                 :alt="selectedItem.name"
                 @error="onImageError"
@@ -133,7 +134,7 @@
               <button
                 class="buy-button"
                 @click="purchaseItem"
-                :disabled="purchasing"
+                :disabled="purchasing || selectedItem.is_reference_only"
               >
                 <span v-if="!purchasing">{{ $t("shop.buy") }}</span>
                 <div v-else class="spinner-small"></div>
@@ -216,7 +217,9 @@ export default {
       if (!this.selectedItem) return [1];
       
       const min = this.selectedItem.min_purchase_quantity || 1;
-      const max = Math.min(this.selectedItem.max_purchase_quantity || 10, 50);
+      const max = this.selectedItem.is_multi_buy
+        ? Math.min(this.selectedItem.max_purchase_quantity || 10, 50)
+        : 1;
       
       const options = [];
       for (let i = min; i <= max; i++) {
@@ -281,7 +284,7 @@ export default {
       this.selectedItem = item;
       // Ajustar cantidad según los límites del item
       const minQuantity = item.min_purchase_quantity || 1;
-      this.selectedQuantity = minQuantity;
+      this.selectedQuantity = item.is_multi_buy ? minQuantity : 1;
       this.purchaseMessage = null;
     },
 
