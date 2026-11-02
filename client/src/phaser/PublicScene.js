@@ -83,14 +83,9 @@ export default class PublicScene extends Phaser.Scene {
         this.input.enabled = true;
         this.input.topOnly = false;
 
-        // Verificar si el sistema de avatares está inicializado
-        const avatarSystemReady = this.registry.get('avatarSystemReady');
-        if (!avatarSystemReady) {
-            //console.warn("⚠️ Sistema de avatares no está listo, inicializando en escena...");
-            this.initializeAvatarSystemFallback();
-        } else {
-            //console.log("✅ Sistema de avatares ya inicializado");
-        }
+        // La marca del preloader puede seguir en true después de su shutdown.
+        // Reinicializar sobre esta escena sin bloquear el renderizado inicial.
+        this.initializeAvatarSystemFallback();
 
         // Configurar listeners para eventos del sistema de avatares
         this.setupAvatarSystemListeners();
@@ -368,6 +363,7 @@ export default class PublicScene extends Phaser.Scene {
 
         // Limpiar del sistema de avatares
         Object.keys(this.users).forEach(userId => {
+            this.users[userId].cleanupCallbacks?.forEach(cleanup => cleanup());
             AvatarSystemController.removeUser(userId);
         });
 

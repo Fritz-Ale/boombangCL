@@ -117,7 +117,9 @@ class AvatarManager {
      */
     loadPriorityAvatars(scene) {
         this.priorityAvatars.forEach(avatarId => {
-            this.loadAvatar(scene, avatarId);
+            this.loadAvatar(scene, avatarId).catch(error => {
+                console.warn("No se pudo precargar el avatar prioritario:", avatarId, error);
+            });
         });
     }
 
@@ -125,8 +127,14 @@ class AvatarManager {
      * Carga un avatar específico
      */
     async loadAvatar(scene, avatarId) {
+        // La marca en memoria puede sobrevivir a un cambio de escena.
         if (this.loadedAvatars.has(avatarId)) {
-            return Promise.resolve();
+            const existingKey = `${this.getAvatarName(avatarId)}_atlas`;
+            if (scene?.textures?.exists(existingKey)) {
+                this.createAvatarAnimations(scene, avatarId);
+                return;
+            }
+            this.loadedAvatars.delete(avatarId);
         }
 
         const loader = this.avatarLoaders[avatarId];
@@ -196,15 +204,19 @@ class AvatarManager {
                 const loaderAtlasJson = loader.main(scene, avatarId) || null;
                 
                 // Escuchar cuando termine la carga
-                scene.load.once('complete', async () => {
-                    // Cachear los assets recién cargados (todas las páginas del multiatlas + JSON exacto del loader)
-                    await this.cacheLoadedAssets(scene, avatarId, versionedAtlasKey, versionedSpreadsheetKey, atlasKey, spreadsheetKey, loaderAtlasJson);
-                    
-                    // Crear animaciones del avatar
+                scene.load.once('complete', () => {
+                    if (!scene.textures.exists(atlasKey)) {
+                        this.inFlightAtlasLoads.delete(atlasKey);
+                        reject(new Error(`Atlas no cargado: ${atlasKey}`));
+                        return;
+                    }
+                    // Renderizar primero; almacenar en caché no debe impedir ver jugadores.
                     this.createAvatarAnimations(scene, avatarId);
                     this.loadedAvatars.add(avatarId);
                     this.inFlightAtlasLoads.delete(atlasKey);
                     resolve();
+                    this.cacheLoadedAssets(scene, avatarId, versionedAtlasKey, versionedSpreadsheetKey, atlasKey, spreadsheetKey, loaderAtlasJson)
+                        .catch(() => {});
                 });
 
                 scene.load.once('loaderror', (file) => {
@@ -227,7 +239,7 @@ class AvatarManager {
      * Crea las animaciones para un avatar específico
      */
     createAvatarAnimations(scene, avatarId) {
-        const config = window.avatars_config[avatarId];
+        const config = window.avatars_config?.[avatarId];
         if (!config) {
             return;
         }

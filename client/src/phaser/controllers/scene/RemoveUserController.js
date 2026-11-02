@@ -22,7 +22,8 @@ class RemoveUserController {
             user.containerUser.destroy();
         }
 
-        // Eliminar datos del jugador
+        // Soltar listeners para impedir que actualizaciones tardías revivan un sprite destruido.
+        user.cleanupCallbacks?.forEach(cleanup => cleanup());
         delete gameScene.users[socketId];
     }
 }

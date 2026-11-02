@@ -62,6 +62,8 @@ class BackgroundAvatarLoader extends EventEmitter {
 
         this.currentScene = scene;
         this.isInitialized = true;
+        // cleanup() pausa el cargador: hay que reanudarlo al entrar a otra sala.
+        this.isPaused = false;
         this.stats.startTime = Date.now();
 
         //console.log("🚀 BackgroundAvatarLoader inicializado");
@@ -80,26 +82,14 @@ class BackgroundAvatarLoader extends EventEmitter {
      * Sincroniza el estado con el AvatarManager para evitar cargas duplicadas
      */
     syncWithAvatarManager() {
-        if (avatarManager.loadedAvatars) {
-            // Copiar avatares ya cargados desde AvatarManager
-            avatarManager.loadedAvatars.forEach(avatarId => {
+        // No confiar en marcas de carga de una escena anterior.
+        this.loadedAvatars.clear();
+        if (!this.currentScene?.textures) return;
+        for (const avatarId of Object.values(AvatarEnum)) {
+            const atlasKey = `${avatarManager.getAvatarName(avatarId)}_atlas`;
+            if (this.currentScene.textures.exists(atlasKey)) {
                 this.loadedAvatars.add(avatarId);
-            });
-        }
-
-        // También verificar texturas existentes en Phaser
-        if (this.currentScene && this.currentScene.textures) {
-            const allAvatars = Object.values(AvatarEnum);
-            for (const avatarId of allAvatars) {
-                const textureKey = `${avatarId}_atlas`;
-                if (this.currentScene.textures.exists(textureKey)) {
-                    this.loadedAvatars.add(avatarId);
-                }
             }
-        }
-
-        if (this.loadedAvatars.size > 0) {
-            //console.log(`🔄 Sincronizado ${this.loadedAvatars.size} avatares ya cargados desde AvatarManager y texturas de Phaser`);
         }
     }
 
@@ -112,14 +102,20 @@ class BackgroundAvatarLoader extends EventEmitter {
         for (const avatarId of this.essentialAvatars) {
             try {
                 // Verificar si ya está cargado (tanto en nuestro estado como en Phaser)
-                const textureKey = `${avatarId}_atlas`;
-                const alreadyLoaded = this.loadedAvatars.has(avatarId) ||
-                    (this.currentScene && this.currentScene.textures.exists(textureKey));
+                const textureKey = `${avatarManager.getAvatarName(avatarId)}_atlas`;
+                const alreadyLoaded = Boolean(this.currentScene?.textures?.exists(textureKey));
 
                 if (!alreadyLoaded) {
                     await this.loadAvatarSync(avatarId);
+                    if (!this.currentScene?.textures?.exists(textureKey)) {
+                        throw new Error(`Atlas esencial no disponible: ${textureKey}`);
+                    }
                     this.loadedAvatars.add(avatarId);
-                    //console.log(`✅ Avatar esencial cargado: ${avatarId}`);
+                    this.emit('avatarLoaded', {
+                        avatarId,
+                        loadedCount: this.loadedAvatars.size,
+                        totalCount: Object.values(AvatarEnum).length
+                    });
                 } else {
                     //console.log(`🔄 Avatar esencial ${avatarId} ya estaba cargado`);
                     this.loadedAvatars.add(avatarId); // Asegurar sincronización
@@ -291,7 +287,7 @@ class BackgroundAvatarLoader extends EventEmitter {
         }
 
         // Verificar si la textura ya existe en Phaser
-        const textureKey = `${avatarId}_atlas`;
+        const textureKey = `${avatarManager.getAvatarName(avatarId)}_atlas`;
         if (this.currentScene.textures.exists(textureKey)) {
             //console.log(`✅ Avatar ${avatarId} ya existe en texturas de Phaser, sincronizando...`);
             this.loadedAvatars.add(avatarId);
@@ -299,13 +295,10 @@ class BackgroundAvatarLoader extends EventEmitter {
         }
 
         // Verificar si el AvatarManager ya lo tiene cargado
-        if (avatarManager.isAvatarLoaded && avatarManager.isAvatarLoaded(avatarId)) {
-            //console.log(`✅ Avatar ${avatarId} ya cargado en AvatarManager, sincronizando...`);
-            this.loadedAvatars.add(avatarId);
-            return Promise.resolve();
+        await avatarManager.loadAvatar(this.currentScene, avatarId);
+        if (!this.currentScene?.textures?.exists(textureKey)) {
+            throw new Error(`Atlas no disponible después de la carga: ${textureKey}`);
         }
-
-        return await avatarManager.loadAvatar(this.currentScene, avatarId);
     }
 
     /**

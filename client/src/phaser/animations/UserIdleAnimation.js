@@ -41,6 +41,9 @@ class UserIdleAnimation {
                 return AvatarAnimationsEnum.LEFTUP_IDLE;
             case DirectionEnum.LEFT:
                 return AvatarAnimationsEnum.LEFT_IDLE;
+            default:
+                // Algunas salas pueden enviar start_z=0 o una dirección ausente.
+                return AvatarAnimationsEnum.DOWN_IDLE;
         }
     }
 }

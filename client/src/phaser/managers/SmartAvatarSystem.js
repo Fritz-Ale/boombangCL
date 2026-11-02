@@ -5,6 +5,7 @@
 
 import AvatarEnum from "@/enums/AvatarEnum.js";
 import backgroundAvatarLoader from "./BackgroundAvatarLoader.js";
+import avatarManager from "./AvatarManager.js";
 import EventEmitter from "events";
 
 class SmartAvatarSystem extends EventEmitter {
@@ -36,18 +37,27 @@ class SmartAvatarSystem extends EventEmitter {
      * Inicializa el sistema con una escena
      */
     async init(scene) {
-        if (this.isInitialized) return;
-        
+        if (this.isInitialized && backgroundAvatarLoader.isInitialized) {
+            // Las texturas son globales, pero la carga debe usar la escena activa.
+            this.currentScene = scene;
+            backgroundAvatarLoader.currentScene = scene;
+            if (backgroundAvatarLoader.isPaused) {
+                backgroundAvatarLoader.resume();
+            }
+            return;
+        }
+
         this.currentScene = scene;
         this.isInitialized = true;
         
         //console.log("🎯 SmartAvatarSystem inicializado");
         
-        // Inicializar el cargador en background
+        // Los eventos deben estar registrados ANTES de cargar los esenciales.
+        if (!this.loaderListenersRegistered) {
+            this.setupLoaderListeners();
+            this.loaderListenersRegistered = true;
+        }
         await backgroundAvatarLoader.init(scene);
-        
-        // Escuchar eventos del cargador
-        this.setupLoaderListeners();
         
         // Sincronizar con avatares ya cargados por el BackgroundAvatarLoader
         if (backgroundAvatarLoader.loadedAvatars) {
@@ -56,9 +66,11 @@ class SmartAvatarSystem extends EventEmitter {
             }
         }
         
-        // Marcar avatares esenciales como disponibles (por si no están en la sincronización)
+        // Un fallback no está disponible hasta que exista su atlas real.
         for (const avatarId of this.fallbackAvatars) {
-            this.availableAvatars.add(avatarId);
+            if (this.isAvatarAvailable(avatarId)) {
+                this.availableAvatars.add(avatarId);
+            }
         }
         
         // Iniciar verificaciones periódicas
@@ -113,8 +125,11 @@ class SmartAvatarSystem extends EventEmitter {
         // Si no está disponible, solicitar carga prioritaria
         backgroundAvatarLoader.requestPriorityLoad(requestedAvatarId);
         
-        // Usar fallback inteligente
+        // Usar fallback inteligente. Si no existe aún, solicitarlo también.
         const fallbackId = this.selectBestFallback(requestedAvatarId);
+        if (!this.isAvatarAvailable(fallbackId)) {
+            backgroundAvatarLoader.requestPriorityLoad(fallbackId);
+        }
         
         // Registrar para actualización futura
         this.activeAvatars.set(userId, {
@@ -174,7 +189,8 @@ class SmartAvatarSystem extends EventEmitter {
      * Verifica si un avatar está disponible para uso inmediato
      */
     isAvatarAvailable(avatarId) {
-        return this.availableAvatars.has(avatarId);
+        const avatarName = avatarManager.getAvatarName(avatarId);
+        return Boolean(avatarName && this.currentScene?.textures?.exists(`${avatarName}_atlas`));
     }
 
     /**
