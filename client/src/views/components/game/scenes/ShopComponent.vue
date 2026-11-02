@@ -214,7 +214,7 @@ export default {
       return Math.round(total);
     },
     quantityOptions() {
-      if (!this.selectedItem) return [1];
+      if (!this.selectedItem || this.selectedItem.is_multi_buy === false) return [1];
       
       const min = this.selectedItem.min_purchase_quantity || 1;
       const max = this.selectedItem.is_multi_buy
