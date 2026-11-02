@@ -3,6 +3,8 @@ const ConsoleLogger = require('../utils/ConsoleLogger');
 const logger = new ConsoleLogger();
 const ResponseSocketsEnum = require('../enums/ResponseSocketsEnum');
 const UpdatePublicScenesController = require('../controllers/game/lobby/UpdatePublicScenesController');
+const UpdateGameScenesController = require('../controllers/game/lobby/UpdateGameScenesController');
+const UpdatePublicIslandsController = require('../controllers/game/lobby/UpdatePublicIslandsController');
 const RemoveSelectedUserTask = require('./RemoveSelectedUserTask');
 const SceneTypesEnum = require('../enums/SceneTypesEnum');
 
@@ -59,11 +61,16 @@ class RemoveUserFromSceneTask {
                 }, user);
             }
 
-            // Actualizar escenas públicas si es necesario
+            // Notificar contadores vivos al lobby sin esperar a recargarlo.
             if (scene.scene_type == SceneTypesEnum.PUBLIC_SCENE) {
-                if (typeof UpdatePublicScenesController.main === 'function') {
-                    UpdatePublicScenesController.main();
-                }
+                UpdatePublicScenesController.main();
+            }
+            if (scene.scene_type == SceneTypesEnum.GAME_SCENE ||
+                scene.scene_type == SceneTypesEnum.MINIGAME_RING) {
+                UpdateGameScenesController.main();
+            }
+            if (scene.scene_type == SceneTypesEnum.PRIVATE_SCENE) {
+                UpdatePublicIslandsController.main();
             }
         }
         catch (err) {

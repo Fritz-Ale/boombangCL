@@ -1,6 +1,7 @@
 <template>
   <div class="game-screens">
     <LobbyScreen
+      :key="lobbyRefreshKey"
       v-if="currentScreen === GameScreensEnum.LOBBY"
       @joinPublicScene="onJoinPublicScene"
       @updateLoading="onUpdateLoading"
@@ -67,6 +68,7 @@
 import { defineAsyncComponent } from "vue";
 import GameScreensEnum from "../../../enums/GameScreensEnum";
 import socket from "../../../sockets/socket.js";
+import createSocketSubscriptions from "../../../utils/createSocketSubscriptions.js";
 import ResponseSocketsEnum from "../../../enums/ResponseSocketsEnum";
 import MenuTypeEnum from "../../../enums/MenuTypeEnum";
 import earlyEventBuffer from "../../../utils/EarlyEventBuffer.js";
@@ -82,6 +84,7 @@ export default {
       sceneData: null,
       GameScreensEnum,
       showMinigameNotification: false,
+      lobbyRefreshKey: 0,
       showIslandErrorAlert: false,
       islandErrorMessage: '',
     };
@@ -126,6 +129,7 @@ export default {
     },
     onExitLobby() {
       this.resetPhaser();
+      this.lobbyRefreshKey++;
       this.sceneData = null;
       this.currentScreen = GameScreensEnum.LOBBY;
       this.currentScreenType = null;
@@ -170,8 +174,8 @@ export default {
     },
   },
   mounted() {
-    socket.off(ResponseSocketsEnum.MINIGAME_JOIN);
-    socket.on(ResponseSocketsEnum.MINIGAME_JOIN, (response) => {
+    this.gameSocketSubscriptions = createSocketSubscriptions(socket);
+    this.gameSocketSubscriptions.on(ResponseSocketsEnum.MINIGAME_JOIN, (response) => {
       if (response.success) {
         // Activar el buffer INMEDIATAMENTE para capturar eventos tempranos
         earlyEventBuffer.activate();
@@ -184,13 +188,11 @@ export default {
       }
     });
 
-    socket.off(ResponseSocketsEnum.MINIGAME_CALL_NOTIFICATION);
-    socket.on(ResponseSocketsEnum.MINIGAME_CALL_NOTIFICATION, () => {
+    this.gameSocketSubscriptions.on(ResponseSocketsEnum.MINIGAME_CALL_NOTIFICATION, () => {
       this.showMinigameNotification = true;
     });
 
-    socket.off(ResponseSocketsEnum.JOIN_PUBLIC_SCENE);
-    socket.on(ResponseSocketsEnum.JOIN_PUBLIC_SCENE, (response) => {
+    this.gameSocketSubscriptions.on(ResponseSocketsEnum.JOIN_PUBLIC_SCENE, (response) => {
       if (response.success) {
         // Activar el buffer INMEDIATAMENTE para capturar eventos tempranos
         earlyEventBuffer.activate();
@@ -204,13 +206,11 @@ export default {
       }
     });
 
-    socket.off(ResponseSocketsEnum.JOIN_ISLAND);
-    socket.on(ResponseSocketsEnum.JOIN_ISLAND, (response) => {
+    this.gameSocketSubscriptions.on(ResponseSocketsEnum.JOIN_ISLAND, (response) => {
       this.onJoinIsland(response.island);
     });
 
-    socket.off(ResponseSocketsEnum.JOIN_PRIVATE_SCENE);
-    socket.on(ResponseSocketsEnum.JOIN_PRIVATE_SCENE, (response) => {
+    this.gameSocketSubscriptions.on(ResponseSocketsEnum.JOIN_PRIVATE_SCENE, (response) => {
       if (response.success) {
         // Activar el buffer INMEDIATAMENTE para capturar eventos tempranos
         earlyEventBuffer.activate();
@@ -224,22 +224,20 @@ export default {
       }
     });
 
-    socket.off(ResponseSocketsEnum.JOIN_PRIVATE_SCENE_ERROR);
-    socket.on(ResponseSocketsEnum.JOIN_PRIVATE_SCENE_ERROR, (response) => {
+    this.gameSocketSubscriptions.on(ResponseSocketsEnum.JOIN_PRIVATE_SCENE_ERROR, (response) => {
       console.error("Error al unirse a la sala privada:", response);
       alert(
         "Error al unirse a la sala privada. Por favor, inténtalo de nuevo."
       );
     });
 
-    socket.off(ResponseSocketsEnum.ERROR_ISLAND_NOT_FOUND);
-    socket.on(ResponseSocketsEnum.ERROR_ISLAND_NOT_FOUND, () => {
+    this.gameSocketSubscriptions.on(ResponseSocketsEnum.ERROR_ISLAND_NOT_FOUND, () => {
       this.showIslandErrorAlert = true;
       this.islandErrorMessage = this.$t('island.error_island_not_found');
     });
   },
   beforeUnmount() {
-    socket.off(ResponseSocketsEnum.ERROR_ISLAND_NOT_FOUND);
+    this.gameSocketSubscriptions?.dispose();
   },
 };
 </script>

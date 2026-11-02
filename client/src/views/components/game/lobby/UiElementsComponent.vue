@@ -85,6 +85,7 @@
 
 <script>
 import socket from "@/sockets/socket";
+import createSocketSubscriptions from "@/utils/createSocketSubscriptions";
 import ResponseSocketsEnum from "@/enums/ResponseSocketsEnum";
 import RequestSocketsEnum from "@/enums/RequestSocketsEnum";
 import asset_background_image from "@/assets/game/lobby/background.webp";
@@ -192,6 +193,7 @@ export default {
     },
   },
   async mounted() {
+    this.mailSocketSubscriptions = createSocketSubscriptions(socket);
     try {
       const avatarUrl = new URL(
         `../../../../assets/game/lobby/avatars/${socket.user.avatar_id}.svg`,
@@ -250,15 +252,9 @@ export default {
 
       // Configurar listeners solo una vez para evitar duplicados
       if (!this.mailListenersConfigured) {
-        // Limpiar listeners existentes primero
-        socket.off(ResponseSocketsEnum.GET_MAIL_INBOX);
-        socket.off(ResponseSocketsEnum.MAIL_UNREAD_COUNT);
-        socket.off(ResponseSocketsEnum.MAIL_READ);
-        socket.off(ResponseSocketsEnum.CLAIM_REWARD_SUCCESS);
-        socket.off(ResponseSocketsEnum.CLAIM_REWARD_ERROR);
-
+        // Los listeners son propiedad de ESTE lobby, nunca de la conexión global.
         // Configurar listeners de socket para el sistema de correo
-        socket.on(ResponseSocketsEnum.GET_MAIL_INBOX, (data) => {
+        this.mailSocketSubscriptions.on(ResponseSocketsEnum.GET_MAIL_INBOX, (data) => {
           if (data.success) {
             this.mailStore.setMails(data.mails || []);
             this.mailStore.setUnreadCount(data.unread_count || 0);
@@ -270,17 +266,17 @@ export default {
           }
         });
 
-        socket.on(ResponseSocketsEnum.MAIL_UNREAD_COUNT, (data) => {
+        this.mailSocketSubscriptions.on(ResponseSocketsEnum.MAIL_UNREAD_COUNT, (data) => {
           this.mailStore.setUnreadCount(data.unread_count);
         });
 
-        socket.on(ResponseSocketsEnum.MAIL_READ, (data) => {
+        this.mailSocketSubscriptions.on(ResponseSocketsEnum.MAIL_READ, (data) => {
           if (data.success) {
             this.mailStore.markMailAsRead(data.mail_id);
           }
         });
 
-        socket.on(ResponseSocketsEnum.CLAIM_REWARD_SUCCESS, (data) => {
+        this.mailSocketSubscriptions.on(ResponseSocketsEnum.CLAIM_REWARD_SUCCESS, (data) => {
           this.mailStore.setClaiming(false);
           if (data.success) {
             this.mailStore.markMailAsClaimed(data.mail_id);
@@ -294,7 +290,7 @@ export default {
           }
         });
 
-        socket.on(ResponseSocketsEnum.CLAIM_REWARD_ERROR, (data) => {
+        this.mailSocketSubscriptions.on(ResponseSocketsEnum.CLAIM_REWARD_ERROR, (data) => {
           this.mailStore.setClaiming(false);
           console.error('Error al reclamar recompensas:', data.message || data);
           // Mostrar una notificación de error al usuario
@@ -303,11 +299,9 @@ export default {
 
         this.mailListenersConfigured = true;
 
-        // Cargar correos automáticamente al entrar al lobby (DESPUÉS de configurar listeners)
-        setTimeout(() => {
-          this.mailStore.setLoading(true);
-          socket.emit(RequestSocketsEnum.GET_MAIL_INBOX);
-        }, 100);
+        // Solicitar después de suscribirse, sin temporizadores con respuestas perdidas.
+        this.mailStore.setLoading(true);
+        socket.emit(RequestSocketsEnum.GET_MAIL_INBOX);
       }
     } catch (error) {
       console.error(this.$t("lobby.ui.avatar_error"), error);
@@ -318,12 +312,7 @@ export default {
       clearInterval(this.timeUpdateInterval);
     }
     
-    // Limpiar listeners de socket
-    socket.off(ResponseSocketsEnum.GET_MAIL_INBOX);
-    socket.off(ResponseSocketsEnum.MAIL_UNREAD_COUNT);
-    socket.off(ResponseSocketsEnum.MAIL_READ);
-    socket.off(ResponseSocketsEnum.CLAIM_REWARD_SUCCESS);
-    socket.off(ResponseSocketsEnum.CLAIM_REWARD_ERROR);
+    this.mailSocketSubscriptions?.dispose();
     
     // Resetear bandera
     this.mailListenersConfigured = false;
@@ -392,8 +381,7 @@ export default {
     logout() {
       if (this.isLogoutButtonClicked) return;
       this.isLogoutButtonClicked = true;
-      socket.off(ResponseSocketsEnum.LOGOUT);
-      socket.on(ResponseSocketsEnum.LOGOUT, () => {
+      this.mailSocketSubscriptions.once(ResponseSocketsEnum.LOGOUT, () => {
         localStorage.removeItem("app_jwt");
         location.reload();
       });
@@ -404,8 +392,7 @@ export default {
     },
     handleGachaConfirm() {
       this.isGachaAlertVisible = false;
-      socket.off(ResponseSocketsEnum.LOBBY_GACHA_SPIN);
-      socket.on(ResponseSocketsEnum.LOBBY_GACHA_SPIN, (data) => {
+      this.mailSocketSubscriptions.once(ResponseSocketsEnum.LOBBY_GACHA_SPIN, (data) => {
         if (data.success) {
           this.$refs.gachaponMachine.triggerAnimation();
           this.gachaponItem.name = data.item.name;

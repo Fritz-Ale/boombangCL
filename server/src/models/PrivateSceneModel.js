@@ -7,6 +7,7 @@ const PrivateSceneResource = require('../resources/PrivateSceneResource');
 const ResponseSocketsEnum = require('../enums/ResponseSocketsEnum');
 const CatalogItemTypeOfBehaviorEnum = require('../enums/CatalogItemTypeOfBehaviorEnum');
 const sceneMutex = require('../utils/SceneMutex');
+const UpdatePublicIslandsController = require('../controllers/game/lobby/UpdatePublicIslandsController');
 
 class PrivateSceneModel extends SceneModel {
     constructor(uuid, row) {
@@ -63,6 +64,7 @@ class PrivateSceneModel extends SceneModel {
             user.setArea(this);
             user.setInventory(userInventoryItems || []);
             this.addUser(user);
+            UpdatePublicIslandsController.main();
 
             // Obtener la lista actualizada de usuarios
             let sceneUsers = [];

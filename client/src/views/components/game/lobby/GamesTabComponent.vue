@@ -14,6 +14,7 @@
 
 <script>
 import socket from "../../../../sockets/socket";
+import createSocketSubscriptions from "../../../../utils/createSocketSubscriptions";
 import RequestSocketsEnum from "../../../../enums/RequestSocketsEnum";
 import ResponseSocketsEnum from "../../../../enums/ResponseSocketsEnum";
 import MenuTypeEnum from "../../../../enums/MenuTypeEnum";
@@ -34,7 +35,15 @@ export default {
     };
   },
   created() {
+    this.gameListSubscriptions = createSocketSubscriptions(socket);
+    this.gameListSubscriptions.on(ResponseSocketsEnum.UPDATE_GAME_SCENES, (scenes) => {
+      this.gameScenes = Array.isArray(scenes) ? scenes : [];
+      this.isLoading = false;
+    });
     this.loadGames();
+  },
+  beforeUnmount() {
+    this.gameListSubscriptions?.dispose();
   },
   mounted() {
     const { initScrollbars } = useOverlayScrollbars();
@@ -49,11 +58,6 @@ export default {
     loadGames() {
       this.isLoading = true;
       socket.emit(RequestSocketsEnum.GET_GAME_SCENES);
-      socket.off(ResponseSocketsEnum.UPDATE_GAME_SCENES);
-      socket.on(ResponseSocketsEnum.UPDATE_GAME_SCENES, (gameScenes) => {
-        this.gameScenes = gameScenes;
-        this.isLoading = false;
-      });
     },
   },
 };

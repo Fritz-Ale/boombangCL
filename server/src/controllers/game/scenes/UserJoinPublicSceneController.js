@@ -1,5 +1,6 @@
 
 const UpdatePublicScenesController = require('../lobby/UpdatePublicScenesController');
+const UpdateGameScenesController = require('../lobby/UpdateGameScenesController');
 const ConnectedUsersCollection = require('../../../collections/ConnectedUsersCollection');
 const PublicScenesCollection = require('../../../collections/PublicScenesCollection');
 const GameScenesCollection = require('../../../collections/GameScenesCollection');
@@ -74,7 +75,13 @@ class UserJoinPublicSceneController {
                     user: await new UserResource(user).toObject(),
                 }, user);
 
-                UpdatePublicScenesController.main(io);
+                // Los contadores del lobby se notifican a quienes siguen en él.
+                // Los escenarios de juegos tienen menú independiente.
+                if (data.menuType == MenuTypeEnum.PUBLIC_SCENE) {
+                    UpdatePublicScenesController.main(io);
+                } else {
+                    UpdateGameScenesController.main(io);
+                }
                 
             } finally {
                 // Liberar el mutex

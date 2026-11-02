@@ -12,6 +12,7 @@
 
 <script>
 import socket from "../../../../sockets/socket";
+import createSocketSubscriptions from "../../../../utils/createSocketSubscriptions";
 import RequestSocketsEnum from "../../../../enums/RequestSocketsEnum";
 import ResponseSocketsEnum from "../../../../enums/ResponseSocketsEnum";
 import SpinnerComponent from '../../common/SpinnerComponent.vue';
@@ -27,8 +28,16 @@ export default {
       isLoading: true,
     };
   },
-  async created() {
+  created() {
+    this.publicIslandsSubscriptions = createSocketSubscriptions(socket);
+    this.publicIslandsSubscriptions.on(ResponseSocketsEnum.UPDATE_PUBLIC_ISLANDS, (data) => {
+      this.islands = Array.isArray(data?.islands) ? data.islands : [];
+      this.isLoading = false;
+    });
     this.loadIslands();
+  },
+  beforeUnmount() {
+    this.publicIslandsSubscriptions?.dispose();
   },
   methods: {
     handleClick(islandId) {
@@ -39,11 +48,6 @@ export default {
     loadIslands() {
       this.isLoading = true;
       socket.emit(RequestSocketsEnum.GET_PUBLIC_ISLANDS);
-      socket.off(ResponseSocketsEnum.UPDATE_PUBLIC_ISLANDS);
-      socket.on(ResponseSocketsEnum.UPDATE_PUBLIC_ISLANDS, (data) => {
-        this.islands = data.islands;
-        this.isLoading = false;
-      });
     },
   },
 };

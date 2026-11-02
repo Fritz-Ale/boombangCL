@@ -52,6 +52,7 @@
 
 <script>
 import socket from "@/sockets/socket";
+import createSocketSubscriptions from "@/utils/createSocketSubscriptions";
 import RequestSocketsEnum from "@/enums/RequestSocketsEnum";
 import ResponseSocketsEnum from "@/enums/ResponseSocketsEnum";
 import UiElementsComponent from "../../components/game/lobby/UiElementsComponent.vue";
@@ -104,31 +105,34 @@ export default {
       },
     },
   },
-  async created() {
+  created() {
+    this.lobbySubscriptions = createSocketSubscriptions(socket);
+    // Suscribirse antes de pedir los datos: la respuesta puede llegar enseguida.
+    this.lobbySubscriptions.on(ResponseSocketsEnum.UPDATE_PUBLIC_SCENES, (publicScenes) => {
+      this.publicScenes = publicScenes;
+      this.$emit("updateLoading", false);
+    });
+    this.lobbySubscriptions.on(ResponseSocketsEnum.GET_MY_ISLANDS, (data) => {
+      this.myIslands = Array.isArray(data?.islands) ? data.islands : [];
+    });
     this.$emit("updateLoading", true);
     this.loadAreas();
     this.loadFavoriteIslands();
     this.loadMyIslands();
   },
+  beforeUnmount() {
+    this.lobbySubscriptions?.dispose();
+  },
   methods: {
     ...mapActions(useLobbyStore, ["setActiveTab"]),
     loadAreas() {
       socket.emit(RequestSocketsEnum.GET_PUBLIC_SCENES);
-      socket.off(ResponseSocketsEnum.UPDATE_PUBLIC_SCENES);
-      socket.on(ResponseSocketsEnum.UPDATE_PUBLIC_SCENES, (publicScenes) => {
-        this.publicScenes = publicScenes;
-        this.$emit("updateLoading", false);
-      });
     },
     loadFavoriteIslands() {
       // Lógica para cargar islas favoritas
     },
     loadMyIslands() {
       socket.emit(RequestSocketsEnum.GET_MY_ISLANDS);
-      socket.off(ResponseSocketsEnum.GET_MY_ISLANDS);
-      socket.on(ResponseSocketsEnum.GET_MY_ISLANDS, (data) => {
-        this.myIslands = data.islands;
-      });
     },
     createIsland() {
       this.$emit("createIsland");

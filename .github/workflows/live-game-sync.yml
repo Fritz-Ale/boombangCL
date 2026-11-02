@@ -1,0 +1,49 @@
+name: BoomBangCL live game synchronization
+
+on:
+  pull_request:
+    paths:
+      - 'client/src/App.vue'
+      - 'client/src/sockets/socket.js'
+      - 'client/src/utils/createSocketSubscriptions.js'
+      - 'client/src/views/screens/game/GameScreens.vue'
+      - 'client/src/views/screens/game/LobbyScreen.vue'
+      - 'client/src/views/components/game/lobby/**'
+      - 'client/src/views/components/game/scenes/public/InventoryPublicSceneComponent.vue'
+      - 'client/src/views/components/auth/LoginFormComponent.vue'
+      - 'client/tests/live-game-sync.test.cjs'
+      - 'server/src/controllers/game/scenes/UserJoinPublicSceneController.js'
+      - 'server/src/tasks/RemoveUserFromSceneTask.js'
+      - 'server/src/models/PrivateSceneModel.js'
+      - 'server/src/controllers/game/lobby/UpdatePublicIslandsController.js'
+      - 'server/src/controllers/game/islands/GetPublicIslandsController.js'
+      - 'server/src/services/publicIslandsSnapshot.js'
+      - '.github/workflows/live-game-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Live subscriptions and reconnection regression tests
+        run: node --test client/tests/live-game-sync.test.cjs
+      - name: Existing socket and inventory regression tests
+        run: node --test client/tests/scene-socket-subscriptions.test.cjs client/tests/inventory-realtime.test.cjs
+      - name: Install HTML5 client dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Build Vue and Phaser
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
