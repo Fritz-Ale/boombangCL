@@ -180,7 +180,10 @@ test('direccion inicial vacia o cero conserva una animacion idle visible', () =>
     const Idle = new Function('DirectionEnum', 'AvatarAnimationsEnum',
         'AnimationUtils', src('animations/UserIdleAnimation.js') +
         '\nreturn UserIdleAnimation;'
-    )({ DOWN: 2, LEFT: 8 }, { DOWN_IDLE: 'down_idle', LEFT_IDLE: 'left_idle' }, {});
+    )({
+        DOWN_LEFT: 1, DOWN: 2, DOWN_RIGHT: 3, RIGHT: 4,
+        UP_RIGHT: 5, UP: 6, UP_LEFT: 7, LEFT: 8
+    }, { DOWN_IDLE: 'down_idle', LEFT_IDLE: 'left_idle' }, {});
     assert.equal(Idle.getTextureKey(0), 'down_idle');
     assert.equal(Idle.getTextureKey(undefined), 'down_idle');
 });
