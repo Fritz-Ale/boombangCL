@@ -6,6 +6,7 @@ on:
       - 'api/app/**'
       - 'api/database/**'
       - 'api/tests/Standalone/catalog-rarity.php'
+      - 'api/tests/Standalone/catalog-purchase-pricing.php'
       - 'client/src/views/components/game/scenes/ShopComponent.vue'
       - '.github/workflows/catalog-rarity-quality.yml'
   workflow_dispatch:
@@ -25,6 +26,7 @@ jobs:
       - name: Check PHP syntax
         run: |
           php -l api/app/Support/CatalogRarity.php
+          php -l api/app/Support/CatalogPurchasePricing.php
           php -l api/app/Models/CatalogItem.php
           php -l api/app/Http/Resources/CatalogItemResource.php
           php -l api/app/Http/Resources/UserCatalogItemsResource.php
@@ -36,7 +38,9 @@ jobs:
           php -l api/database/migrations/2026_11_02_150000_add_rarity_and_reference_fields_to_catalog_items.php
           php -l api/database/seeders/CatalogReferenceSeeder.php
       - name: Validate rarity thresholds and research input
-        run: php api/tests/Standalone/catalog-rarity.php
+        run: |
+          php api/tests/Standalone/catalog-rarity.php
+          php api/tests/Standalone/catalog-purchase-pricing.php
       - name: Check protected purchase and island contract
         run: |
           grep -q "lockForUpdate()" api/app/Http/Controllers/Internal/ShopController.php
