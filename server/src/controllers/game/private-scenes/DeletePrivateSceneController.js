@@ -3,6 +3,7 @@ const ConnectedUsersCollection = require('../../../collections/ConnectedUsersCol
 const PrivateSceneApiService = require('../../../services-api/PrivateSceneApiService');
 const PrivateScenesCollection = require('../../../collections/PrivateScenesCollection');
 const RemoveUserFromSceneTask = require('../../../tasks/RemoveUserFromSceneTask');
+const GetPublicIslandsController = require('../islands/GetPublicIslandsController');
 
 class DeletePrivateSceneController {
     static async main(socket, io, data) {
@@ -79,6 +80,8 @@ class DeletePrivateSceneController {
                 if (PrivateScenesCollection.getById(sceneId)) {
                     PrivateScenesCollection.remove(sceneId);
                 }
+                // Todos los usuarios del lobby reciben el estado actual.
+                GetPublicIslandsController.broadcastToLobby();
             } else {
                 socket.emit(ResponseSocketsEnum.ERROR_PRIVATE_SCENE_DELETE, {
                     message: response.message || 'Failed to delete scene',
