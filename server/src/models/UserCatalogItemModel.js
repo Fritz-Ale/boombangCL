@@ -1,11 +1,24 @@
 class UserCatalogItemModel {
+    static parseTileList(value, fallback) {
+        try {
+            const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+            if (Array.isArray(parsed) && parsed.every(tile =>
+                Array.isArray(tile) && tile.length === 2 &&
+                Number.isInteger(tile[0]) && Number.isInteger(tile[1])
+            )) return parsed;
+        } catch (_error) {
+            // Datos antiguos o incompletos no deben bloquear la entrada a la isla.
+        }
+        return fallback;
+    }
+
     constructor(row) {
         this.id = row.id;
         this.private_scene_id = row.private_scene_id; // ID de la escena a la que pertenece el objeto
         this.display_name = row.display_name;
         this.sprite_name = row.sprite_name;
-        this.map_size = JSON.parse(row.map_size); // Tamaño del mapa del objeto map_size: [[0, 1], [1, 2], [2, 1], [1, 0], [1, 1]],
-        this.occupied_tiles = JSON.parse(row.occupied_tiles); // Casillas ocupadas por el objeto  //occupied_tiles: [[11, 10], [12, 11], [11, 12], [10, 11], [11, 11]],
+        this.map_size = UserCatalogItemModel.parseTileList(row.map_size, [[0, 0]]);
+        this.occupied_tiles = UserCatalogItemModel.parseTileList(row.occupied_tiles, []);
         this.image = row.image;
         this.image_url = row.image_url;
         this.spreadsheet = row.spreadsheet;
@@ -19,6 +32,8 @@ class UserCatalogItemModel {
         this.resized = row.resized;
         this.type_of_behavior = row.type_of_behavior;
         this.scale = row.scale;
+        this.rarity_code = row.rarity_code || 'comun';
+        this.rarity_label = row.rarity_label || 'Común';
     }
 }
 
