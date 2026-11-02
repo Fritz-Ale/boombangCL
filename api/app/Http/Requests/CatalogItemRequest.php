@@ -37,6 +37,7 @@ class CatalogItemRequest extends FormRequest
             'reference_source_url' => 'nullable|url|max:500',
             'asset_rights_status' => 'sometimes|in:unverified,licensed,original',
             'asset_rights_evidence' => 'nullable|string|max:2000',
+            'asset_rights_evidence' => 'nullable|string|max:2000',
             'price' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0|max:100',
             'price_type' => 'required|in:golden_coins,silver_coins,stripe_payment',
