@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Internal;
 
 use App\Models\User;
 use App\Models\CatalogItem;
+use App\Support\CatalogPurchasePricing;
 use Illuminate\Http\Request;
 use App\Models\CatalogCategory;
 use App\Models\UserCatalogItem;
@@ -75,7 +76,7 @@ class ShopController extends Controller
 
         $request->validate([
             'catalog_item_id' => 'required|integer|exists:catalog_items,id',
-            'quantity' => 'integer|min:1',
+            'quantity' => 'integer|min:1|max:1000',
         ]);
 
         $catalogItemId = $request->input('catalog_item_id');
@@ -134,16 +135,21 @@ class ShopController extends Controller
             ], 400);
         }
 
-        // Calcular el precio total
-        $totalPrice = $catalogItem->price * $quantity;
-
-        // Aplicar descuento si existe
-        if ($catalogItem->discount > 0) {
-            $totalPrice = $totalPrice - ($totalPrice * ($catalogItem->discount / 100));
+        // No confiar solo en la validación del administrador: también pueden existir
+        // registros históricos o importaciones con monedas/precios inválidos.
+        try {
+            $totalPrice = CatalogPurchasePricing::total(
+                $catalogItem->price,
+                $catalogItem->discount ?? 0,
+                $quantity,
+                (string) $catalogItem->price_type
+            );
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Invalid catalog purchase configuration',
+            ], 422);
         }
-
-        // Redondear el precio total
-        $totalPrice = (int) round($totalPrice);
 
         DB::beginTransaction();
 
