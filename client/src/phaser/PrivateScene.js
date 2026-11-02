@@ -283,8 +283,11 @@ export default class PrivateScene extends Phaser.Scene {
             if (import.meta.env.VITE_APP_ENV === "local") {
                 //console.log('Socket event received:', ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY);
             }
-            if (data.item) {
-                this.inventoryItemsList.push(data.item);
+            // La BD confirmó la retirada y Socket.IO entrega el objeto completo.
+            // No confiar en IDs con el mismo tipo (el servidor puede serializar números/cadenas).
+            const item = data?.item;
+            if (item?.id != null && !this.inventoryItemsList.some(existing => String(existing.id) === String(item.id))) {
+                this.inventoryItemsList.push({ ...item, private_scene_id: null, occupied_tiles: [] });
                 this.updateHTMLInventoryUI();
             }
         });
@@ -293,14 +296,14 @@ export default class PrivateScene extends Phaser.Scene {
                 //console.log('Socket event received:', ResponseSocketsEnum.SCENE_REMOVE_ITEM);
             }
             const itemId = data.user_catalog_item_id;
-            const itemToRemove = this.sceneItems.find(i => i.id === itemId);
+            const itemToRemove = this.sceneItems.find(i => String(i.id) === String(itemId));
 
             if (itemToRemove) {
                 // Eliminar sprite y del array de objetos de escena
                 if (itemToRemove.sprite) {
                     itemToRemove.sprite.destroy();
                 }
-                this.sceneItems = this.sceneItems.filter(i => i.id !== itemId);
+                this.sceneItems = this.sceneItems.filter(i => String(i.id) !== String(itemId));
 
                 // Actualizar escena
                 this.markOccupiedTiles();
@@ -391,7 +394,7 @@ export default class PrivateScene extends Phaser.Scene {
                 //console.log('Socket event received:', ResponseSocketsEnum.REMOVE_ITEM_FROM_INVENTORY);
             }
             const itemId = data.user_catalog_item_id;
-            const itemIndex = this.inventoryItemsList.findIndex(i => i.id === itemId);
+            const itemIndex = this.inventoryItemsList.findIndex(i => String(i.id) === String(itemId));
             if (itemIndex !== -1) {
                 this.inventoryItemsList.splice(itemIndex, 1);
                 this.updateHTMLInventoryUI();
