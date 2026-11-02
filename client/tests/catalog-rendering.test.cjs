@@ -12,7 +12,7 @@ function createSceneHelpers(env = 'production') {
   const end = sceneCode.indexOf('\n    preload() {', start);
   assert.ok(start !== -1 && end > start, 'los helpers de sprites existen');
   const methods = sceneCode.slice(start, end).replaceAll('import.meta.env.VITE_APP_ENV', 'env');
-  return new Function('env', 'return ({' + methods + '});')(env);
+  return new Function('env', 'class Helpers {' + methods + '} return new Helpers();')(env);
 }
 
 test('se reconocen vídeos con versión en querystring y extensiones seguras', () => {
