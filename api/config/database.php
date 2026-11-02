@@ -2,6 +2,12 @@
 
 use Illuminate\Support\Str;
 
+// PHP 8.5 depreca PDO::MYSQL_ATTR_SSL_CA; usar la constante de la
+// subclase si está disponible, manteniendo compatibilidad con PHP 8.2/8.3.
+$mysqlSslCaAttribute = extension_loaded('pdo_mysql')
+    ? (defined(\Pdo\Mysql::class.'::ATTR_SSL_CA') ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA)
+    : null;
+
 return [
 
     /*
@@ -58,7 +64,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                $mysqlSslCaAttribute => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
@@ -78,7 +84,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                $mysqlSslCaAttribute => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
