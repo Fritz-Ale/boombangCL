@@ -44,11 +44,14 @@ export default class PublicScene extends Phaser.Scene {
         this.isSceneReady = false;
         this.eventBuffer = [];
         this.sceneGeneration = 0;
+        this._sceneClosed = false;
+        this._destroyHookRegistered = false;
     }
 
     init(data) {
         // Reiniciar el estado cuando Phaser reutiliza esta instancia de sala.
         this.sceneGeneration += 1;
+        this._sceneClosed = false;
         this.isSceneReady = false;
         this.eventBuffer = [];
         this.avatarsEssentialReady = false;
@@ -85,7 +88,10 @@ export default class PublicScene extends Phaser.Scene {
         const generation = this.sceneGeneration;
         // Registrar la limpieza antes de cualquier await durante la creación.
         this.events.once('shutdown', this.shutdown, this);
-        this.events.once('destroy', this.destroy, this);
+        if (!this._destroyHookRegistered) {
+            this.events.once('destroy', this.destroy, this);
+            this._destroyHookRegistered = true;
+        }
         //console.log("🎮 Inicializando PublicScene...");
         
         if (!this.plugins.get('rexColorReplacePipeline')) {
@@ -352,6 +358,8 @@ export default class PublicScene extends Phaser.Scene {
     }
 
     shutdown() {
+        if (this._sceneClosed) return;
+        this._sceneClosed = true;
         this.sceneGeneration += 1; // Invalida trabajos asíncronos de la sala anterior.
         //console.log("🧹 Shutting down PublicScene...");
 
