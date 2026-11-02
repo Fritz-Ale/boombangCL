@@ -11,6 +11,7 @@
           @goToRegister="onGoToRegister"
         />
         <GameScreens
+          ref="gameScreens"
           v-else
           :gamePhaser="gamePhaser"
           @updateLoading="onUpdateLoading"
@@ -25,6 +26,8 @@ import Phaser from "phaser";
 import { defineAsyncComponent } from "vue";
 import socket from "./sockets/socket";
 import GameScreensEnum from "./enums/GameScreensEnum";
+import RequestSocketsEnum from "./enums/RequestSocketsEnum";
+import ResponseSocketsEnum from "./enums/ResponseSocketsEnum";
 import ColorReplacePipelinePlugin from "phaser3-rex-plugins/plugins/colorreplacepipeline-plugin.js";
 import gameConfig from "@/config/gameConfig.js";
 import visibilityManager from "./phaser/managers/VisibilityManager.js";
@@ -35,6 +38,7 @@ export default {
       gamePhaser: null,
       loading: false,
       isAuthenticated: false, // Nueva bandera de autenticación
+      reconnectPending: false, // Se perdió una sesión autenticada, no reiniciar página
     };
   },
   created() {
@@ -161,17 +165,58 @@ export default {
       this.gamePhaser.canvas.style.height = gameConfig.GAME_HEIGHT + "px";
     },
     handleDisconnect() {
+      if (!this.isAuthenticated) return;
+      // Socket.IO crea una conexión nueva: los datos de sesión y de sala anteriores
+      // ya no son autoritativos. Bloquear controles mientras se recupera el JWT.
+      this.reconnectPending = true;
       this.onUpdateLoading(true);
-      if (this.gamePhaser && this.gamePhaser.scene) {
-        this.gamePhaser.scene.stop("PublicScene");
-        this.gamePhaser.scene.stop("MinigameScene");
+      for (const scene of this.gamePhaser?.scene?.getScenes(true) || []) {
+        if (scene.input) scene.input.enabled = false;
       }
-      this.gamePhaser = null;
-      document.getElementById("phaser-container").innerHTML = "";
-      this.currentScreen = GameScreensEnum.LOGIN;
+    },
+    handleReconnect() {
+      if (!this.reconnectPending || !this.isAuthenticated) return;
+      const jwt = localStorage.getItem("app_jwt");
+      if (!jwt) {
+        this.resetSessionWithoutReload();
+        return;
+      }
+      socket.emit(RequestSocketsEnum.JWT_AUTO_LOGIN, { authJwt: jwt });
+    },
+    handleSessionRestored(data) {
+      if (!this.reconnectPending || !this.isAuthenticated) return;
+      if (!data?.user) {
+        this.resetSessionWithoutReload();
+        return;
+      }
+      socket.user = data.user;
+      if (data.user.authJwt) {
+        localStorage.setItem("app_jwt", data.user.authJwt);
+      }
+      this.reconnectPending = false;
+      // Las salas del socket anterior ya no existen para esta conexión.
+      // Salir al lobby EN LA MISMA página y solicitar datos frescos.
+      this.$refs.gameScreens?.onExitLobby();
       this.onUpdateLoading(false);
-
-      location.reload();
+    },
+    handleSessionInvalid() {
+      if (!this.reconnectPending) return;
+      localStorage.removeItem("app_jwt");
+      this.resetSessionWithoutReload();
+    },
+    resetSessionWithoutReload() {
+      this.reconnectPending = false;
+      if (this.gamePhaser) {
+        this.gamePhaser.destroy(true);
+        this.gamePhaser = null;
+      }
+      socket.user = null;
+      this.isAuthenticated = false;
+      this.onUpdateLoading(false);
+    },
+    handleCriticalSessionError() {
+      localStorage.removeItem("app_jwt");
+      this.resetSessionWithoutReload();
     },
     onUpdateLoading(value) {
       this.loading = value;
@@ -208,12 +253,11 @@ export default {
     // Detectar desconexión del socket
     socket.on("disconnect", this.handleDisconnect);
 
-    // Detectar reconexión
-    socket.on("connect", () => {
-      //console.log("Reconectado al servidor");
-    });
-
-    socket.on("error_critical", this.handleDisconnect);
+    // Recuperar la sesión sin destruir la página ni reutilizar el estado antiguo.
+    socket.on("connect", this.handleReconnect);
+    socket.on(ResponseSocketsEnum.LOGIN_SUCCESS, this.handleSessionRestored);
+    socket.on(ResponseSocketsEnum.JWT_AUTO_LOGIN_INVALID, this.handleSessionInvalid);
+    socket.on("error_critical", this.handleCriticalSessionError);
 
     // Inicializar auto-escalado del juego
     this.rescaleGame();
@@ -222,8 +266,10 @@ export default {
   beforeUnmount() {
     // Remover listeners de socket para evitar fugas de memoria
     socket.off("disconnect", this.handleDisconnect);
-    socket.off("connect");
-    socket.off("error_critical", this.handleDisconnect);
+    socket.off("connect", this.handleReconnect);
+    socket.off(ResponseSocketsEnum.LOGIN_SUCCESS, this.handleSessionRestored);
+    socket.off(ResponseSocketsEnum.JWT_AUTO_LOGIN_INVALID, this.handleSessionInvalid);
+    socket.off("error_critical", this.handleCriticalSessionError);
     
     // Remover listener de resize
     window.removeEventListener("resize", this.rescaleGame);
