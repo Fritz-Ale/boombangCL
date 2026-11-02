@@ -135,6 +135,22 @@ class PutItemPrivateSceneController {
             itemBeingPlaced = user.inventory.find(item => item.id === userCatalogItemId);
         }
 
+        // La huella debe conservar exactamente las celdas que define el
+        // catálogo, simplemente trasladadas a otra posición. De lo contrario
+        // un cliente modificado podría colocar objetos grandes en una sola celda.
+        if (!itemBeingPlaced || !Array.isArray(itemBeingPlaced.map_size) ||
+            itemBeingPlaced.map_size.length !== occupiedTiles.length ||
+            !itemBeingPlaced.map_size.every(tile => Array.isArray(tile) &&
+                tile.length === 2 && Number.isInteger(tile[0]) && Number.isInteger(tile[1]))) {
+            return false;
+        }
+        const offsetX = occupiedTiles[0][0] - itemBeingPlaced.map_size[0][0];
+        const offsetY = occupiedTiles[0][1] - itemBeingPlaced.map_size[0][1];
+        const proposed = new Set(occupiedTiles.map(([x, y]) => `${x},${y}`));
+        if (!itemBeingPlaced.map_size.every(([x, y]) => proposed.has(`${x + offsetX},${y + offsetY}`))) {
+            return false;
+        }
+
         for (const tile of occupiedTiles) {
             const [x, y] = tile;
 
