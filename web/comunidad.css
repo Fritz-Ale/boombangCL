@@ -1,0 +1,41 @@
+
+/* BoomBangCL: comunidad chilena, estilos originales */
+.cl-hero{background:radial-gradient(circle at 80% 25%,#42dccc44,transparent 30%),linear-gradient(115deg,#095775,#068c95 60%,#0dbcae);color:#fff;padding:92px 0 103px;overflow:hidden}
+.cl-hero .container{position:relative}.cl-hero .container:after{content:"✳";position:absolute;right:3%;top:-45px;font-size:clamp(8rem,26vw,23rem);color:#ffffff10;pointer-events:none}
+.cl-hero h1{font-size:clamp(3.25rem,7vw,6.6rem);line-height:1;letter-spacing:-.06em;max-width:850px;margin:12px 0 22px;font-weight:900}
+.cl-hero h1 em,.cl-next h2 em{color:#ffe18b;font-style:normal}.cl-hero p{max-width:650px;color:#effffb;font-size:1.13rem}
+.cl-kicker{font-size:.82rem;font-weight:900;letter-spacing:.14em;color:#fff3aa}
+.cl-actions{display:flex;flex-wrap:wrap;gap:14px;margin:28px 0 12px}.cl-hero .cl-footnote{font-size:.79rem;color:#d3f6f0;margin:21px 0 0}
+.cl-hero-small{padding:78px 0}.cl-section{padding:85px 0}.cl-alt{background:#f2f7f4}
+.cl-heading{max-width:850px;margin-bottom:30px}.cl-heading h2{max-width:790px}.cl-heading>p{color:#4a6673;max-width:750px}
+.cl-cards,.cl-roadmap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.cl-card,.cl-roadmap-item{background:#fff;border:1px solid #e0ebed;box-shadow:0 10px 35px #00252b0b;border-radius:22px;padding:26px;min-width:0}
+.cl-card .cl-icon{font-size:2.5rem}.cl-card h3,.cl-roadmap-item h3{font-size:1.43rem;margin:13px 0 10px}
+.cl-card p,.cl-roadmap-item p{font-size:.94rem;color:#476171;margin:0 0 18px}
+.cl-card a,.cl-text-link{font-weight:900;color:#087d83;text-decoration:underline;text-underline-offset:3px}
+.cl-clock{display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center;background:#fff;color:#113848;border-radius:100px;border:1px solid #dce8e4;padding:10px 18px;font-size:.87rem!important}
+.cl-event-list{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr));margin:22px 0}
+.cl-empty{grid-column:1/-1;background:#fff;border:2px dashed #b5d3d0;padding:32px 26px;border-radius:18px;color:#375465}
+.cl-event{background:#fff;border:1px solid #dfeae6;border-radius:16px;padding:20px}
+.cl-event time{display:block;font-weight:900;color:#087e83;font-size:.85rem}.cl-event h3{margin:8px 0;font-size:1.2rem}.cl-event p{color:#526974;font-size:.9rem;margin:0}
+.cl-muted{font-size:.87rem;color:#526974;line-height:1.7}
+.cl-split{display:grid;grid-template-columns:1fr 1fr;gap:65px;align-items:start}.cl-split h2{font-size:clamp(2.4rem,4.1vw,4rem)}
+.cl-form{padding:29px;border-radius:20px;background:#fff;border:1px solid #d9e9e7;box-shadow:0 12px 44px #00333d12;display:grid;gap:10px}
+.cl-form label{font-size:.92rem;font-weight:900;color:#19384b}
+.cl-form input,.cl-form select,.cl-form textarea{width:100%;max-width:100%;background:#fafdfd;color:#133648;border:1px solid #a7c6c6;border-radius:10px;padding:13px;font-family:inherit;font-size:1rem}
+.cl-form textarea{resize:vertical;min-height:140px}.cl-form :is(input,select,textarea):focus-visible{outline:3px solid #ffce67;outline-offset:2px}
+.cl-form .button{border:0;cursor:pointer;margin-top:10px}.cl-form-status{font-size:.83rem;color:#516976;margin:4px 0 0}
+.cl-rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cl-rules>div{border-left:5px solid #09a7a4;background:#fff;padding:21px 24px;border-radius:0 15px 15px 0}
+.cl-rules strong{color:#164c5d;font-size:1.02rem}.cl-rules p{margin:8px 0 0;font-size:.89rem;color:#4a6270}
+.cl-next{border-radius:26px;color:#fff;text-align:center;padding:70px 25px;background:linear-gradient(125deg,#0b5972,#00aaa6)}
+.cl-next h2{font-size:clamp(2.7rem,5vw,5rem);margin:10px auto 20px}.cl-next p{max-width:650px;margin:0 auto 24px;color:#e8fffb}
+.cl-filters{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}.cl-filter{background:#fff;border:1px solid #b6d0cd;padding:11px 17px;border-radius:100px;font-weight:900;color:#1b5862;cursor:pointer}
+.cl-filter:hover,.cl-filter:focus-visible{background:#e4f7f4}.cl-filter.is-active{color:#fff;background:#0a6377;border-color:#0a6377}
+.cl-count{font-size:.87rem;color:#526b77;margin:16px 0 22px}.cl-roadmap-item{border-top:5px solid #a8e4d7}.cl-roadmap-item[hidden]{display:none}
+.cl-status{display:inline-block;font-size:.7rem;border-radius:50px;padding:6px 11px;font-weight:900;letter-spacing:.045em}
+.status-base{background:#e6f8ec;color:#286a49}.status-priority{background:#fff1d8;color:#8a5609}.status-idea{background:#eae9fb;color:#5044a3}
+.cl-sources{border-radius:22px;padding:30px;background:#fff;border:1px solid #dbe7e8}.cl-sources h3{font-size:1.38rem}
+.cl-sources a{display:block;padding:12px 0;border-bottom:1px solid #e3eeee;font-weight:800;color:#0b697a;text-decoration:underline;text-underline-offset:3px}.cl-sources a:last-child{border-bottom:0}
+@media(max-width:900px){.cl-cards,.cl-roadmap{grid-template-columns:repeat(2,minmax(0,1fr))}.cl-split{gap:28px}}
+@media(max-width:680px){.cl-hero{padding:63px 0}.cl-section{padding:55px 0}.cl-split,.cl-cards,.cl-roadmap,.cl-rules,.cl-event-list{grid-template-columns:1fr}.cl-form{padding:18px}.cl-actions .button{max-width:100%}.cl-hero h1{font-size:clamp(3rem,13vw,4.75rem)}.cl-clock{border-radius:15px}}

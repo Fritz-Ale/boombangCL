@@ -1,0 +1,96 @@
+/* BoomBangCL · mejoras incrementales de interfaz, accesibilidad y responsive */
+:root { color-scheme: light; }
+html { scroll-padding-top: 110px; }
+body { min-width: 280px; overflow-wrap: anywhere; }
+:where(main section[id], main [id], footer[id]) { scroll-margin-top: 110px; }
+:where(button, a, input, textarea, select, summary):focus-visible {
+  outline: 3px solid #f5a623;
+  outline-offset: 4px;
+}
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.site-header { isolation: isolate; }
+.brand { max-width: 100%; }
+.main-nav a[aria-current="page"]:not(.nav-cta) {
+  color: #075e73;
+  text-decoration: underline;
+  text-underline-offset: 9px;
+  text-decoration-thickness: 3px;
+}
+.menu-button { min-width: 44px; min-height: 44px; border-radius: 10px; }
+.menu-button:hover { background: #e6f6ef; }
+.footer-top {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(24px, 5vw, 80px);
+  padding-bottom: 44px;
+}
+.footer-intro p { max-width: 365px; }
+.footer-links {
+  display: flex !important;
+  flex-direction: column;
+  gap: 10px !important;
+  align-items: flex-start !important;
+}
+.footer-links h2 { font-size: 1rem; letter-spacing: 0; color: #fff; margin: 0 0 6px; }
+.footer-links a { display: inline-block; line-height: 1.5; padding: 2px 0; }
+.footer-bottom { align-items: center; }
+.footer-bottom a { text-underline-offset: 4px; }
+.footer-project-status {
+  background: #1b4657;
+  border: 1px solid #59858c;
+  color: #effff9;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: .78rem !important;
+  line-height: 1.6;
+}
+.footer-project-status > span { color: #ffdd83; }
+.back-to-top { font-weight: 900; white-space: nowrap; }
+.join-note a { text-decoration: underline; font-weight: 900; }
+.cl-card, .cl-roadmap-item, .place-card, .update-card { overflow-wrap: anywhere; }
+.cl-form input, .cl-form select, .cl-form textarea { min-width: 0; }
+@media (max-width: 1020px) {
+  .header-inner { gap: 16px; }
+  .main-nav { gap: 13px; }
+}
+@media (max-width: 760px) {
+  html { scroll-padding-top: 84px; }
+  :where(main section[id], main [id], footer[id]) { scroll-margin-top: 84px; }
+  .menu-button { flex: 0 0 auto; }
+  .main-nav.open {
+    max-height: min(70dvh, 500px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .main-nav > a { min-height: 44px; display: flex; align-items: center; }
+  .main-nav > a[aria-current="page"] { background: #e3f5f1; border-radius: 10px; }
+  .footer-top { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 20px; }
+  .footer-intro { grid-column: 1 / -1; }
+  .footer-top nav { align-items: flex-start; }
+  .footer-bottom { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .button { max-width: 100%; white-space: normal; text-align: center; }
+}
+@media (max-width: 420px) {
+  .footer-top { grid-template-columns: 1fr; }
+  .footer-intro { grid-column: auto; }
+  .site-header .brand { font-size: 1.4rem; }
+  .site-header .brand-sun { font-size: 1.65rem; }
+  .top-strip { line-height: 1.55; }
+  .hero-actions, .cl-actions { gap: 12px; }
+  .cl-form { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .button, [data-reveal] { transition: none !important; }
+}
