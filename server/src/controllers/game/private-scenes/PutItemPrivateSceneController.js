@@ -46,8 +46,8 @@ class PutItemPrivateSceneController {
                     user_catalog_item_id: user_catalog_item_id,
                     occupied_tiles: occupied_tiles
                 }, user);
-                // Evitar emitir a una sala anterior si el usuario se ha desconectado.
-                if (user.currentArea !== scene) return;
+                // Aunque el propietario haya salido durante el guardado, la
+                // escena compartida debe reflejar lo confirmado por Laravel.
 
                 // Actualizar la posición y reconstruir las colisiones de todos los muebles.
                 itemToMove.occupied_tiles = occupied_tiles;
@@ -77,25 +77,28 @@ class PutItemPrivateSceneController {
                     private_scene_id: scene.id,
                     occupied_tiles: occupied_tiles
                 }, user);
-                if (user.currentArea !== scene) return;
+                // El cambio pertenece a la escena original, no a la nueva sala.
 
                 // Update item properties
-                userCatalogItem.private_scene_id = user.currentArea.id;
+                userCatalogItem.private_scene_id = scene.id;
                 userCatalogItem.occupied_tiles = occupied_tiles;
 
                 // Move item from inventory to scene
-                user.inventory.splice(userCatalogItemIndex, 1);
-                user.currentArea.objects.push(userCatalogItem);
+                const inventoryIndex = user.inventory.findIndex(item => String(item.id) === String(user_catalog_item_id));
+                if (inventoryIndex !== -1) user.inventory.splice(inventoryIndex, 1);
+                scene.objects.push(userCatalogItem);
 
                 scene.rebuildObjectNavigationMap();
 
-                user.currentArea.emit(ResponseSocketsEnum.SCENE_PUT_ITEM, {
+                scene.emit(ResponseSocketsEnum.SCENE_PUT_ITEM, {
                     item: userCatalogItem
                 });
 
-                socket.emit(ResponseSocketsEnum.REMOVE_ITEM_FROM_INVENTORY, {
-                    user_catalog_item_id: user_catalog_item_id
-                });
+                if (user.currentArea === scene) {
+                    socket.emit(ResponseSocketsEnum.REMOVE_ITEM_FROM_INVENTORY, {
+                        user_catalog_item_id: user_catalog_item_id
+                    });
+                }
 
             }
 
