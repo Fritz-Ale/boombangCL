@@ -1,6 +1,16 @@
 const ApiService = require('./ApiService');
 
 class PrivateSceneApiService {
+    static async persistDecoration(route, data, user) {
+        const response = await ApiService.post(route, data, user.authJwt);
+        // ApiService transforms HTTP 4xx/5xx into a statusCode-bearing object.
+        // Do not commit in-memory changes unless the database accepted the action.
+        if (response?.statusCode >= 400 || response?.success === false) {
+            throw new Error(response?.error || response?.message || 'No se pudo guardar el objeto en la isla');
+        }
+        return response;
+    }
+
     static async create(sceneData, user) {
         try {
             return await ApiService.post('api/private-scene/create', sceneData, user.authJwt);
@@ -20,27 +30,15 @@ class PrivateSceneApiService {
     }
 
     static async removeItem(data, user) {
-        try {
-            await ApiService.post('api/private-scene/remove-item', data, user.authJwt);
-        } catch (error) {
-            console.error('Error al eliminar el item de la escena:', error.response ? error.response.data : error.message);
-        }
+        return await this.persistDecoration('api/private-scene/remove-item', data, user);
     }
 
     static async putItem(data, user) {
-        try {
-            await ApiService.post('api/private-scene/put-item', data, user.authJwt);
-        } catch (error) {
-            console.error('Error al poner el item en la escena:', error.response ? error.response.data : error.message);
-        }
+        return await this.persistDecoration('api/private-scene/put-item', data, user);
     }
 
     static async updateItemPosition(data, user) {
-        try {
-            await ApiService.post('api/private-scene/update-item-position', data, user.authJwt);
-        } catch (error) {
-            console.error('Error al actualizar la posición del item:', error.response ? error.response.data : error.message);
-        }
+        return await this.persistDecoration('api/private-scene/update-item-position', data, user);
     }
 
     static async updateName(sceneData, user) {
