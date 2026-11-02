@@ -372,7 +372,8 @@
     "tabs": {
       "areas": "区域",
       "games": "游戏",
-      "islands": "岛屿"
+      "islands": "岛屿",
+      "search": "搜索"
     },
     "my_islands": {
       "no_islands": "你没有创建任何岛屿。"
