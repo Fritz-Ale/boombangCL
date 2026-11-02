@@ -122,6 +122,8 @@ php artisan catalog:import-art /ruta/privada/manifest.json --dry-run
 php artisan catalog:import-art /ruta/privada/manifest.json
 ```
 
+Para importar un atlas, indica **obligatoriamente** `width` y `height` del objeto o fotograma. La imagen de vista previa no define el tamaño del sprite; si no hay atlas, el importador toma los píxeles de `spreadsheet` antes de `image`. `scale` admite números entre 0.05 y 8, incluidos decimales. Phaser carga el primer fotograma disponible del atlas; una animación completa exige configuración adicional.
+
 Las copias se guardan en `public/uploads/catalog/approved/` identificadas con SHA-256;
 deben quedar respaldadas por documentación de licencia real. Este importador no
 descarga recursos remotos ni publica objetos: tras verificar las imágenes,
