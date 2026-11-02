@@ -396,7 +396,7 @@ export default class PrivateScene extends Phaser.Scene {
                             } else {
                                 this.load.image(textureName, assetSrc);
                             }
-                            const type = atlas && (item.spreadsheet || item.spreadsheet_url) ? 'atlas' : 'image';
+                            const type = atlas && (item.spreadsheet || item.spreadsheet_url) ? 'atlasjson' : 'image';
                             this.load.once(`filecomplete-${type}-${textureName}`, () => {
                                 //console.log('  ✅ Image loaded, adding item to scene');
                                 this.sceneItems.push(item);
@@ -1076,7 +1076,7 @@ export default class PrivateScene extends Phaser.Scene {
                     const frameNames = (item.atlas || item.atlas_url)
                         ? this.textures.get(item.sprite_name).getFrameNames()
                         : [];
-                    const firstFrame = frameNames.length ? frameNames[0] : undefined;
+                    const firstFrame = frameNames.find(frame => frame !== '__BASE') || undefined;
                     item.sprite = this.add.image(avgX, y, item.sprite_name, firstFrame)
                         .setOrigin(0.5, 0.90)
                         .setScale(baseScale * this.sceneScaleFactor);
