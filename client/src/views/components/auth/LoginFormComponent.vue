@@ -84,6 +84,38 @@ export default {
     return { languageStore };
   },
   methods: {
+    async handleLoginSuccess(data) {
+      if (data.user && data.user.lang) {
+        await this.languageStore.setLocale(data.user.lang);
+      }
+      if (data.user?.authJwt) {
+        localStorage.setItem("app_jwt", data.user.authJwt);
+      }
+      socket.user = data.user;
+      this.loading = false;
+      this.$emit("loginSuccess");
+    },
+    handleLoginError(error) {
+      if (error.errors) {
+        this.setErrors(error.errors);
+      } else if (error.message) {
+        this.showUsernameError = true;
+        this.usernameError = error.message;
+      }
+      this.loading = false;
+    },
+    handleInvalidJwt() {
+      localStorage.removeItem("app_jwt");
+      this.loading = false;
+      this.resetErrors();
+      // Mostrar formulario normal, sin recargar ni entrar en bucle.
+    },
+    handleSocketConnect() {
+      this.isSocketConnected = true;
+    },
+    handleSocketDisconnect() {
+      this.isSocketConnected = false;
+    },
     login() {
       if (this.loading || !this.isSocketConnected) return;
       this.resetErrors();
@@ -110,51 +142,26 @@ export default {
   },
   mounted() {
     this.$refs.username.focus();
+    // Registrar los callbacks ANTES de emitir solicitudes para evitar perder
+    // respuestas rápidas, y liberarlos al desmontar el formulario.
+    socket.on(ResponseSocketsEnum.LOGIN_SUCCESS, this.handleLoginSuccess);
+    socket.on(ResponseSocketsEnum.LOGIN_ERROR, this.handleLoginError);
+    socket.on(ResponseSocketsEnum.JWT_AUTO_LOGIN_INVALID, this.handleInvalidJwt);
+    socket.on("connect", this.handleSocketConnect);
+    socket.on("disconnect", this.handleSocketDisconnect);
+
     const token = localStorage.getItem("app_jwt");
     if (token) {
       this.loading = true;
       socket.emit(RequestSocketsEnum.JWT_AUTO_LOGIN, { authJwt: token });
     }
-
-    socket.off(ResponseSocketsEnum.LOGIN_SUCCESS);
-    socket.on(ResponseSocketsEnum.LOGIN_SUCCESS, async (data) => {
-      if (data.user && data.user.lang) {
-        await this.languageStore.setLocale(data.user.lang);
-      }
-      if (data.user?.authJwt) {
-        localStorage.setItem("app_jwt", data.user.authJwt);
-      }
-      socket.user = data.user;
-      this.$emit("loginSuccess");
-    });
-
-    socket.off(ResponseSocketsEnum.LOGIN_ERROR);
-    socket.on(ResponseSocketsEnum.LOGIN_ERROR, (error) => {
-      console.error("Login error:", error);
-      if (error.errors) {
-        this.setErrors(error.errors);
-      } else if (error.message) {
-        this.showUsernameError = true;
-        this.usernameError = error.message;
-      }
-      this.loading = false;
-    });
-
-    socket.off(ResponseSocketsEnum.JWT_AUTO_LOGIN_INVALID);
-    socket.on(ResponseSocketsEnum.JWT_AUTO_LOGIN_INVALID, () => {
-      localStorage.removeItem("app_jwt");
-      this.loading = false;
-      window.location.reload(true);
-    });
-
-    socket.on("connect", () => {
-      this.isSocketConnected = true;
-    });
-    socket.on("disconnect", () => {
-      this.isSocketConnected = false;
-    });
-
-    //this.autoLoginIfPossible();
+  },
+  beforeUnmount() {
+    socket.off(ResponseSocketsEnum.LOGIN_SUCCESS, this.handleLoginSuccess);
+    socket.off(ResponseSocketsEnum.LOGIN_ERROR, this.handleLoginError);
+    socket.off(ResponseSocketsEnum.JWT_AUTO_LOGIN_INVALID, this.handleInvalidJwt);
+    socket.off("connect", this.handleSocketConnect);
+    socket.off("disconnect", this.handleSocketDisconnect);
   },
 };
 </script>
