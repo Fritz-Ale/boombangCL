@@ -17,9 +17,17 @@ class GetPublicInventoryController {
 
             const responseData = await InventoryApiService.getUserInventory(user);
 
+            if (responseData?.statusCode >= 400 || responseData?.success === false ||
+                !Array.isArray(responseData?.inventory)) {
+                socket.emit(ResponseSocketsEnum.PUBLIC_INVENTORY_DATA, {
+                    success: false,
+                    message: 'No se pudo consultar la mochila. Inténtalo nuevamente.',
+                });
+                return;
+            }
             socket.emit(ResponseSocketsEnum.PUBLIC_INVENTORY_DATA, {
                 success: true,
-                inventory: responseData.inventory || [],
+                inventory: responseData.inventory,
             });
         } catch (err) {
             console.error('Error en GetPublicInventoryController:', err);

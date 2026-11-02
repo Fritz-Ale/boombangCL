@@ -5,6 +5,7 @@ const InventoryApiService = require('../../../services-api/InventoryApiService')
 
 class PurchaseShopItemController {
     static async main(socket, io, data) {
+        let lockedUser = null;
         try {
             const user = ConnectedUsersCollection.getBySocketId(socket.id);
 
@@ -26,6 +27,18 @@ class PurchaseShopItemController {
                 });
                 return;
             }
+
+            // Una misma sesión no debe procesar dos pagos y snapshots de
+            // inventario intercalados. El segundo intento se rechaza sin cargo.
+            if (user._purchasePending) {
+                socket.emit(ResponseSocketsEnum.SHOP_PURCHASE, {
+                    success: false,
+                    message: 'Ya hay una compra en proceso. Espera su confirmación.',
+                });
+                return;
+            }
+            user._purchasePending = true;
+            lockedUser = user;
 
             //console.log('=== PURCHASE ATTEMPT (SERVER) ===');
             //console.log('User ID:', user.id);
@@ -100,6 +113,8 @@ class PurchaseShopItemController {
                 success: false,
                 message: err.message || 'Error del servidor',
             });
+        } finally {
+            if (lockedUser) lockedUser._purchasePending = false;
         }
     }
 }
