@@ -38,7 +38,8 @@ test('rejected private room deletion never removes connected players',async()=>{
     '../../../collections/ConnectedUsersCollection':{getBySocketId:()=>({id:'owner'})},
     '../../../services-api/PrivateSceneApiService':{delete:async()=>({statusCode:403,success:true})},
     '../../../collections/PrivateScenesCollection':{getById:()=>room,remove(){removeCount++;}},
-    '../../../tasks/RemoveUserFromSceneTask':{main(){removePlayer++;}}
+    '../../../tasks/RemoveUserFromSceneTask':{main(){removePlayer++;}},
+    '../islands/GetPublicIslandsController':{broadcastToLobby(){}}
   });
   await handler.main({id:'s',emit:e=>events.push(e)},{},{sceneId:7});
   assert.equal(removePlayer,0);
