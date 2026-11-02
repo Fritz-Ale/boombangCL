@@ -4,7 +4,8 @@ import DarkeningUtils from "@/utils/DarkeningUtils";
 class PublicSceneLoader {
     static main(gameScene, preload = true) {
         const areaId = gameScene.sceneData.scenery.id;
-        const assets = gameScene.sceneData.scenery.assets_data?.assets_data_repeatable || [];
+        const assetEntries = gameScene.sceneData.scenery.assets_data?.assets_data_repeatable;
+        const assets = Array.isArray(assetEntries) ? assetEntries : [];
         const npc = gameScene.sceneData.scenery.npc;
         const baseApiUrl = (gameScene.sceneData.scenery.base_api_url || '').replace(/\/$/, '') + '/';
 
