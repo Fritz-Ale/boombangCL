@@ -20,6 +20,9 @@ class PutItemPrivateSceneController {
             ) return;
 
             const { user_catalog_item_id, occupied_tiles, is_move } = data || {};
+            if (!Number.isSafeInteger(user_catalog_item_id) || user_catalog_item_id < 1) {
+                throw new Error('ID de objeto inválido');
+            }
             const scene = user.currentArea;
             // Serializar cambios mientras Laravel confirma el guardado.
             if (scene._catalogMutationPending) {
@@ -46,30 +49,9 @@ class PutItemPrivateSceneController {
                 // Evitar emitir a una sala anterior si el usuario se ha desconectado.
                 if (user.currentArea !== scene) return;
 
-                // Free up old tiles
-                itemToMove.occupied_tiles.forEach(tile => {
-                    const [x, y] = tile;
-                    if (user.currentArea.navigationMapBase[y] && user.currentArea.navigationMapBase[y][x] !== undefined) {
-                        user.currentArea.navigationMapBase[y][x] = 0; // Mark as walkable
-                    }
-                });
-
-                // Update item's position
+                // Actualizar la posición y reconstruir las colisiones de todos los muebles.
                 itemToMove.occupied_tiles = occupied_tiles;
-
-                // Occupy new tiles based on behavior type
-                occupied_tiles.forEach(tile => {
-                    const [x, y] = tile;
-                    if (user.currentArea.navigationMapBase[y] && user.currentArea.navigationMapBase[y][x] !== undefined) {
-                        // WALKABLE and WALKABLE_OVERLAY items don't block navigation
-                        if (itemToMove.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE || 
-                            itemToMove.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE_OVERLAY) {
-                            user.currentArea.navigationMapBase[y][x] = 0; // Keep walkable
-                        } else {
-                            user.currentArea.navigationMapBase[y][x] = 1; // Mark as unwalkable
-                        }
-                    }
-                });
+                scene.rebuildObjectNavigationMap();
 
                 scene.emit(ResponseSocketsEnum.SCENE_PUT_ITEM, {
                     item: itemToMove
@@ -105,19 +87,7 @@ class PutItemPrivateSceneController {
                 user.inventory.splice(userCatalogItemIndex, 1);
                 user.currentArea.objects.push(userCatalogItem);
 
-                // Occupy tiles in navigation map based on behavior type
-                occupied_tiles.forEach(tile => {
-                    const [x, y] = tile;
-                    if (user.currentArea.navigationMapBase[y] && user.currentArea.navigationMapBase[y][x] !== undefined) {
-                        // WALKABLE and WALKABLE_OVERLAY items don't block navigation
-                        if (userCatalogItem.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE || 
-                            userCatalogItem.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE_OVERLAY) {
-                            user.currentArea.navigationMapBase[y][x] = 0; // Keep walkable
-                        } else {
-                            user.currentArea.navigationMapBase[y][x] = 1; // Mark as unwalkable
-                        }
-                    }
-                });
+                scene.rebuildObjectNavigationMap();
 
                 user.currentArea.emit(ResponseSocketsEnum.SCENE_PUT_ITEM, {
                     item: userCatalogItem
