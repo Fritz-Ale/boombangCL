@@ -71,6 +71,7 @@ export default {
       usernameError: "",
       showUsernameError: false,
       loading: false,
+      autoLoginRequested: false,
       isSocketConnected: socket.connected,
       asset_button_image,
       asset_warning_image,
@@ -96,6 +97,7 @@ export default {
       this.$emit("loginSuccess");
     },
     handleLoginError(error) {
+      this.autoLoginRequested = false;
       if (error.errors) {
         this.setErrors(error.errors);
       } else if (error.message) {
@@ -106,15 +108,26 @@ export default {
     },
     handleInvalidJwt() {
       localStorage.removeItem("app_jwt");
+      this.autoLoginRequested = false;
       this.loading = false;
       this.resetErrors();
       // Mostrar formulario normal, sin recargar ni entrar en bucle.
     },
+    requestStoredSession() {
+      const token = localStorage.getItem("app_jwt");
+      if (!token || !socket.connected || this.autoLoginRequested) return;
+      this.autoLoginRequested = true;
+      this.loading = true;
+      socket.emit(RequestSocketsEnum.JWT_AUTO_LOGIN, { authJwt: token });
+    },
     handleSocketConnect() {
       this.isSocketConnected = true;
+      this.requestStoredSession();
     },
     handleSocketDisconnect() {
       this.isSocketConnected = false;
+      this.loading = false;
+      this.autoLoginRequested = false;
     },
     login() {
       if (this.loading || !this.isSocketConnected) return;
@@ -150,11 +163,7 @@ export default {
     socket.on("connect", this.handleSocketConnect);
     socket.on("disconnect", this.handleSocketDisconnect);
 
-    const token = localStorage.getItem("app_jwt");
-    if (token) {
-      this.loading = true;
-      socket.emit(RequestSocketsEnum.JWT_AUTO_LOGIN, { authJwt: token });
-    }
+    this.requestStoredSession();
   },
   beforeUnmount() {
     socket.off(ResponseSocketsEnum.LOGIN_SUCCESS, this.handleLoginSuccess);
