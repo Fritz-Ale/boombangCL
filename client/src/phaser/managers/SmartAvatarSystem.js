@@ -37,8 +37,13 @@ class SmartAvatarSystem extends EventEmitter {
      * Inicializa el sistema con una escena
      */
     async init(scene) {
-        if (this.isInitialized) return;
-        
+        if (this.isInitialized && backgroundAvatarLoader.isInitialized) {
+            // Las texturas son globales, pero la carga debe usar la escena activa.
+            this.currentScene = scene;
+            backgroundAvatarLoader.currentScene = scene;
+            return;
+        }
+
         this.currentScene = scene;
         this.isInitialized = true;
         
