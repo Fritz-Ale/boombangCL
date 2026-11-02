@@ -1,0 +1,69 @@
+name: Catalog rarity and island asset validation
+
+on:
+  pull_request:
+    paths:
+      - 'api/app/Support/CatalogRarity.php'
+      - 'api/app/Console/Commands/ImportLicensedCatalogArt.php'
+      - 'api/app/Models/CatalogItem.php'
+      - 'api/app/Http/Controllers/Internal/**'
+      - 'api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php'
+      - 'api/app/Http/Resources/*Catalog*'
+      - 'api/database/migrations/*rarity*'
+      - 'api/database/reference/**'
+      - 'api/database/seeders/CatalogReferenceSeeder.php'
+      - 'api/tests/Standalone/catalog-rarity.php'
+      - 'client/src/phaser/PrivateScene.js'
+      - 'client/src/phaser/html/private-scene/InventoryPrivateSceneHtml.js'
+      - 'client/src/views/components/game/scenes/**'
+      - '.github/workflows/catalog-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['8.2', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.version }}
+          coverage: none
+      - name: Parse catalog and island PHP files
+        run: |
+          php -l api/app/Support/CatalogRarity.php
+          php -l api/app/Console/Commands/ImportLicensedCatalogArt.php
+          php -l api/app/Models/CatalogItem.php
+          php -l api/app/Http/Controllers/Internal/ShopController.php
+          php -l api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php
+          php -l api/app/Http/Resources/CatalogItemResource.php
+          php -l api/app/Http/Resources/UserCatalogItemsResource.php
+          php -l api/database/seeders/CatalogReferenceSeeder.php
+          php -l api/database/migrations/2026_11_02_150000_add_rarity_and_reference_fields_to_catalog_items.php
+      - name: Validate rarity boundaries and reference inventory
+        run: php api/tests/Standalone/catalog-rarity.php
+
+  client:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Install dependency lockfile
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile complete Phaser and Vue client
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
