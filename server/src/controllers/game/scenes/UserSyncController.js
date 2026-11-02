@@ -21,7 +21,7 @@ class UserSyncController {
 
             // Reenviar información de posición de cada usuario
             areaUsers.forEach(areaUser => {
-                const userData = new UserResource().transform(areaUser);
+                const userData = new UserResource(areaUser).toPublicObject();
                 
                 socket.emit(ResponseSocketsEnum.USER_UPDATE_POSITION, {
                     user: userData,
