@@ -1,6 +1,7 @@
 const ConnectedUsersCollection = require('../../../collections/ConnectedUsersCollection');
 const ResponseSocketsEnum = require('../../../enums/ResponseSocketsEnum');
 const ShopApiService = require('../../../services-api/ShopApiService');
+const InventoryApiService = require('../../../services-api/InventoryApiService');
 
 class PurchaseShopItemController {
     static async main(socket, io, data) {
@@ -15,12 +16,13 @@ class PurchaseShopItemController {
                 return;
             }
 
-            const { catalog_item_id, quantity } = data;
+            const { catalog_item_id, quantity = 1 } = data || {};
 
-            if (!catalog_item_id) {
+            if (!Number.isInteger(catalog_item_id) || catalog_item_id < 1 ||
+                !Number.isInteger(quantity) || quantity < 1 || quantity > 50) {
                 socket.emit(ResponseSocketsEnum.SHOP_PURCHASE, {
                     success: false,
-                    message: 'catalog_item_id es requerido',
+                    message: 'Identificador o cantidad inválidos',
                 });
                 return;
             }
@@ -33,7 +35,7 @@ class PurchaseShopItemController {
             //console.log('Quantity:', quantity);
             //console.log('Quantity Type:', typeof quantity);
 
-            const responseData = await ShopApiService.purchaseItem(user, catalog_item_id, quantity || 1);
+            const responseData = await ShopApiService.purchaseItem(user, catalog_item_id, quantity);
 
             //console.log('=== PURCHASE RESPONSE ===');
             //console.log('Success:', responseData.success);
@@ -55,6 +57,28 @@ class PurchaseShopItemController {
                     gold: responseData.user.gold,
                     silver: responseData.user.silver,
                 });
+
+                // El objeto comprado debe aparecer en el inventario de la misma sesión
+                // sin necesidad de abandonar y volver a entrar en la isla.
+                try {
+                    const updated = await InventoryApiService.getUserInventory(user);
+                    if (Array.isArray(updated?.inventory)) {
+                        const previousIds = new Set((user.inventory || []).map(item => String(item.id)));
+                        user.setInventory(updated.inventory);
+                        for (const item of user.inventory) {
+                            if (!previousIds.has(String(item.id))) {
+                                socket.emit(ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY, { item });
+                            }
+                        }
+                        socket.emit(ResponseSocketsEnum.PUBLIC_INVENTORY_DATA, {
+                            success: true,
+                            inventory: updated.inventory,
+                        });
+                    }
+                } catch (syncError) {
+                    // La compra ya fue confirmada; un fallo al refrescar no debe cobrar de nuevo.
+                    console.error('Error syncing inventory after purchase:', syncError);
+                }
 
                 socket.emit(ResponseSocketsEnum.SHOP_PURCHASE, {
                     success: true,

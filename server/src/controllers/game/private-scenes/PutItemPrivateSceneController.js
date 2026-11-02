@@ -7,6 +7,7 @@ const CatalogItemTypeOfBehaviorEnum = require('../../../enums/CatalogItemTypeOfB
 
 class PutItemPrivateSceneController {
     static async main(socket, io, data) {
+        let lockedScene = null;
         try {
             const user = ConnectedUsersCollection.getBySocketId(socket.id);
             if (!user) {
@@ -18,7 +19,17 @@ class PutItemPrivateSceneController {
                 user.currentArea.user_id != user.id
             ) return;
 
-            const { user_catalog_item_id, occupied_tiles, is_move } = data;
+            const { user_catalog_item_id, occupied_tiles, is_move } = data || {};
+            if (!Number.isSafeInteger(user_catalog_item_id) || user_catalog_item_id < 1) {
+                throw new Error('ID de objeto inválido');
+            }
+            const scene = user.currentArea;
+            // Serializar cambios mientras Laravel confirma el guardado.
+            if (scene._catalogMutationPending) {
+                throw new Error('La sala está guardando otro objeto. Vuelve a intentar.');
+            }
+            scene._catalogMutationPending = true;
+            lockedScene = scene;
 
             if (is_move) {
                 // Logic for moving an item already in the scene
@@ -30,40 +41,21 @@ class PutItemPrivateSceneController {
                 if (!this.#validateOccupiedTiles(user.currentArea, occupied_tiles, user, user_catalog_item_id, true)) {
                     throw new Error('Occupied tiles validation failed for move');
                 }
-                
-                // Free up old tiles
-                itemToMove.occupied_tiles.forEach(tile => {
-                    const [x, y] = tile;
-                    if (user.currentArea.navigationMapBase[y] && user.currentArea.navigationMapBase[y][x] !== undefined) {
-                        user.currentArea.navigationMapBase[y][x] = 0; // Mark as walkable
-                    }
-                });
 
-                // Update item's position
-                itemToMove.occupied_tiles = occupied_tiles;
-
-                // Occupy new tiles based on behavior type
-                occupied_tiles.forEach(tile => {
-                    const [x, y] = tile;
-                    if (user.currentArea.navigationMapBase[y] && user.currentArea.navigationMapBase[y][x] !== undefined) {
-                        // WALKABLE and WALKABLE_OVERLAY items don't block navigation
-                        if (itemToMove.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE || 
-                            itemToMove.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE_OVERLAY) {
-                            user.currentArea.navigationMapBase[y][x] = 0; // Keep walkable
-                        } else {
-                            user.currentArea.navigationMapBase[y][x] = 1; // Mark as unwalkable
-                        }
-                    }
-                });
-
-                user.currentArea.emit(ResponseSocketsEnum.SCENE_PUT_ITEM, {
-                    item: itemToMove
-                });
-
-                PrivateSceneApiService.updateItemPosition({
+                await PrivateSceneApiService.updateItemPosition({
                     user_catalog_item_id: user_catalog_item_id,
                     occupied_tiles: occupied_tiles
                 }, user);
+                // Evitar emitir a una sala anterior si el usuario se ha desconectado.
+                if (user.currentArea !== scene) return;
+
+                // Actualizar la posición y reconstruir las colisiones de todos los muebles.
+                itemToMove.occupied_tiles = occupied_tiles;
+                scene.rebuildObjectNavigationMap();
+
+                scene.emit(ResponseSocketsEnum.SCENE_PUT_ITEM, {
+                    item: itemToMove
+                });
             } else {
                 // Logic for placing a new item from inventory
                 const userCatalogItemIndex = user.inventory.findIndex(item => item.id == user_catalog_item_id);
@@ -80,6 +72,12 @@ class PutItemPrivateSceneController {
                 }
 
                 const userCatalogItem = user.inventory[userCatalogItemIndex];
+                await PrivateSceneApiService.putItem({
+                    user_catalog_item_id: user_catalog_item_id,
+                    private_scene_id: scene.id,
+                    occupied_tiles: occupied_tiles
+                }, user);
+                if (user.currentArea !== scene) return;
 
                 // Update item properties
                 userCatalogItem.private_scene_id = user.currentArea.id;
@@ -89,19 +87,7 @@ class PutItemPrivateSceneController {
                 user.inventory.splice(userCatalogItemIndex, 1);
                 user.currentArea.objects.push(userCatalogItem);
 
-                // Occupy tiles in navigation map based on behavior type
-                occupied_tiles.forEach(tile => {
-                    const [x, y] = tile;
-                    if (user.currentArea.navigationMapBase[y] && user.currentArea.navigationMapBase[y][x] !== undefined) {
-                        // WALKABLE and WALKABLE_OVERLAY items don't block navigation
-                        if (userCatalogItem.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE || 
-                            userCatalogItem.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE_OVERLAY) {
-                            user.currentArea.navigationMapBase[y][x] = 0; // Keep walkable
-                        } else {
-                            user.currentArea.navigationMapBase[y][x] = 1; // Mark as unwalkable
-                        }
-                    }
-                });
+                scene.rebuildObjectNavigationMap();
 
                 user.currentArea.emit(ResponseSocketsEnum.SCENE_PUT_ITEM, {
                     item: userCatalogItem
@@ -111,18 +97,14 @@ class PutItemPrivateSceneController {
                     user_catalog_item_id: user_catalog_item_id
                 });
 
-                PrivateSceneApiService.putItem({
-                    user_catalog_item_id: user_catalog_item_id,
-                    private_scene_id: user.currentArea.id,
-                    occupied_tiles: occupied_tiles
-                }, user);
             }
 
         } catch (err) {
             console.error('Error in PutItemPrivateSceneController:', err);
             Log.error('Error in PutItemPrivateSceneController: ' + err);
-            // Optionally send an error back to the client
-            // socket.emit('put_item_error', { message: err.message });
+            socket.emit('scene_item_error', { message: 'No se pudo colocar o mover el objeto. Comprueba la posición y vuelve a intentar.' });
+        } finally {
+            if (lockedScene) lockedScene._catalogMutationPending = false;
         }
     }
 
@@ -132,12 +114,41 @@ class PutItemPrivateSceneController {
         const rows = currentArea.map_rows;
         const cols = currentArea.map_cols;
 
+        if (!Array.isArray(occupiedTiles) || occupiedTiles.length === 0 || occupiedTiles.length > 256 ||
+            !Array.isArray(gameMap) || !Number.isInteger(rows) || !Number.isInteger(cols)) {
+            return false;
+        }
+        const uniqueTiles = new Set();
+        for (const tile of occupiedTiles) {
+            if (!Array.isArray(tile) || tile.length !== 2 ||
+                !Number.isInteger(tile[0]) || !Number.isInteger(tile[1])) return false;
+            const tileKey = `${tile[0]},${tile[1]}`;
+            if (uniqueTiles.has(tileKey)) return false;
+            uniqueTiles.add(tileKey);
+        }
+
         // Find the item being placed, whether it's from inventory or being moved
         let itemBeingPlaced = null;
         if (isMove) {
             itemBeingPlaced = sceneObjects.find(obj => obj.id === userCatalogItemId);
         } else if (userCatalogItemId) {
             itemBeingPlaced = user.inventory.find(item => item.id === userCatalogItemId);
+        }
+
+        // La huella debe conservar exactamente las celdas que define el
+        // catálogo, simplemente trasladadas a otra posición. De lo contrario
+        // un cliente modificado podría colocar objetos grandes en una sola celda.
+        if (!itemBeingPlaced || !Array.isArray(itemBeingPlaced.map_size) ||
+            itemBeingPlaced.map_size.length !== occupiedTiles.length ||
+            !itemBeingPlaced.map_size.every(tile => Array.isArray(tile) &&
+                tile.length === 2 && Number.isInteger(tile[0]) && Number.isInteger(tile[1]))) {
+            return false;
+        }
+        const offsetX = occupiedTiles[0][0] - itemBeingPlaced.map_size[0][0];
+        const offsetY = occupiedTiles[0][1] - itemBeingPlaced.map_size[0][1];
+        const proposed = new Set(occupiedTiles.map(([x, y]) => `${x},${y}`));
+        if (!itemBeingPlaced.map_size.every(([x, y]) => proposed.has(`${x + offsetX},${y + offsetY}`))) {
+            return false;
         }
 
         for (const tile of occupiedTiles) {
@@ -149,7 +160,7 @@ class PutItemPrivateSceneController {
             }
 
             // 2. Check if the tile is walkable on the base game map
-            if (gameMap[y][x] !== 0) {
+            if (!Array.isArray(gameMap[y]) || gameMap[y][x] !== 0) {
                 return false;
             }
 
@@ -161,7 +172,8 @@ class PutItemPrivateSceneController {
                 }
 
                 // Check if the tile is occupied by this scene object
-                if (sceneObject.occupied_tiles.some(t => t[0] === x && t[1] === y)) {
+                if (Array.isArray(sceneObject.occupied_tiles) &&
+                    sceneObject.occupied_tiles.some(t => t[0] === x && t[1] === y)) {
                     const isExistingObjectWalkable = sceneObject.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE ||
                                                    sceneObject.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE_OVERLAY;
 

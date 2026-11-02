@@ -20,6 +20,12 @@ on:
       - 'server/src/models/PrivateSceneModel.js'
       - 'server/src/tasks/RemoveUserFromSceneTask.js'
       - 'server/tests/live-island-presence.test.cjs'
+      - 'server/tests/live-purchase-decoration.test.cjs'
+      - 'server/src/controllers/game/shop/PurchaseShopItemController.js'
+      - 'server/src/controllers/game/private-scenes/PutItemPrivateSceneController.js'
+      - 'server/src/controllers/game/private-scenes/RemoveItemPrivateSceneController.js'
+      - 'server/src/services-api/PrivateSceneApiService.js'
+      - 'server/src/models/PrivateSceneModel.js'
       - '.github/workflows/live-state-sync.yml'
   workflow_dispatch:
 
@@ -41,6 +47,8 @@ jobs:
         run: node --test client/tests/live-state-sync.test.cjs client/tests/inventory-realtime.test.cjs client/tests/scene-socket-subscriptions.test.cjs
       - name: Verify server-side live island presence broadcasts
         run: node --test server/tests/live-island-presence.test.cjs
+      - name: Test purchased inventory and database-confirmed island object mutations
+        run: node --test server/tests/live-purchase-decoration.test.cjs
       - name: Install HTML5 dependencies
         working-directory: client
         run: npm ci --no-audit --no-fund
