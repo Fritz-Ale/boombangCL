@@ -39,24 +39,29 @@ class RemoveItemPrivateSceneController {
             await PrivateSceneApiService.removeItem({
                 user_catalog_item_id: userCatalogItemId,
             }, user);
-            if (user.currentArea !== scene) return;
+            // Actualizar la escena original incluso si el propietario salió
+            // mientras Laravel guardaba el cambio.
 
             // Remove item from the scene and add it to the user's inventory
-            user.currentArea.objects = user.currentArea.objects.filter(item => item.id != userCatalogItemId);
-            user.inventory.push(userCatalogItem);
+            scene.objects = scene.objects.filter(item => String(item.id) !== String(userCatalogItemId));
+            if (!user.inventory.some(item => String(item.id) === String(userCatalogItemId))) {
+                user.inventory.push(userCatalogItem);
+            }
             scene.rebuildObjectNavigationMap();
 
             // Update item properties
             userCatalogItem.private_scene_id = null;
             userCatalogItem.occupied_tiles = [];
 
-            user.currentArea.emit(ResponseSocketsEnum.SCENE_REMOVE_ITEM, {
+            scene.emit(ResponseSocketsEnum.SCENE_REMOVE_ITEM, {
                 user_catalog_item_id: userCatalogItemId
             });
 
-            socket.emit(ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY, {
-                item: userCatalogItem
-            });
+            if (user.currentArea === scene) {
+                socket.emit(ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY, {
+                    item: userCatalogItem
+                });
+            }
 
         } catch (err) {
             console.error('Error in RemoveItemPrivateSceneController:', err);
