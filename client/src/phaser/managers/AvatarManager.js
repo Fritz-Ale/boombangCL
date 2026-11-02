@@ -202,15 +202,19 @@ class AvatarManager {
                 const loaderAtlasJson = loader.main(scene, avatarId) || null;
                 
                 // Escuchar cuando termine la carga
-                scene.load.once('complete', async () => {
-                    // Cachear los assets recién cargados (todas las páginas del multiatlas + JSON exacto del loader)
-                    await this.cacheLoadedAssets(scene, avatarId, versionedAtlasKey, versionedSpreadsheetKey, atlasKey, spreadsheetKey, loaderAtlasJson);
-                    
-                    // Crear animaciones del avatar
+                scene.load.once('complete', () => {
+                    if (!scene.textures.exists(atlasKey)) {
+                        this.inFlightAtlasLoads.delete(atlasKey);
+                        reject(new Error(`Atlas no cargado: ${atlasKey}`));
+                        return;
+                    }
+                    // Renderizar primero; almacenar en caché no debe impedir ver jugadores.
                     this.createAvatarAnimations(scene, avatarId);
                     this.loadedAvatars.add(avatarId);
                     this.inFlightAtlasLoads.delete(atlasKey);
                     resolve();
+                    this.cacheLoadedAssets(scene, avatarId, versionedAtlasKey, versionedSpreadsheetKey, atlasKey, spreadsheetKey, loaderAtlasJson)
+                        .catch(() => {});
                 });
 
                 scene.load.once('loaderror', (file) => {
