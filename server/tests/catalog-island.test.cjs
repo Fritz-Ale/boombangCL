@@ -26,7 +26,14 @@ function fixture(persist=async()=>({success:true}), operation='PutItemPrivateSce
         }
       }));
     },
-    emit:(name,data)=>notified.push({name,data})};
+    emit:(name,data)=>notified.push({name,data}),
+    rebuildObjectNavigationMap() {
+      this.navigationMapBase = this.game_map.map(row => [...row]);
+      for (const object of this.objects) {
+        if (object.type_of_behavior === 'walkable' || object.type_of_behavior === 'overlay') continue;
+        for (const [x,y] of object.occupied_tiles || []) this.navigationMapBase[y][x] = 1;
+      }
+    }};
   const item={id:35,private_scene_id:null,occupied_tiles:[],type_of_behavior:'BLOCKING'};
   const user={id:7,currentArea:scene,inventory:[item]};
   const socket={id:'socket7',emit:(name,data)=>sent.push({name,data})};
