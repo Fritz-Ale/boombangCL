@@ -187,3 +187,17 @@ test('direccion inicial vacia o cero conserva una animacion idle visible', () =>
     assert.equal(Idle.getTextureKey(0), 'down_idle');
     assert.equal(Idle.getTextureKey(undefined), 'down_idle');
 });
+
+test('el cargador se reanuda al entrar a otra sala tras cleanup', async () => {
+    const Background = new Function('socket', 'AvatarEnum', 'avatarManager',
+        'EventEmitter', src('managers/BackgroundAvatarLoader.js') +
+        '\nreturn backgroundAvatarLoader;'
+    )({ user: null }, avatars, avatarManager, EventEmitter);
+    Background.isPaused = true;
+    let started = false;
+    Background.loadEssentialAvatars = async () => {};
+    Background.startBackgroundLoading = () => { started = true; };
+    await Background.init(fakeScene());
+    assert.equal(Background.isPaused, false);
+    assert.equal(started, true);
+});
