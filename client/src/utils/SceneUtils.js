@@ -31,10 +31,10 @@ class SceneUtils {
     * Detectar si un archivo es un video por su extensión
     */
     static isVideoFile(src) {
-        if (!src) return false;
-        const videoExtensions = ['.webm', '.mp4', '.ogg', '.mov'];
-        const extension = src.toLowerCase().substring(src.lastIndexOf('.'));
-        return videoExtensions.includes(extension);
+        // Los recursos versionados usan ?v=... o #...; el sufijo no forma parte
+        // de la extensión. Clasificarlos como imagen deja fondos de video negros.
+        return typeof src === 'string' &&
+            /\.(?:webm|mp4|ogg|mov)(?:[?#]|$)/i.test(src.trim());
     }
 
     static moveItem(gameScene, sprite) {
