@@ -2,6 +2,13 @@ const Resource = require('./Resource');
 const GameClock = require('../utils/GameClock');
 
 class UserResource extends Resource {
+    // Usar solo para datos que podrán ver otros jugadores: nunca incluir
+    // token de sesión, herramientas administrativas o ajustes privados.
+    toPublicObject() {
+        const { authJwt, admin_tools, lobby_tutorial, ...publicData } = this.toObject();
+        return publicData;
+    }
+
     transform(data) {
         return {
             game_time: GameClock.getCurrentGameTime(),
