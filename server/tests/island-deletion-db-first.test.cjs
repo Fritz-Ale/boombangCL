@@ -19,6 +19,8 @@ test('rejected island deletion never evicts users or deletes the live room',asyn
     '../../../enums/ResponseSocketsEnum':{ERROR_ISLAND_DELETE:'error',FORCE_LOBBY_REDIRECT:'kick'},
     '../../../collections/ConnectedUsersCollection':{getBySocketId:()=>({id:'owner'})},
     '../../../services-api/IslandApiService':{delete:async()=>({success:false,message:'denied'})},
+    './GetPublicIslandsController':{broadcastToLobby(){}},
+    '../islands/GetPublicIslandsController':{broadcastToLobby(){}},
     '../../../collections/PrivateScenesCollection':{
       getByIslandId:()=>[room],remove(){removeCount++;}
     }
