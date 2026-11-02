@@ -134,3 +134,35 @@ primer fotograma; **no implica** animación completa del objeto original.
 Ambos importadores funcionan sobre la base de datos de desarrollo después de
 ejecutar las migraciones de esta rama. No se debe ejecutar ninguno sobre un
 servidor público sin realizar una copia de seguridad y las pruebas de aceptación.
+
+
+## Imágenes ya incluidas en el ZIP histórico (solo desarrollo local)
+
+El proyecto tiene `api/public/uploads.zip`, pero no contiene la carpeta
+`api/public/uploads/` descomprimida en GitHub. Además, Docker Compose utiliza
+un volumen independiente `api_uploads` que puede estar vacío. Esto explica
+miniaturas o texturas ausentes aun cuando estén presentes en el ZIP.
+
+Antes de empezar, **verifica qué recursos tienes derecho a usar**. El ZIP
+histórico no implica autorización para distribuirlos públicamente.
+
+En tu clon **local** de Mac, sin desplegar:
+
+```bash
+# Inspeccionar qué archivos se podrían preparar (no crea archivos)
+python3 scripts/install_catalog_assets_local.py
+
+# Opcional, únicamente para revisar sprites en una copia local
+python3 scripts/install_catalog_assets_local.py --install
+```
+
+La herramienta utiliza los archivos del ZIP que ya está en tu repositorio,
+restringe tipos admitidos, comprueba rutas para evitar escapes, no sobrescribe
+ficheros existentes y no modifica MySQL ni activa compras. No se ejecuta
+automáticamente durante el build ni en Cloudflare. La instalación se bloquea
+cuando `APP_ENV=production`.
+
+Para pruebas Docker, el volumen `api_uploads` no recibe automáticamente lo
+que haya en la carpeta de la Mac: hay que preparar y respaldar el contenido
+local de manera controlada. Antes de una publicación, sustituye los gráficos
+cuya licencia no esté acreditada por recursos propios o autorizados.
