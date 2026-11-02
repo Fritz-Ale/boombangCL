@@ -9,6 +9,7 @@
         />
 
         <AreasTab
+          ref="areasTab"
           v-if="activeTab === 'areas'"
           :public-scenes="publicScenes"
           @join-scene="joinScene"
@@ -132,6 +133,9 @@ export default {
     },
     createIsland() {
       this.$emit("createIsland");
+    },
+    resetSceneJoin(message = "No se pudo entrar a la sala. Inténtalo nuevamente.") {
+      this.$refs.areasTab?.resetJoining(message);
     },
     joinScene(sceneUuid, menuType) {
       socket.emit(RequestSocketsEnum.JOIN_PUBLIC_SCENE, {
