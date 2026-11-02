@@ -34,7 +34,7 @@ function fixture(persist=async()=>({success:true}), operation='PutItemPrivateSce
         for (const [x,y] of object.occupied_tiles || []) this.navigationMapBase[y][x] = 1;
       }
     }};
-  const item={id:35,private_scene_id:null,occupied_tiles:[],type_of_behavior:'BLOCKING'};
+  const item={id:35,private_scene_id:null,map_size:[[0,0]],occupied_tiles:[],type_of_behavior:'BLOCKING'};
   const user={id:7,currentArea:scene,inventory:[item]};
   const socket={id:'socket7',emit:(name,data)=>sent.push({name,data})};
   const api={
@@ -145,4 +145,17 @@ test('un segundo cambio simultáneo de sala es rechazado hasta que el primero se
   release({success:true});
   await first;
   assert.equal(o.scene.objects.length,1);
+});
+
+
+test('no admite reducir el tamaño o deformar huellas de muebles',async()=> {
+  const o=fixture();
+  o.item.map_size=[[0,0],[1,0]];
+  await o.Controller.main(o.socket,{}, {user_catalog_item_id:35,occupied_tiles:[[0,0]]});
+  assert.equal(o.calls.length,0);
+  // Una misma huella trasladada debe caber en el mapa; un patrón distinto no.
+  await o.Controller.main(o.socket,{}, {user_catalog_item_id:35,occupied_tiles:[[0,0],[0,1]]});
+  assert.equal(o.calls.length,0);
+  await o.Controller.main(o.socket,{}, {user_catalog_item_id:35,occupied_tiles:[[0,0],[1,0]]});
+  assert.equal(o.calls.length,1);
 });
