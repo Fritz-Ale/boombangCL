@@ -3,6 +3,7 @@ const ConsoleLogger = require('../utils/ConsoleLogger');
 const logger = new ConsoleLogger();
 const ResponseSocketsEnum = require('../enums/ResponseSocketsEnum');
 const UpdatePublicScenesController = require('../controllers/game/lobby/UpdatePublicScenesController');
+const GetPublicIslandsController = require('../controllers/game/islands/GetPublicIslandsController');
 const RemoveSelectedUserTask = require('./RemoveSelectedUserTask');
 const SceneTypesEnum = require('../enums/SceneTypesEnum');
 
@@ -64,6 +65,9 @@ class RemoveUserFromSceneTask {
                 if (typeof UpdatePublicScenesController.main === 'function') {
                     UpdatePublicScenesController.main();
                 }
+            }
+            if (scene.scene_type == SceneTypesEnum.PRIVATE_SCENE) {
+                GetPublicIslandsController.broadcastToLobby();
             }
         }
         catch (err) {
