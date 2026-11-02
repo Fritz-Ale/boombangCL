@@ -18,6 +18,14 @@ function fixture(persist=async()=>({success:true}), operation='PutItemPrivateSce
   const calls=[], notified=[], sent=[];
   const scene={id:10,user_id:7,scene_type:'private',objects:[],max_objects:20,
     game_map:[[0,0]],map_rows:1,map_cols:2,navigationMapBase:[[0,0]],
+    rebuildObjectNavigationMap() {
+      this.navigationMapBase = this.game_map.map(row => [...row]);
+      this.objects.forEach(object => (object.occupied_tiles || []).forEach(([x,y]) => {
+        if (object.type_of_behavior !== 'walkable' && object.type_of_behavior !== 'overlay') {
+          this.navigationMapBase[y][x] = 1;
+        }
+      }));
+    },
     emit:(name,data)=>notified.push({name,data})};
   const item={id:35,private_scene_id:null,occupied_tiles:[],type_of_behavior:'BLOCKING'};
   const user={id:7,currentArea:scene,inventory:[item]};
@@ -94,4 +102,40 @@ test('rechazo de API convertido a JSON impide confirmar',async()=>{
   }};
   vm.runInNewContext(fs.readFileSync(filename,'utf8'),ctx);
   await assert.rejects(()=>ctx.module.exports.putItem({}, {authJwt:'redacted'}),/Forbidden/);
+});
+
+
+test('mover un mueble conserva las colisiones del resto de objetos', async () => {
+  const o=fixture();
+  o.item.private_scene_id=10;o.item.occupied_tiles=[[0,0]];o.scene.objects=[o.item];
+  o.scene.rebuildObjectNavigationMap();
+  assert.deepEqual(o.scene.navigationMapBase,[[1,0]]);
+  await o.Controller.main(o.socket,{}, {user_catalog_item_id:35,occupied_tiles:[[1,0]],is_move:true});
+  assert.deepEqual(o.scene.navigationMapBase,[[0,1]]);
+  assert.equal(o.notified.length,1);
+  assert.deepEqual(o.item.occupied_tiles,[[1,0]]);
+});
+
+test('retiro confirmado desbloquea la casilla y devuelve el inventario', async () => {
+  const o=fixture(undefined,'RemoveItemPrivateSceneController');
+  o.scene.objects=[o.item];o.item.private_scene_id=10;o.item.occupied_tiles=[[0,0]];o.user.inventory=[];
+  o.scene.rebuildObjectNavigationMap();
+  await o.Controller.main(o.socket,{}, {user_catalog_item_id:35});
+  assert.deepEqual(o.scene.navigationMapBase,[[0,0]]);
+  assert.equal(o.scene.objects.length,0);
+  assert.equal(o.user.inventory.length,1);
+  assert.equal(o.notified.length,1);
+});
+
+test('un segundo cambio simultáneo de sala es rechazado hasta que el primero se guarda', async () => {
+  let release;
+  const o=fixture(()=>new Promise(resolve=>{release=resolve}));
+  const first=o.Controller.main(o.socket,{}, {user_catalog_item_id:35,occupied_tiles:[[0,0]]});
+  const second=o.Controller.main(o.socket,{}, {user_catalog_item_id:35,occupied_tiles:[[1,0]]});
+  await second;
+  assert.equal(o.calls.length,1);
+  assert.equal(o.scene.objects.length,0);
+  release({success:true});
+  await first;
+  assert.equal(o.scene.objects.length,1);
 });
