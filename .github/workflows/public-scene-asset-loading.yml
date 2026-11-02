@@ -1,0 +1,34 @@
+name: Public scene asset loading regressions
+
+on:
+  pull_request:
+    paths:
+      - 'client/src/phaser/loaders/PublicSceneLoader.js'
+      - 'client/src/utils/SceneUtils.js'
+      - 'client/tests/public-scene-assets.test.cjs'
+      - '.github/workflows/public-scene-asset-loading.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-scene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Simulate UFO assets and missing textures without browser
+        run: node --test client/tests/public-scene-assets.test.cjs
+      - name: Install locked frontend dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile Vue and Phaser application
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
