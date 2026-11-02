@@ -33,8 +33,9 @@ class SceneUtils {
     static isVideoFile(src) {
         // Los recursos versionados usan ?v=... o #...; el sufijo no forma parte
         // de la extensión. Clasificarlos como imagen deja fondos de video negros.
-        return typeof src === 'string' &&
-            /\.(?:webm|mp4|ogg|mov)(?:[?#]|$)/i.test(src.trim());
+        if (typeof src !== 'string') return false;
+        const pathname = src.trim().split(/[?#]/, 1)[0];
+        return /\.(?:webm|mp4|ogg|mov)$/i.test(pathname);
     }
 
     static moveItem(gameScene, sprite) {
