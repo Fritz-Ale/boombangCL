@@ -5,6 +5,7 @@
 
 import AvatarEnum from "@/enums/AvatarEnum.js";
 import backgroundAvatarLoader from "./BackgroundAvatarLoader.js";
+import avatarManager from "./AvatarManager.js";
 import EventEmitter from "events";
 
 class SmartAvatarSystem extends EventEmitter {
@@ -56,9 +57,11 @@ class SmartAvatarSystem extends EventEmitter {
             }
         }
         
-        // Marcar avatares esenciales como disponibles (por si no están en la sincronización)
+        // Nunca declarar disponible un avatar cuyo atlas todavía no existe.
         for (const avatarId of this.fallbackAvatars) {
-            this.availableAvatars.add(avatarId);
+            if (!this.isAvatarAvailable(avatarId)) {
+                backgroundAvatarLoader.requestPriorityLoad(avatarId);
+            }
         }
         
         // Iniciar verificaciones periódicas
@@ -115,6 +118,9 @@ class SmartAvatarSystem extends EventEmitter {
         
         // Usar fallback inteligente
         const fallbackId = this.selectBestFallback(requestedAvatarId);
+        if (!this.isAvatarAvailable(fallbackId)) {
+            backgroundAvatarLoader.requestPriorityLoad(fallbackId);
+        }
         
         // Registrar para actualización futura
         this.activeAvatars.set(userId, {
@@ -174,7 +180,9 @@ class SmartAvatarSystem extends EventEmitter {
      * Verifica si un avatar está disponible para uso inmediato
      */
     isAvatarAvailable(avatarId) {
-        return this.availableAvatars.has(avatarId);
+        // Un registro obsoleto no debe producir un personaje invisible.
+        const key = `${avatarManager.getAvatarName(avatarId)}_atlas`;
+        return Boolean(this.currentScene?.textures?.exists(key));
     }
 
     /**

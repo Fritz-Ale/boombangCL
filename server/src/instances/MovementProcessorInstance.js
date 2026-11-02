@@ -21,9 +21,19 @@ class MovementProcessorInstance {
         this.processing = true;
         const processMovement = async () => {
             if (!this.processing) return;
-            const movers = this.scene.users.filter(user => user.finalTarget);
-            await Promise.all(movers.map(user => this.processUserMovement(user)));
-            setTimeout(processMovement, AnimationBlockTimerEnum.WALK);
+            const cycleStartedAt = Date.now();
+            try {
+                const movers = this.scene.users.filter(user => user.finalTarget);
+                await Promise.all(movers.map(user => this.processUserMovement(user)));
+            } catch (error) {
+                logger.log(`Error in movement processing cycle: ${error.message}`, 'error');
+            } finally {
+                if (this.processing) {
+                    // Medir de inicio a inicio: no sumar el cálculo de rutas a cada paso.
+                    const remaining = Math.max(0, AnimationBlockTimerEnum.WALK - (Date.now() - cycleStartedAt));
+                    setTimeout(processMovement, remaining);
+                }
+            }
         };
         processMovement();
     }

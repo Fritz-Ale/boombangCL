@@ -1,0 +1,56 @@
+name: Avatar and movement regressions
+
+on:
+  pull_request:
+    paths:
+      - 'client/src/phaser/**'
+      - 'client/src/enums/AnimationsTimerEnum.js'
+      - 'client/tests/**'
+      - 'server/src/instances/MovementProcessorInstance.js'
+      - 'server/src/enums/AnimationBlockTimerEnum.js'
+      - 'server/tests/**'
+      - '.github/workflows/avatar-movement-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check client/src/phaser/managers/BackgroundAvatarLoader.js
+          node --check client/src/phaser/managers/SmartAvatarSystem.js
+          node --check client/src/phaser/controllers/scene/AddUserController.js
+          node --check client/src/phaser/controllers/scene/CreateSceneController.js
+          node --check server/src/instances/MovementProcessorInstance.js
+          node --check server/src/controllers/game/scenes/UserJoinPublicSceneController.js
+      - name: Test avatar loading and walking cadence
+        run: node --test client/tests/avatar-visibility.test.cjs server/tests/movement-timing.test.cjs
+
+  client-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile complete Vue and Phaser client
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
