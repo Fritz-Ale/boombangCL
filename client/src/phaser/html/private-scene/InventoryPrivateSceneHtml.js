@@ -239,7 +239,13 @@ class InventoryPrivateSceneHtml {
         this.draggedItem = slotData;
 
         // Setup shadow image
-        let imageSrc = import.meta.env.VITE_APP_ENV == 'local' ? slotData.group.image : slotData.group.image_url;
+        const imageSrc = import.meta.env.VITE_APP_ENV === 'local'
+            ? (slotData.group.image || slotData.group.image_url)
+            : (slotData.group.image_url || slotData.group.image);
+        if (!imageSrc) {
+            this.draggedItem = null;
+            return;
+        }
         dragShadowImg.src = imageSrc;
 
         // Obtener el factor de escala de la escena (0.5 para big_scene, 1 para normal)
@@ -506,17 +512,34 @@ class InventoryPrivateSceneHtml {
                 let imageSrc = import.meta.env.VITE_APP_ENV == 'local'
                     ? (group.image || group.image_url)
                     : (group.image_url || group.image);
+                if (!imageSrc) {
+                    icon.style.display = 'none';
+                    icon.removeAttribute('src');
+                    slot.style.cursor = 'default';
+                    // Conservar el conteo para que el objeto no desaparezca de la mochila.
+                    count.textContent = group.count > 1 ? group.count : '';
+                    count.style.display = group.count > 1 ? 'block' : 'none';
+                    return;
+                }
                 icon.src = imageSrc;
                 icon.style.display = 'block';
+                icon.onerror = () => {
+                    if (icon.src === imageSrc || icon.getAttribute('src') === imageSrc) {
+                        icon.style.display = 'none';
+                    }
+                };
 
                 // Aplicar dimensiones personalizadas si están definidas
                 if (group.width != null || group.height != null) {
                     // Crear una imagen temporal para obtener las dimensiones originales
                     const tempImg = new Image();
                     tempImg.onload = () => {
+                        // Un cambio de página puede reutilizar el icono antes de cargar.
+                        if (icon.getAttribute('src') !== imageSrc) return;
                         const originalWidth = tempImg.naturalWidth;
                         const originalHeight = tempImg.naturalHeight;
-                        
+                        if (!originalWidth || !originalHeight) return;
+
                         let targetWidth = group.width || originalWidth;
                         let targetHeight = group.height || originalHeight;
                         
@@ -566,7 +589,7 @@ class InventoryPrivateSceneHtml {
     }
 
     getGroupedItems() {
-        const map = {};
+        const map = Object.create(null);
         this.scene.inventoryItemsList.forEach(item => {
             if (!map[item.sprite_name]) {
                 map[item.sprite_name] = { ...item, count: 0 };
