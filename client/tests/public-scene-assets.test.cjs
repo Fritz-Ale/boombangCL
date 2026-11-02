@@ -26,7 +26,7 @@ const loader = vm.runInNewContext(
     }
 );
 
-function fakeScene(assets, { loadedImages = [], loadedVideos = [], npc = null } = {}) {
+function fakeScene(assets, { loadedImages = [], loadedVideos = [], npc = null, arrows = [], items = [] } = {}) {
     const result = { imageLoads: [], videoLoads: [], drawnImages: [], drawnVideos: [], warnings: [], cameraColor: null };
     const sprite = () => {
         const object = {
@@ -48,8 +48,8 @@ function fakeScene(assets, { loadedImages = [], loadedVideos = [], npc = null } 
             assets_data: assets,
             npc,
             base_api_url: 'https://api.example.test',
-            items: [],
-            arrows: [],
+            items,
+            arrows,
             darkening: false
         }},
         load: {
@@ -144,4 +144,55 @@ test('missing NPC texture is not instantiated as broken Phaser sprite', () => {
     loader.main(gameScene, false);
     assert.equal(result.drawnImages.length, 0);
     assert.ok(result.warnings.some(w => w.detail.code === 'npc_missing'));
+});
+
+test('nginx client build loads relative UFO and NPC URLs from public Laravel host', () => {
+    const { gameScene, result } = fakeScene(
+        { assets_data_repeatable: [{ is_background: 1, image: 'uploads/public-scene/ufo/assets/fondo.webp' }] },
+        { npc: {
+            active: true,
+            sprite_name: 'npc_1',
+            image: '/uploads/public-scene/ufo/assets/npc.webp',
+            positionX: 30,
+            positionY: 50
+        }}
+    );
+    loader.main(gameScene, true);
+    assert.equal(result.imageLoads.length, 2);
+    assert.equal(result.imageLoads[0][1], 'https://api.example.test/uploads/public-scene/ufo/assets/fondo.webp');
+    assert.equal(result.imageLoads[1][1], 'https://api.example.test/uploads/public-scene/ufo/assets/npc.webp');
+    assert.equal(result.imageLoads.some(([, url]) => url.startsWith('uploads/')), false);
+});
+
+test('scene arrows and collectible sprites use API URL even when frontend is on different domain', () => {
+    const { gameScene, result } = fakeScene(
+        { assets_data_repeatable: [] },
+        {
+            arrows: [
+                { sprite_name: 'exit', image: 'uploads/arrow.png', image_url: 'https://api.example.test/uploads/arrow.png' },
+                { sprite_name: 'other', image: 'uploads/arrow2.png' }
+            ],
+            items: [
+                {
+                    file_name: 'apple',
+                    sprite_file: 'uploads/apple.png',
+                    catch_file_name: 'apple-catch',
+                    catch_sprite_file: '/uploads/apple-catch.png'
+                },
+                {
+                    file_name: 'coin',
+                    sprite_file: 'uploads/coin.png',
+                    sprite_file_url: 'https://cdn.example.test/coin.png'
+                }
+            ]
+        }
+    );
+    loader.main(gameScene, true);
+    const urls = result.imageLoads.map(([, url]) => url);
+    assert.ok(urls.includes('https://api.example.test/uploads/arrow.png'));
+    assert.ok(urls.includes('https://api.example.test/uploads/arrow2.png'));
+    assert.ok(urls.includes('https://api.example.test/uploads/apple.png'));
+    assert.ok(urls.includes('https://api.example.test/uploads/apple-catch.png'));
+    assert.ok(urls.includes('https://cdn.example.test/coin.png'));
+    assert.equal(urls.some(url => !/^https:\/\//.test(url)), false);
 });
