@@ -1,33 +1,42 @@
 <template>
-  <div class="lobby__scenes-container__tabs">
-    <div
+  <div class="lobby__scenes-container__tabs" role="group" aria-label="Secciones del lobby">
+    <button
+      type="button"
       class="lobby__scenes-container__tabs-tab fixed-width"
       :class="{ selected: activeTab === 'areas' }"
+      :aria-pressed="activeTab === 'areas'"
       @click="$emit('update:activeTab', 'areas')"
     >
       <span class="fit_label">{{ $t("lobby.tabs.areas") }}</span>
-    </div>
-    <div
+    </button>
+    <button
+      type="button"
       class="lobby__scenes-container__tabs-tab fixed-width"
       :class="{ selected: activeTab === 'games' }"
+      :aria-pressed="activeTab === 'games'"
       @click="$emit('update:activeTab', 'games')"
     >
       <span class="fit_label">{{ $t("lobby.tabs.games") }}</span>
-    </div>
-    <div
+    </button>
+    <button
+      type="button"
       class="lobby__scenes-container__tabs-tab fixed-width"
       :class="{ selected: activeTab === 'islands' }"
+      :aria-pressed="activeTab === 'islands'"
       @click="$emit('update:activeTab', 'islands')"
     >
       <span class="fit_label">{{ $t("lobby.tabs.islands") }}</span>
-    </div>
-    <div
+    </button>
+    <button
+      type="button"
       class="lobby__scenes-container__tabs-tab"
       :class="{ selected: activeTab === 'search' }"
+      :aria-pressed="activeTab === 'search'"
+      :aria-label="$t('lobby.tabs.search')"
       @click="$emit('update:activeTab', 'search')"
     >
-      <i class="las la-search"></i>
-    </div>
+      <i class="las la-search" aria-hidden="true"></i>
+    </button>
   </div>
 </template>
 
@@ -91,10 +100,17 @@ export default {
   align-items: center;
   flex: 1;
   min-width: 0;
+  min-height: 40px;
+  border: 0;
+  font: inherit;
 }
 
 .lobby__scenes-container__tabs-tab.selected {
   background-color: #1c2c35ad;
+}
+.lobby__scenes-container__tabs-tab:focus-visible {
+  outline: 3px solid #ffdc76;
+  outline-offset: 2px;
 }
 
 .lobby__scenes-container__tabs-tab:last-child {
