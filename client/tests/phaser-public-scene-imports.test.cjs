@@ -12,7 +12,7 @@ const darkeningSource = fs.readFileSync(darkeningPath, 'utf8');
 
 function evaluate(source, classname, injected) {
     const text = source
-        .replace(/^import .*;\s*$/gm, '')
+        .replace(/^import .*;.*$/gm, '')
         .replaceAll('import.meta.env.VITE_ANIMATION_AVATAR_EDITOR', "'false'")
         .replaceAll('import.meta.env.VITE_MAP_MAKER', "'false'")
         .replaceAll('import.meta.env.VITE_SHOW_ISOMAP', "'false'")
