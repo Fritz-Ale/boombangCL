@@ -7,6 +7,8 @@ on:
       - 'client/src/utils/SceneUtils.js'
       - 'client/tests/public-scene-assets.test.cjs'
       - 'scripts/audit_public_scene_assets.py'
+      - 'scripts/install_public_scene_assets_local.py'
+      - 'scripts/tests/test_install_public_scene_assets_local.py'
       - 'boombang_api.sql'
       - 'api/public/uploads.zip'
       - '.github/workflows/public-scene-asset-loading.yml'
@@ -44,6 +46,11 @@ jobs:
         run: python3 -m py_compile scripts/audit_public_scene_assets.py
       - name: Check original UFO background actually exists in uploads.zip
         run: python3 scripts/audit_public_scene_assets.py --require-ufo
+      - name: Validate optional local extraction and path security
+        run: |
+          python3 -m py_compile scripts/install_public_scene_assets_local.py
+          python3 -m unittest discover -s scripts/tests -p 'test_install_public_scene_assets_local.py' -v
+          python3 scripts/install_public_scene_assets_local.py
       - name: Keep only asset metadata, not copyrighted artwork
         uses: actions/upload-artifact@v4
         if: always()
