@@ -3,10 +3,12 @@ import DarkeningUtils from "@/utils/DarkeningUtils";
 
 class PublicSceneLoader {
     static main(gameScene, preload = true) {
-        const areaId = gameScene.sceneData.scenery.id;
-        const assets = gameScene.sceneData.scenery.assets_data?.assets_data_repeatable || [];
-        const npc = gameScene.sceneData.scenery.npc;
-        const baseApiUrl = (gameScene.sceneData.scenery.base_api_url || '').replace(/\/$/, '') + '/';
+        const scenery = gameScene.sceneData?.scenery || {};
+        const areaId = scenery.id;
+        const rawAssets = scenery.assets_data?.assets_data_repeatable;
+        const assets = Array.isArray(rawAssets) ? rawAssets : [];
+        const npc = scenery.npc;
+        const baseApiUrl = (scenery.base_api_url || '').replace(/\/$/, '') + '/';
 
         if (preload) {
             this.#preload(areaId, assets, npc, gameScene, baseApiUrl);
@@ -28,8 +30,13 @@ class PublicSceneLoader {
     static #preload(areaId, assets, npc, gameScene, baseApiUrl) {
         const viteEnv = import.meta.env.VITE_APP_ENV;
         assets.forEach((asset, index) => {
+            if (!asset || typeof asset !== 'object') return;
             const spriteName = 'public_scene_' + areaId + '_item_' + index;
             const assetSrc = this.#assetUrl(asset.image, baseApiUrl, viteEnv);
+            if (!assetSrc) {
+                console.warn('[PublicSceneLoader] Recurso sin URL:', spriteName);
+                return;
+            }
             if (SceneUtils.isVideoFile(assetSrc)) {
                 gameScene.load.video(spriteName, assetSrc);
             } else {
@@ -39,6 +46,10 @@ class PublicSceneLoader {
         if (npc && npc.active) {
             const spriteName = 'public_scene_' + areaId + '_npc_' + (npc.spriteName ?? npc.sprite_name ?? npc.stripeName);
             const npcSrc = this.#assetUrl(npc.image, baseApiUrl, viteEnv);
+            if (!npcSrc) {
+                console.warn('[PublicSceneLoader] NPC activo sin imagen:', spriteName);
+                return;
+            }
             if (SceneUtils.isVideoFile(npcSrc)) {
                 gameScene.load.video(spriteName, npcSrc);
             } else {
@@ -51,9 +62,11 @@ class PublicSceneLoader {
         const gameTime = gameScene.sceneData.scenery.game_time;
         const roomHasDarkening = gameScene.sceneData.scenery.darkening;
 
+        let backgroundLoaded = false;
         assets.forEach((asset, index) => {
+            if (!asset || typeof asset !== 'object') return;
             const spriteName = 'public_scene_' + areaId + '_item_' + index;
-            
+
             // Verificar si el item debe mostrarse según show_from y show_to
             const shouldShow = DarkeningUtils.shouldShowItem(
                 gameTime,
@@ -62,7 +75,12 @@ class PublicSceneLoader {
             );
 
             if (asset.is_background == 1) {
-                this.#loadBackground(gameScene, spriteName, gameTime, roomHasDarkening);
+                if (this.#hasLoadedTexture(gameScene, spriteName)) {
+                    this.#loadBackground(gameScene, spriteName, gameTime, roomHasDarkening);
+                    backgroundLoaded = true;
+                } else {
+                    console.error('[PublicSceneLoader] Fondo no cargado:', spriteName);
+                }
             }
             else {
                 this.#loadSingleItem(gameScene, spriteName, {
@@ -80,13 +98,37 @@ class PublicSceneLoader {
             }
         });
 
+        if (!backgroundLoaded) {
+            this.#showMissingBackground(gameScene, areaId);
+        }
         this.#loadNpc(gameScene, npc, areaId);
 
         //SceneUtils.moveItems(gameScene);
     }
 
+    static #hasLoadedTexture(gameScene, spriteName) {
+        return Boolean(gameScene.textures?.exists(spriteName) ||
+            gameScene.cache?.video?.has(spriteName));
+    }
+
+    static #showMissingBackground(gameScene, areaId) {
+        // No inventar una textura original. Dar un estado visible y diagnosticable
+        // en lugar de dejar un canvas negro si la BD/ZIP no aportó el fondo.
+        console.error('[PublicSceneLoader] Área sin fondo utilizable:', areaId);
+        gameScene.cameras?.main?.setBackgroundColor('#274763');
+        if (gameScene.add?.text) {
+            gameScene.add.text(16, 16, 'Fondo no disponible en esta área', {
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '14px',
+                color: '#ffffff',
+                backgroundColor: '#274763',
+                padding: { x: 8, y: 6 }
+            }).setScrollFactor(0).setDepth(999);
+        }
+    }
+
     static #loadSingleItem(gameScene, spriteName, item) {
-        if (!item.show_item) {
+        if (!item.show_item || !this.#hasLoadedTexture(gameScene, spriteName)) {
             return; // Si no se debe mostrar el item, no hacemos nada
         }
 
@@ -124,6 +166,11 @@ class PublicSceneLoader {
         if (!npcData || !npcData.active) {
             return; // Si no hay NPC o no está activo, no hacemos nada
         }
+        if (!this.#hasLoadedTexture(gameScene,
+            'public_scene_' + areaId + '_npc_' + (npcData.spriteName ?? npcData.sprite_name ?? npcData.stripeName))) {
+            console.warn('[PublicSceneLoader] NPC sin textura cargada:', npcData.id);
+            return;
+        }
         // Aplicar factor de escala para big_scene (los NPCs sí se escalan)
         const scaleFactor = gameScene.sceneScaleFactor || 1;
         const finalScale = (Number(npcData.scale) || 1) * scaleFactor;
@@ -131,7 +178,7 @@ class PublicSceneLoader {
         const spriteName = 'public_scene_' + areaId + '_npc_' + (npcData.spriteName ?? npcData.sprite_name ?? npcData.stripeName);
         let sprite;
 
-        if (SceneUtils.isVideoFile(npcData.image)) {
+        if (gameScene.cache?.video?.has(spriteName)) {
             sprite = gameScene.add.video(npcData.positionX * scaleFactor, npcData.positionY * scaleFactor, spriteName);
             sprite.setOrigin(0.5, 1);
             sprite.setDepth(npcData.depth || npcData.positionY * scaleFactor);
