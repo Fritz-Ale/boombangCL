@@ -39,7 +39,7 @@ Schedule::command('boombang:process-games-events')
 Artisan::command('boombang:scenes:diagnose {--scene= : ID or exact name} {--json : Machine-readable report} {--strict : Fail when any scene is incomplete}', function () {
     $selected = $this->option('scene');
     try {
-        $query = \\App\\Models\\PublicScene::query()->where('active', 1);
+        $query = \App\Models\PublicScene::query()->where('active', 1);
         if ($selected !== null && $selected !== '') {
             if (ctype_digit((string) $selected)) {
                 $query->where('id', (int) $selected);
@@ -48,12 +48,12 @@ Artisan::command('boombang:scenes:diagnose {--scene= : ID or exact name} {--json
             }
         }
         $scenes = $query->get(['id', 'name', 'assets_data']);
-    } catch (\\Throwable $exception) {
+    } catch (\Throwable $exception) {
         $this->error('No se pudieron consultar las áreas públicas. Revisa la conexión MySQL y los logs de Laravel.');
         return 2;
     }
 
-    $report = \\App\\Support\\PublicSceneAssetDiagnostics::inspect($scenes, public_path());
+    $report = \App\Support\PublicSceneAssetDiagnostics::inspect($scenes, public_path());
     if ($this->option('json')) {
         $this->line(json_encode($report, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
     } else {
