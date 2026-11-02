@@ -1,6 +1,7 @@
 <template>
   <div class="game-screens">
     <LobbyScreen
+      ref="lobbyScreen"
       v-if="currentScreen === GameScreensEnum.LOBBY"
       @joinPublicScene="onJoinPublicScene"
       @updateLoading="onUpdateLoading"
@@ -198,8 +199,11 @@ export default {
         let sceneryType = response.data.scenery.type;
         this.onJoinPublicScene(sceneryType, response.data);
       } else {
+        this.$refs.lobbyScreen?.resetSceneJoin(
+          response.message || "No se pudo entrar a la sala. Inténtalo nuevamente."
+        );
         if (import.meta.env.VITE_APP_ENV === "local") {
-          console.log("Error al unirse a la sala.");
+          console.warn("Error al unirse a la sala:", response.message);
         }
       }
     });
