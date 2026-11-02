@@ -1,7 +1,7 @@
 import Enum from './Enum';
 
 const AnimationsTimerEnum = new Enum({
-    WALK: 750,
+    WALK: 630,
 });
 
 export default AnimationsTimerEnum;
