@@ -104,31 +104,38 @@ export default {
       },
     },
   },
-  async created() {
+  created() {
+    // El lobby es el propietario de estos listeners. Nunca usar socket.off(event)
+    // sin callback: borraría suscripciones legítimas de otras pantallas.
+    socket.on(ResponseSocketsEnum.UPDATE_PUBLIC_SCENES, this.handleAreasUpdate);
+    socket.on(ResponseSocketsEnum.GET_MY_ISLANDS, this.handleMyIslandsUpdate);
     this.$emit("updateLoading", true);
     this.loadAreas();
     this.loadFavoriteIslands();
     this.loadMyIslands();
   },
+  beforeUnmount() {
+    socket.off(ResponseSocketsEnum.UPDATE_PUBLIC_SCENES, this.handleAreasUpdate);
+    socket.off(ResponseSocketsEnum.GET_MY_ISLANDS, this.handleMyIslandsUpdate);
+  },
   methods: {
     ...mapActions(useLobbyStore, ["setActiveTab"]),
+    handleAreasUpdate(publicScenes) {
+      if (!Array.isArray(publicScenes)) return;
+      this.publicScenes = publicScenes;
+      this.$emit("updateLoading", false);
+    },
+    handleMyIslandsUpdate(data) {
+      if (Array.isArray(data?.islands)) this.myIslands = data.islands;
+    },
     loadAreas() {
       socket.emit(RequestSocketsEnum.GET_PUBLIC_SCENES);
-      socket.off(ResponseSocketsEnum.UPDATE_PUBLIC_SCENES);
-      socket.on(ResponseSocketsEnum.UPDATE_PUBLIC_SCENES, (publicScenes) => {
-        this.publicScenes = publicScenes;
-        this.$emit("updateLoading", false);
-      });
     },
     loadFavoriteIslands() {
       // Lógica para cargar islas favoritas
     },
     loadMyIslands() {
       socket.emit(RequestSocketsEnum.GET_MY_ISLANDS);
-      socket.off(ResponseSocketsEnum.GET_MY_ISLANDS);
-      socket.on(ResponseSocketsEnum.GET_MY_ISLANDS, (data) => {
-        this.myIslands = data.islands;
-      });
     },
     createIsland() {
       this.$emit("createIsland");

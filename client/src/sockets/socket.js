@@ -4,8 +4,9 @@ import { io } from 'socket.io-client';
 const socket = io(import.meta.env.VITE_SERVER_URL, {
     transports: ['websocket'], // Usa solo websockets
     reconnection: true, // Intenta reconectar automáticamente
-    reconnectionAttempts: 5, // Número de intentos antes de fallar
-    reconnectionDelay: 1000, // Espera 1 segundo entre intentos
+    reconnectionAttempts: Infinity, // La conexión se reintenta sin recargar el juego
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 10000, // Espera máxima entre intentos
     //upgrade: false,              // quita intento de upgrade
     //perMessageDeflate: false,    // menos CPU (a costa de más ancho de banda)
 });

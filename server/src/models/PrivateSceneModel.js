@@ -7,6 +7,7 @@ const PrivateSceneResource = require('../resources/PrivateSceneResource');
 const ResponseSocketsEnum = require('../enums/ResponseSocketsEnum');
 const CatalogItemTypeOfBehaviorEnum = require('../enums/CatalogItemTypeOfBehaviorEnum');
 const sceneMutex = require('../utils/SceneMutex');
+const GetPublicIslandsController = require('../controllers/game/islands/GetPublicIslandsController');
 
 class PrivateSceneModel extends SceneModel {
     constructor(uuid, row) {
@@ -92,9 +93,10 @@ class PrivateSceneModel extends SceneModel {
             }, user);
 
         } finally {
-            // Liberar el mutex
+            // Liberar el mutex antes de notificar al lobby.
             release();
         }
+        GetPublicIslandsController.broadcastToLobby();
     }
 }
 
