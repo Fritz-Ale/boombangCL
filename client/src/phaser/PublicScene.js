@@ -9,7 +9,6 @@ import SceneResponseSockets from "./sockets/SceneResponseSockets"; // Controlado
 import OverheadChatAnimation from "./animations/OverheadChatAnimation"; // Animación de chat
 import PublicSceneLoader from "./loaders/PublicSceneLoader"; // Precargador de escena
 import CreateSceneController from "./controllers/scene/CreateSceneController"; // Controlador de creación de escena
-import RemovePhaserSocketsUtil from "../utils/RemovePhaserSocketsUtil"; // Utilidad para eliminar sockets
 import TintManager from "./managers/TintManager"; // Gestor de tintes
 import PublicSceneResponse from "./sockets/PublicSceneResponse"; // Respuesta de escena pública
 import AvatarSystemController from "./controllers/AvatarSystemController.js"; // Nuevo sistema de avatares
@@ -371,7 +370,6 @@ export default class PublicScene extends Phaser.Scene {
             AvatarSystemController.removeUser(userId);
         });
 
-        RemovePhaserSocketsUtil.main(socket); // Eliminar eventos de socket
 
         if (this.chatManager) {
             this.chatManager.destroy();
