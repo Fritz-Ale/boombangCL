@@ -47,7 +47,7 @@ El enlace del juego `http://play.boombang.com` apunta al **cliente de desarrollo
 ## Preparación del futuro dominio .cl
 
 1. Comprobar la disponibilidad y, si se desea, registrar el dominio elegido mediante [NIC Chile](https://www.nic.cl/dominios/). **La presencia de BoomBangCL en este repositorio no significa que un dominio .cl esté registrado.**
-2. Publicar la carpeta `web/` como sitio estático en un proyecto de **Cloudflare Pages** (directorio de salida `web` según el método de despliegue; si la raíz del proyecto es `web/`, usar `.`).
+2. Publicar mediante **Cloudflare Pages** con raíz del repositorio, **Build command:** `sh web/build-pages.sh` y **Build output directory:** `web`. El script copia las capturas de `doc/screenshots/` a `web/screenshots/`; sin él, las imágenes de la portada aparecerían rotas.
 3. En **Workers & Pages → proyecto → Custom domains** agregar el nombre de dominio adquirido. Para un dominio raíz, agregar su zona en Cloudflare y delegar los servidores DNS desde el registrador. Ver [documentación oficial de Cloudflare](https://developers.cloudflare.com/pages/configuration/custom-domains/).
 4. Verificar HTTPS, enlaces, `/comunidad.html`, `/mejoras.html` y `/eventos.json` antes de anunciar el dominio.
 5. Alojamiento del juego, Socket.IO, API Laravel y base de datos requieren despliegue separado: Cloudflare Pages no los ejecuta por sí solo. Configurar en producción URLs, CORS, autenticación, correo y medidas antiabuso.
