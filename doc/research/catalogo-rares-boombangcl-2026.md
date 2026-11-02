@@ -66,3 +66,17 @@ El seeder es opcional y no reemplaza arte ni altera precios de objetos comprable
 ## Trabajo pendiente y honestidad de validación
 
 No se han inspeccionado ni importado todos los cientos de objetos del catálogo externo. No se han incorporado sus imágenes originales, ni se ha verificado su ancho o altura. No se ha migrado una base de datos real, ni se ha hecho una prueba multijugador real. Los precios externos son valores estimativos del mercado de otro servicio y no se sincronizan con el juego local.
+
+## Auditoría reproducible de los recursos que YA están en la rama main
+
+Se añadió `scripts/audit_catalog_assets.py`, que lee el SQL y el ZIP del propio repositorio sin descomprimir ni publicar imágenes. La auditoría GitHub Actions del 02-11-2026 (#41508823887) obtuvo:
+
+- **183 registros** de `catalog_items` en `boombang_api.sql`: **161** de tipo `scene_item` (categoría de objeto) y **22** de tipo `user_decoration`; no todos son necesariamente mobiliario colocable.
+- Las **183 miniaturas** y **183 texturas** referenciadas se localizaron dentro del ZIP existente. No se encontraron rutas de texturas faltantes.
+- **0 atlas referenciados encontrados**: esto no demuestra que no exista ningún otro archivo de animación en el archivo ZIP, solo que los registros inspeccionados no tenían referencias resueltas a atlas.
+- Solo **19 de los 183** registros ya tenían `width` y `height` simultáneamente configurados en el SQL, aunque el reporte midió dimensiones naturales de las imágenes localizadas mediante Pillow.
+- En el SQL evaluado, **5** artículos están simultáneamente marcados como activos y comprables. Esto no prueba que se puedan comprar en un servidor vivo.
+
+El resultado JSON (únicamente metadatos, rutas y tamaños, **sin imágenes**) queda como artefacto de GitHub Actions `existing-catalog-metadata` en https://github.com/Fritz-Ale/boombangCL/actions/runs/41508823887, disponible temporalmente según la retención del workflow.
+
+**Aún no se copian dimensiones naturales a la BD**: para algunos objetos la imagen de catálogo y la textura Phaser son distintas, y `scale` y `map_size` deben verificarse sobre una isla real. La licencia del repositorio original contiene una reserva de derechos; la existencia local de recursos no sustituye un permiso de distribución pública.
