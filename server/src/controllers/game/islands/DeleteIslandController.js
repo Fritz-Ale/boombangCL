@@ -24,6 +24,16 @@ class DeleteIslandController {
                 return;
             }
 
+            // La base de datos debe autorizar y confirmar la eliminación ANTES
+            // de expulsar jugadores o borrar escenas de memoria.
+            const response = await IslandApiService.delete({ islandId }, user);
+            if (response?.statusCode >= 400 || response?.success !== true) {
+                socket.emit(ResponseSocketsEnum.ERROR_ISLAND_DELETE, {
+                    message: response?.message || 'Failed to delete island', islandId
+                });
+                return;
+            }
+
             // Obtener todas las escenas de la isla antes de eliminarla
             const scenesOfIsland = PrivateScenesCollection.getByIslandId(islandId);
 
@@ -70,11 +80,6 @@ class DeleteIslandController {
                     PrivateScenesCollection.remove(privateScene.id);
                 });
             }
-
-            // Llamar a la API para eliminar la isla (incluye cascade delete de escenas e items)
-            const response = await IslandApiService.delete({
-                islandId: islandId
-            }, user);
 
             if (response.success) {
                 // Notificar a todos los usuarios viendo la isla
