@@ -120,6 +120,7 @@ class ImportAuthorizedCatalog extends Command
                         'price_type' => $entry['currency'],
                         'rarity_code' => $entry['rarity'],
                         'asset_rights_status' => $entry['license'],
+                        'asset_rights_evidence' => $entry['evidence'],
                         'is_reference_only' => false,
                         'is_multi_buy' => true,
                         'is_purchasable' => (bool) $this->option('activate'),
