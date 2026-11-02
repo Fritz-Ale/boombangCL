@@ -50,7 +50,7 @@ class SendUserToSceneController {
                 // Obtener la lista actualizada de usuarios
                 let sceneUsers = [];
                 for (const sceneUser of scene.users) {
-                    sceneUsers.push(await new UserResource(sceneUser).toObject());
+                    sceneUsers.push(await new UserResource(sceneUser).toPublicObject());
                 }
 
                 // Enviar respuesta al usuario que se está uniendo
@@ -68,7 +68,7 @@ class SendUserToSceneController {
 
                 // Notificar a todos los demás usuarios
                 scene.emitToAllExcept(ResponseSocketsEnum.NEW_USER_JOIN_SCENE, {
-                    user: await new UserResource(user).toObject(),
+                    user: await new UserResource(user).toPublicObject(),
                 }, user);
                 
             } finally {
