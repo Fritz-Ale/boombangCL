@@ -56,6 +56,7 @@
 
 <script>
 import socket from "@/sockets/socket";
+import createSocketSubscriptions from "@/utils/createSocketSubscriptions";
 import RequestSocketsEnum from "@/enums/RequestSocketsEnum";
 import ResponseSocketsEnum from "@/enums/ResponseSocketsEnum";
 import asset_button_image from "@/assets/game/auth/login-button-image.webp";
@@ -107,17 +108,18 @@ export default {
     handleTokenReceived(idToken) {
       socket.emit(RequestSocketsEnum.LOGIN_OAUTH, { authToken: idToken });
     },
+    autoLoginIfPossible() {
+      if (!socket.connected || this.loading) return;
+      const token = localStorage.getItem("app_jwt");
+      if (!token) return;
+      this.loading = true;
+      socket.emit(RequestSocketsEnum.JWT_AUTO_LOGIN, { authJwt: token });
+    },
   },
   mounted() {
     this.$refs.username.focus();
-    const token = localStorage.getItem("app_jwt");
-    if (token) {
-      this.loading = true;
-      socket.emit(RequestSocketsEnum.JWT_AUTO_LOGIN, { authJwt: token });
-    }
-
-    socket.off(ResponseSocketsEnum.LOGIN_SUCCESS);
-    socket.on(ResponseSocketsEnum.LOGIN_SUCCESS, async (data) => {
+    this.loginSubscriptions = createSocketSubscriptions(socket);
+    this.loginSubscriptions.on(ResponseSocketsEnum.LOGIN_SUCCESS, async (data) => {
       if (data.user && data.user.lang) {
         await this.languageStore.setLocale(data.user.lang);
       }
@@ -128,8 +130,7 @@ export default {
       this.$emit("loginSuccess");
     });
 
-    socket.off(ResponseSocketsEnum.LOGIN_ERROR);
-    socket.on(ResponseSocketsEnum.LOGIN_ERROR, (error) => {
+    this.loginSubscriptions.on(ResponseSocketsEnum.LOGIN_ERROR, (error) => {
       console.error("Login error:", error);
       if (error.errors) {
         this.setErrors(error.errors);
@@ -140,21 +141,25 @@ export default {
       this.loading = false;
     });
 
-    socket.off(ResponseSocketsEnum.JWT_AUTO_LOGIN_INVALID);
-    socket.on(ResponseSocketsEnum.JWT_AUTO_LOGIN_INVALID, () => {
+    this.loginSubscriptions.on(ResponseSocketsEnum.JWT_AUTO_LOGIN_INVALID, () => {
       localStorage.removeItem("app_jwt");
       this.loading = false;
-      window.location.reload(true);
+      this.showUsernameError = true;
+      this.usernameError = "Tu sesión expiró. Inicia sesión nuevamente.";
     });
 
-    socket.on("connect", () => {
+    this.loginSubscriptions.on("connect", () => {
       this.isSocketConnected = true;
+      if (!this.loading) this.autoLoginIfPossible();
     });
-    socket.on("disconnect", () => {
+    this.loginSubscriptions.on("disconnect", () => {
       this.isSocketConnected = false;
+      this.loading = false;
     });
-
-    //this.autoLoginIfPossible();
+    this.autoLoginIfPossible();
+  },
+  beforeUnmount() {
+    this.loginSubscriptions?.dispose();
   },
 };
 </script>
