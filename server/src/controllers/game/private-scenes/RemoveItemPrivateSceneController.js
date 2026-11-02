@@ -31,7 +31,7 @@ class RemoveItemPrivateSceneController {
                 throw new Error('Item not found in user current area');
             }
 
-            if (userCatalogItem.private_scene_id !== user.currentArea.id) {
+            if (String(userCatalogItem.private_scene_id) !== String(scene.id)) {
                 throw new Error('Item does not belong to the current private scene');
             }
 
