@@ -85,3 +85,49 @@ test('both scene socket controllers use scoped subscription helper', () => {
         assert.doesNotMatch(code, /socket\.on\(/);
     }
 });
+
+test('private room listeners are individually cleaned without disrupting the next room', () => {
+    const socket = new EventEmitter();
+    const previous = createScene();
+    const current = createScene();
+    const oldListeners = sceneSocketSubscriptions(previous, socket);
+    const newListeners = sceneSocketSubscriptions(current, socket);
+    const inventoryUpdates = [];
+    const itemEvents = [
+        'ADD_ITEM_TO_INVENTORY', 'SCENE_REMOVE_ITEM', 'SCENE_PUT_ITEM',
+        'REMOVE_ITEM_FROM_INVENTORY', 'ROTATE_OBJECT', 'PRIVATE_SCENE_COLORS_UPDATED'
+    ];
+    for (const event of itemEvents) {
+        oldListeners.listen(event, () => inventoryUpdates.push('old'));
+        newListeners.listen(event, () => inventoryUpdates.push('current'));
+    }
+    previous.events.emit('shutdown');
+    for (const event of itemEvents) {
+        socket.emit(event);
+        assert.equal(socket.listenerCount(event), 1);
+    }
+    assert.deepEqual(inventoryUpdates, Array(6).fill('current'));
+    current.events.emit('destroy');
+    for (const event of itemEvents) {
+        assert.equal(socket.listenerCount(event), 0);
+    }
+});
+
+test('every Phaser scene uses scoped cleanup, including six private inventory handlers', () => {
+    const scenes = ['PublicScene.js', 'PrivateScene.js', 'MinigameScene.js'];
+    for (const name of scenes) {
+        const code = fs.readFileSync(path.join(root, 'src/phaser', name), 'utf8');
+        assert.doesNotMatch(code, /RemovePhaserSocketsUtil/);
+        assert.doesNotMatch(code, /socket\.off\([^,)]*\)/);
+    }
+    const privateScene = fs.readFileSync(path.join(root, 'src/phaser/PrivateScene.js'), 'utf8');
+    assert.match(privateScene, /sceneSocketSubscriptions\(this, socket\)/);
+    assert.doesNotMatch(privateScene, /socket\.on\(/);
+    const inventoryEvents = [
+        'ADD_ITEM_TO_INVENTORY', 'SCENE_REMOVE_ITEM', 'SCENE_PUT_ITEM',
+        'REMOVE_ITEM_FROM_INVENTORY', 'ROTATE_OBJECT', 'PRIVATE_SCENE_COLORS_UPDATED'
+    ];
+    for (const name of inventoryEvents) {
+        assert.match(privateScene, new RegExp('listen\\(ResponseSocketsEnum\\.' + name + ','));
+    }
+});
