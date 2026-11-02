@@ -24,6 +24,7 @@ on:
       - 'server/tests/live-island-presence.test.cjs'
       - 'server/tests/live-purchase-decoration.test.cjs'
       - 'server/tests/live-purchase-concurrency.test.cjs'
+      - 'server/tests/scene-exit-persistence.test.cjs'
       - 'server/src/controllers/game/inventory/GetPublicInventoryController.js'
       - 'server/src/controllers/game/shop/PurchaseShopItemController.js'
       - 'server/src/controllers/game/private-scenes/PutItemPrivateSceneController.js'
@@ -55,6 +56,8 @@ jobs:
         run: node --test server/tests/live-purchase-decoration.test.cjs
       - name: Test concurrent purchases and inventory API error handling
         run: node --test server/tests/live-purchase-concurrency.test.cjs
+      - name: Test owner leaving while decoration is persisted
+        run: node --test server/tests/scene-exit-persistence.test.cjs
       - name: Install HTML5 dependencies
         working-directory: client
         run: npm ci --no-audit --no-fund
