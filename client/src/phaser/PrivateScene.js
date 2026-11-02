@@ -101,31 +101,38 @@ export default class PrivateScene extends Phaser.Scene {
         this.load.image("asset_accept_image", asset_accept_image);
         this.load.image("asset_reject_image", asset_reject_image);
 
-        if (this.sceneData.myScene) {
-            // Cargar dinámicamente los assets de inventario
-            this.backpackUserItems.forEach(item => {
-                let assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
-                // Detectar si es un video por la extensión
-                if (this.isVideoFile(assetSrc)) {
-                    this.load.video(item.sprite_name, assetSrc);
-                } else {
-                    this.load.image(item.sprite_name, assetSrc);
-                }
-            });
-        }
+        const catalogTexturesQueued = new Set();
+        const loadCatalogItem = (item) => {
+            const key = item?.sprite_name;
+            if (!key || catalogTexturesQueued.has(key) ||
+                this.textures.exists(key) || this.cache.video.exists(key)) return;
 
-        // Cargar objetos de escena existentes
-        this.sceneItems.forEach(item => {
-            if (!this.textures.exists(item.sprite_name) && !this.cache.video.exists(item.sprite_name)) {
-                let assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
-                // Detectar si es un video por la extensión
-                if (this.isVideoFile(assetSrc)) {
-                    this.load.video(item.sprite_name, assetSrc);
-                } else {
-                    this.load.image(item.sprite_name, assetSrc);
-                }
+            // Los objetos estáticos sin atlas deben poder usar image_url directamente.
+            // Antes se exigía spreadsheet_url y quedaban invisibles al colocarlos.
+            const local = import.meta.env.VITE_APP_ENV === 'local';
+            const sprite = local
+                ? (item.spreadsheet || item.image || item.spreadsheet_url || item.image_url)
+                : (item.spreadsheet_url || item.image_url || item.spreadsheet || item.image);
+            if (!sprite) {
+                console.warn('Objeto sin recurso gráfico:', key);
+                return;
             }
-        });
+
+            const atlas = local ? (item.atlas || item.atlas_url) : (item.atlas_url || item.atlas);
+            if (this.isVideoFile(sprite)) {
+                this.load.video(key, sprite);
+            } else if (atlas && (item.spreadsheet || item.spreadsheet_url)) {
+                this.load.atlas(key, sprite, atlas);
+            } else {
+                this.load.image(key, sprite);
+            }
+            catalogTexturesQueued.add(key);
+        };
+
+        if (this.sceneData.myScene) {
+            this.backpackUserItems.forEach(loadCatalogItem);
+        }
+        this.sceneItems.forEach(loadCatalogItem);
     }
 
     async create() {
@@ -1043,7 +1050,11 @@ export default class PrivateScene extends Phaser.Scene {
                 } else if (this.textures.exists(item.sprite_name)) {
                     // Crear imagen sprite
                     const baseScale = item.scale || this.dpiScale;
-                    item.sprite = this.add.image(avgX, y, item.sprite_name)
+                    const frameNames = (item.atlas || item.atlas_url)
+                        ? this.textures.get(item.sprite_name).getFrameNames()
+                        : [];
+                    const firstFrame = frameNames.length ? frameNames[0] : undefined;
+                    item.sprite = this.add.image(avgX, y, item.sprite_name, firstFrame)
                         .setOrigin(0.5, 0.90)
                         .setScale(baseScale * this.sceneScaleFactor);
 
