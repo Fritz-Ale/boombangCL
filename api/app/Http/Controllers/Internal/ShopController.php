@@ -40,6 +40,10 @@ class ShopController extends Controller
         $items = CatalogItem::where('is_active', true)
             ->where('is_purchasable', true)
             ->where('is_reference_only', false)
+            ->where(function ($query) {
+                $query->whereNull('reference_source_url')
+                    ->orWhereIn('asset_rights_status', ['original', 'licensed']);
+            })
             ->with('category')
             ->orderBy('category_id', 'asc')
             ->orderBy('id', 'asc')
