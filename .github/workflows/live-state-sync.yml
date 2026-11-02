@@ -1,0 +1,43 @@
+name: HTML5 live game state regression
+
+on:
+  pull_request:
+    paths:
+      - 'client/src/App.vue'
+      - 'client/src/sockets/socket.js'
+      - 'client/src/views/screens/game/GameScreens.vue'
+      - 'client/src/views/screens/game/LobbyScreen.vue'
+      - 'client/src/views/screens/game/island/IslandCreateScreen.vue'
+      - 'client/src/views/screens/game/island/IslandSceneCreateScreen.vue'
+      - 'client/src/views/components/game/lobby/GamesTabComponent.vue'
+      - 'client/src/views/components/game/lobby/PublicIslandsComponent.vue'
+      - 'client/src/views/components/game/scenes/public/InventoryPublicSceneComponent.vue'
+      - 'client/src/views/components/auth/LoginFormComponent.vue'
+      - 'client/tests/live-state-sync.test.cjs'
+      - '.github/workflows/live-state-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Test subscriptions, inventory changes, and session recovery
+        run: node --test client/tests/live-state-sync.test.cjs client/tests/inventory-realtime.test.cjs client/tests/scene-socket-subscriptions.test.cjs
+      - name: Install HTML5 dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Build Phaser and Vue
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
