@@ -398,7 +398,8 @@
     "tabs": {
       "areas": "エリア",
       "games": "ゲーム",
-      "islands": "島"
+      "islands": "島",
+      "search": "検索"
     },
     "my_islands": {
       "no_islands": "作成した島はありません。"
