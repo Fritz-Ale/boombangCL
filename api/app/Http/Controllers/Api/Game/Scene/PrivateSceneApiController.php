@@ -125,8 +125,16 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
             if ($responseUpdate == 0) {
                 throw new Exception('Item does not belong to the current private scene or does not exist.');
             }
+            return response()->json(['success' => true]);
         } catch (Exception $e) {
-            return $this->handleException($e);
+            Log::warning('Error de inventario en escena privada: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'operation' => 'removeItem',
+            ]);
+            return response()->json([
+                'success' => false,
+                'error' => 'No fue posible actualizar el objeto de la escena.',
+            ], 422);
         }
     }
 
@@ -157,8 +165,16 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
             if ($responseUpdate == 0) {
                 throw new Exception('Item does not belong to the current user or does not exist.');
             }
+            return response()->json(['success' => true]);
         } catch (Exception $e) {
-            return $this->handleException($e);
+            Log::warning('Error de inventario en escena privada: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'operation' => 'putItem',
+            ]);
+            return response()->json([
+                'success' => false,
+                'error' => 'No fue posible actualizar el objeto de la escena.',
+            ], 422);
         }
     }
 
@@ -184,8 +200,16 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
             if ($responseUpdate == 0) {
                 throw new Exception('Item does not belong to the current user or does not exist.');
             }
+            return response()->json(['success' => true]);
         } catch (Exception $e) {
-            return $this->handleException($e);
+            Log::warning('Error de inventario en escena privada: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'operation' => 'updateItemPosition',
+            ]);
+            return response()->json([
+                'success' => false,
+                'error' => 'No fue posible actualizar el objeto de la escena.',
+            ], 422);
         }
     }
 
