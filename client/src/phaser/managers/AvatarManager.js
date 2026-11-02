@@ -125,8 +125,14 @@ class AvatarManager {
      * Carga un avatar específico
      */
     async loadAvatar(scene, avatarId) {
+        // La marca en memoria puede sobrevivir a un cambio de escena.
         if (this.loadedAvatars.has(avatarId)) {
-            return Promise.resolve();
+            const existingKey = `${this.getAvatarName(avatarId)}_atlas`;
+            if (scene?.textures?.exists(existingKey)) {
+                this.createAvatarAnimations(scene, avatarId);
+                return;
+            }
+            this.loadedAvatars.delete(avatarId);
         }
 
         const loader = this.avatarLoaders[avatarId];
