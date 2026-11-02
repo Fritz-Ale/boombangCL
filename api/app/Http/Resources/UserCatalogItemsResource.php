@@ -40,6 +40,8 @@ class UserCatalogItemsResource extends JsonResource
             'resized' => $this->resized,
             'type_of_behavior' => $this->catalogItem->type_of_behavior,
             'scale' => $this->catalogItem->scale,
+            'rarity_code' => $this->catalogItem->rarity_code,
+            'rarity_label' => \App\Support\CatalogRarity::label($this->catalogItem->rarity_code),
         ];
     }
 }
