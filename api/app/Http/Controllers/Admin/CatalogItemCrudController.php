@@ -368,9 +368,9 @@ class CatalogItemCrudController extends CrudController
                 'label' => 'Escala',
                 'type' => 'number',
                 'default' => 1,
-                'attributes' => ["step" => "1", "min" => "1"],
+                'attributes' => ['step' => '0.05', 'min' => '0.05', 'max' => '8'],
                 'wrapper' => ['class' => 'form-group col-md-4'],
-                'hint' => 'Factor de escala para el objeto en la escena. 1 = tamaño original, 2 = el doble de grande, etc.',
+                'hint' => 'Escala del objeto en Phaser (0.05–8); mantener la proporción de la textura original.',
                 'tab' => 'Configuración'
             ],
             [
