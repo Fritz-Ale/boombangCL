@@ -15,6 +15,8 @@ on:
       - 'client/src/views/components/auth/LoginFormComponent.vue'
       - 'client/tests/live-state-sync.test.cjs'
       - 'server/src/controllers/game/islands/GetPublicIslandsController.js'
+      - 'server/src/controllers/game/islands/UpdateIslandNameController.js'
+      - 'server/src/controllers/game/islands/UpdateIslandDescriptionController.js'
       - 'server/src/models/PrivateSceneModel.js'
       - 'server/src/tasks/RemoveUserFromSceneTask.js'
       - 'server/tests/live-island-presence.test.cjs'
