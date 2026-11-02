@@ -3,7 +3,7 @@ import AnimationsTimerEnum from "../../../enums/AnimationsTimerEnum.js";
 import UserMoveDeniedController from "../scene/UserMoveDeniedController.js";
 import gameConfig from "@/config/gameConfig.js";
 
-//TODO: Codigo obsoleto, siempre se recibe 1 posición en el path
+// El servidor envía un paso por evento; mantenemos la animación hasta el último.
 class MoveUserController {
     /**
      * Llamada principal para iniciar el movimiento del jugador por un path.
@@ -38,6 +38,7 @@ class MoveUserController {
         // Detener tweens existentes
         if (user.currentTween) {
             user.currentTween.stop();
+            user.currentTween = null;
         }
         gameScene.tweens.killTweensOf(user.containerUser);
 
@@ -127,8 +128,9 @@ class MoveUserController {
             gameScene
         );
 
-        // Crea el tween de movimiento y almacena el tween actual para futuras referencias
-        user.currentTween = gameScene.tweens.add({
+        // Continuar la marcha entre pasos; solamente el último pasa a idle.
+        let tween;
+        tween = gameScene.tweens.add({
             targets: user.containerUser,
             x: centerX,
             y: centerY,
@@ -147,9 +149,10 @@ class MoveUserController {
                 }
             },
             onComplete: () => {
-                // Al terminar el movimiento, detenemos la animación
-                user.spriteAvatar.stop();
-                
+                // Ignorar un tween antiguo si llegó otro movimiento durante su ejecución.
+                if (user.currentTween !== tween) return;
+                user.currentTween = null;
+
                 // Update user's current position for WALKABLE_OVERLAY depth management
                 user.currentAreaPosition = { x: step.x, y: step.y };
                 
@@ -163,6 +166,7 @@ class MoveUserController {
                 }
             }
         });
+        user.currentTween = tween;
     }
 }
 

@@ -30,8 +30,10 @@ class UserMoveController {
             }
 
             if (
+                !Number.isInteger(targetX) || !Number.isInteger(targetY) ||
                 targetX < 0 || targetX >= user.currentArea.map_width ||
                 targetY < 0 || targetY >= user.currentArea.map_height ||
+                !Array.isArray(user.currentArea.game_map[targetY]) ||
                 user.currentArea.game_map[targetY][targetX] !== 0
             ) {
                 //console.log('Posición objetivo no válida');

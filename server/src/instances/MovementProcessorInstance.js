@@ -14,16 +14,28 @@ class MovementProcessorInstance {
     constructor(scene) {
         this.scene = scene;
         this.processing = false;
+        this.movementTimer = null;
         this.#startReservationCleanup();
     }
 
     startProcessing() {
+        if (this.processing) return;
         this.processing = true;
         const processMovement = async () => {
             if (!this.processing) return;
-            const movers = this.scene.users.filter(user => user.finalTarget);
-            await Promise.all(movers.map(user => this.processUserMovement(user)));
-            setTimeout(processMovement, AnimationBlockTimerEnum.WALK);
+            const startedAt = Date.now();
+            try {
+                const movers = this.scene.users.filter(user => user.finalTarget);
+                await Promise.all(movers.map(user => this.processUserMovement(user)));
+            } catch (err) {
+                logger.log(`Error en ciclo de movimiento: ${err.message}`, 'error');
+            } finally {
+                if (this.processing) {
+                    // Mantener la cadencia: el tiempo de pathfinding cuenta dentro de los 630 ms.
+                    const delay = Math.max(0, AnimationBlockTimerEnum.WALK - (Date.now() - startedAt));
+                    this.movementTimer = setTimeout(processMovement, delay);
+                }
+            }
         };
         processMovement();
     }
@@ -342,6 +354,10 @@ class MovementProcessorInstance {
 
     stopProcessing() {
         this.processing = false;
+        if (this.movementTimer !== null) {
+            clearTimeout(this.movementTimer);
+            this.movementTimer = null;
+        }
         if (this.cleanupInterval) {
             clearInterval(this.cleanupInterval);
             this.cleanupInterval = null;

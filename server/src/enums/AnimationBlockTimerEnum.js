@@ -5,7 +5,7 @@ const AnimationBlockTimerEnum = new Enum({
     UPPERCUT_SEND: 12000,
     UPPERCUT_RECEIVE: 15000,
     CHAT: 200,
-    WALK: 750,
+    WALK: 630,
     BOOMER_LAUGHTER_1: 5000,
     BOOMER_LAUGHTER_2: 5000,
     BOOMER_CRY: 5000,
