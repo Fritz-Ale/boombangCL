@@ -471,9 +471,13 @@ class CreateSceneController {
   static async createUsers(gameScene, usersData, authUserData) {
     // Crear los jugadores iniciales de manera secuencial para evitar condiciones de carrera
     try {
-      for (let i = 0; i < usersData.length; i++) {
-        const userData = usersData[i];
-        await AddUserController.main(gameScene, userData);
+      for (const userData of (usersData || [])) {
+        try {
+          // Los jugadores iniciales se renderizan antes de activar el buffer de sockets.
+          await AddUserController.processUser(gameScene, userData);
+        } catch (error) {
+          console.error("Error creando jugador inicial:", userData?.id, error);
+        }
       }
 
       SetUserCardController.main(gameScene, authUserData, authUserData);
