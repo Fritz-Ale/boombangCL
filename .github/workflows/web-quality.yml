@@ -1,0 +1,32 @@
+name: Portal UI and UX checks
+
+on:
+  pull_request:
+    paths:
+      - 'web/**'
+      - '.github/workflows/web-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify script syntax
+        run: |
+          node --check web/script.js
+          node --check web/comunidad.js
+          sh -n web/build-pages.sh
+      - name: Validate pages, links, accessibility and agenda
+        run: node --test web/tests/*.test.cjs
+      - name: Check Cloudflare Pages output
+        run: |
+          sh web/build-pages.sh
+          test -f web/screenshots/portada.png
+          test -f web/screenshots/sala-publica.png
