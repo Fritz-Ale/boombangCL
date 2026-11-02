@@ -418,7 +418,8 @@
     "tabs": {
       "areas": "Зоны",
       "games": "Игры",
-      "islands": "Острова"
+      "islands": "Острова",
+      "search": "Поиск"
     },
     "my_islands": {
       "no_islands": "У вас нет созданных островов."
