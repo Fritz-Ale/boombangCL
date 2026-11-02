@@ -41,6 +41,9 @@ class SmartAvatarSystem extends EventEmitter {
             // Las texturas son globales, pero la carga debe usar la escena activa.
             this.currentScene = scene;
             backgroundAvatarLoader.currentScene = scene;
+            if (backgroundAvatarLoader.isPaused) {
+                backgroundAvatarLoader.resume();
+            }
             return;
         }
 
