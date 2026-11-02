@@ -210,16 +210,24 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
         try {
             $userId = Auth::id();
             DB::transaction(function () use ($validated, $userId) {
-                $item = UserCatalogItem::with('catalogItem')
-                    ->whereKey($validated['user_catalog_item_id'])
+                // Keep lock ordering identical to putItem (scene before item).
+                $sceneId = UserCatalogItem::whereKey($validated['user_catalog_item_id'])
                     ->where('user_id', $userId)
-                    ->whereNotNull('private_scene_id')
+                    ->value('private_scene_id');
+                if (!$sceneId) {
+                    throw new \InvalidArgumentException('El objeto no está colocado.');
+                }
+
+                $scene = PrivateScene::with('privateSceneConfig')
+                    ->whereKey($sceneId)
+                    ->where('user_id', $userId)
                     ->lockForUpdate()
                     ->firstOrFail();
 
-                $scene = PrivateScene::with('privateSceneConfig')
-                    ->whereKey($item->private_scene_id)
+                $item = UserCatalogItem::with('catalogItem')
+                    ->whereKey($validated['user_catalog_item_id'])
                     ->where('user_id', $userId)
+                    ->where('private_scene_id', $scene->id)
                     ->lockForUpdate()
                     ->firstOrFail();
 
