@@ -28,6 +28,8 @@ on:
       - 'server/tests/scene-object-id-consistency.test.cjs'
       - 'server/tests/island-deletion-db-first.test.cjs'
       - 'server/tests/island-delete-lobby-refresh.test.cjs'
+      - 'server/tests/private-scenes-id-normalization.test.cjs'
+      - 'server/src/collections/PrivateScenesCollection.js'
       - 'server/src/controllers/game/islands/DeleteIslandController.js'
       - 'server/src/controllers/game/private-scenes/DeletePrivateSceneController.js'
       - 'server/src/controllers/game/inventory/GetPublicInventoryController.js'
@@ -69,6 +71,8 @@ jobs:
         run: node --test server/tests/island-deletion-db-first.test.cjs
       - name: Verify lobby refresh after island removal
         run: node --test server/tests/island-delete-lobby-refresh.test.cjs
+      - name: Test room ID matching and island cleanup
+        run: node --test server/tests/private-scenes-id-normalization.test.cjs
       - name: Install HTML5 dependencies
         working-directory: client
         run: npm ci --no-audit --no-fund
