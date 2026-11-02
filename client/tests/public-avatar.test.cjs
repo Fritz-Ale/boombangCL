@@ -175,3 +175,12 @@ test('cargador esencial emite el evento sólo después de que el atlas existe', 
     assert.deepEqual(events, [12]);
     assert.equal(Background.loadedAvatars.has(12), true);
 });
+
+test('direccion inicial vacia o cero conserva una animacion idle visible', () => {
+    const Idle = new Function('DirectionEnum', 'AvatarAnimationsEnum',
+        'AnimationUtils', src('animations/UserIdleAnimation.js') +
+        '\nreturn UserIdleAnimation;'
+    )({ DOWN: 2, LEFT: 8 }, { DOWN_IDLE: 'down_idle', LEFT_IDLE: 'left_idle' }, {});
+    assert.equal(Idle.getTextureKey(0), 'down_idle');
+    assert.equal(Idle.getTextureKey(undefined), 'down_idle');
+});
