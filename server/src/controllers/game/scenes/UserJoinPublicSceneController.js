@@ -25,7 +25,11 @@ class UserJoinPublicSceneController {
                 PublicScenesCollection.getByUid(data.sceneUuid) :
                 GameScenesCollection.getByUid(data.sceneUuid);
             if (!scene) {
-                throw new Error("Scene not found");
+                socket.emit(ResponseSocketsEnum.JOIN_PUBLIC_SCENE, {
+                    success: false,
+                    message: 'La sala solicitada no existe'
+                });
+                return;
             }
             if (scene.containsUser(user) || user.currentArea) {
                 logger.log(`User ${user.username} already in area, skipping join request`, 'warn');
@@ -47,6 +51,13 @@ class UserJoinPublicSceneController {
                 
                 if (!added) {
                     logger.log(`Failed to add user ${user.username} to scene ${scene.name}, user already present`, 'warn');
+                    if (!scene.containsUser(user)) {
+                        user.setArea(null);
+                    }
+                    socket.emit(ResponseSocketsEnum.JOIN_PUBLIC_SCENE, {
+                        success: false,
+                        message: 'No se pudo ingresar a la sala'
+                    });
                     return;
                 }
                 
