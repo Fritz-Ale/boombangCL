@@ -71,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import socket from '@/sockets/socket';
 import RequestSocketsEnum from '@/enums/RequestSocketsEnum';
 import ResponseSocketsEnum from '@/enums/ResponseSocketsEnum';
@@ -153,15 +153,44 @@ const loadInventory = () => {
   socket.emit(RequestSocketsEnum.GET_PUBLIC_INVENTORY);
 };
 
-onMounted(() => {
-  loadInventory();
+// Los eventos del servidor son autoritativos: no sumar objetos antes de confirmar.
+const onInventoryData = (data) => {
+  loading.value = false;
+  if (data?.success && Array.isArray(data.inventory)) {
+    inventoryItems.value = data.inventory;
+  }
+};
 
-  socket.on(ResponseSocketsEnum.PUBLIC_INVENTORY_DATA, (data) => {
-    loading.value = false;
-    if (data.inventory) {
-      inventoryItems.value = data.inventory;
-    }
-  });
+const onInventoryItemAdded = (data) => {
+  const item = data?.item;
+  if (item?.id == null) return;
+  if (inventoryItems.value.some(existing => String(existing.id) === String(item.id))) return;
+  inventoryItems.value = [...inventoryItems.value, { ...item, private_scene_id: null }];
+};
+
+const onInventoryItemRemoved = (data) => {
+  const itemId = data?.user_catalog_item_id;
+  if (itemId == null) return;
+  inventoryItems.value = inventoryItems.value.filter(item => String(item.id) !== String(itemId));
+};
+
+// No dejar la UI en una página vacía tras comprar o colocar varios objetos.
+watch(totalPages, (pages) => {
+  currentPage.value = Math.max(0, Math.min(currentPage.value, pages - 1));
+});
+
+onMounted(() => {
+  // Registrar ANTES de solicitar el snapshot, sin borrar listeners de otros módulos.
+  socket.on(ResponseSocketsEnum.PUBLIC_INVENTORY_DATA, onInventoryData);
+  socket.on(ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY, onInventoryItemAdded);
+  socket.on(ResponseSocketsEnum.REMOVE_ITEM_FROM_INVENTORY, onInventoryItemRemoved);
+  loadInventory();
+});
+
+onUnmounted(() => {
+  socket.off(ResponseSocketsEnum.PUBLIC_INVENTORY_DATA, onInventoryData);
+  socket.off(ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY, onInventoryItemAdded);
+  socket.off(ResponseSocketsEnum.REMOVE_ITEM_FROM_INVENTORY, onInventoryItemRemoved);
 });
 </script>
 
