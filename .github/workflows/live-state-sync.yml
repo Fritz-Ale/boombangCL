@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'client/src/App.vue'
+      - 'client/src/phaser/PrivateScene.js'
+      - 'client/src/views/screens/game/scenes/PrivateSceneScreen.vue'
       - 'client/src/sockets/socket.js'
       - 'client/src/views/screens/game/GameScreens.vue'
       - 'client/src/views/screens/game/LobbyScreen.vue'
