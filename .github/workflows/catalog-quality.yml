@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'api/app/Support/CatalogRarity.php'
+      - 'api/app/Support/PrivateScenePlacementValidator.php'
       - 'api/app/Console/Commands/**'
       - 'api/app/Models/CatalogItem.php'
       - 'api/app/Http/Controllers/Internal/**'
@@ -13,6 +14,7 @@ on:
       - 'api/database/reference/**'
       - 'api/database/seeders/CatalogReferenceSeeder.php'
       - 'api/tests/Standalone/catalog-rarity.php'
+      - 'api/tests/Standalone/private-scene-placement.php'
       - 'client/tests/**'
       - 'scripts/install_catalog_assets_local.py'
       - 'scripts/tests/**'
@@ -46,6 +48,8 @@ jobs:
       - name: Parse catalog and island PHP files
         run: |
           php -l api/app/Support/CatalogRarity.php
+          php -l api/app/Support/PrivateScenePlacementValidator.php
+          php -l api/tests/Standalone/private-scene-placement.php
           php -l api/app/Console/Commands/ImportLicensedCatalogArt.php
           php -l api/app/Models/CatalogItem.php
           php -l api/app/Http/Controllers/Internal/ShopController.php
@@ -55,7 +59,9 @@ jobs:
           php -l api/database/seeders/CatalogReferenceSeeder.php
           php -l api/database/migrations/2026_11_02_150000_add_rarity_and_reference_fields_to_catalog_items.php
       - name: Validate rarity boundaries and reference inventory
-        run: php api/tests/Standalone/catalog-rarity.php
+        run: |
+          php api/tests/Standalone/catalog-rarity.php
+          php api/tests/Standalone/private-scene-placement.php
 
   client:
     runs-on: ubuntu-latest
