@@ -23,6 +23,28 @@ class PrivateSceneModel extends SceneModel {
         this.island = new IslandModel(row.island); // Isla asociada a la escena
         this.island_id = row.island_id; // ID de la isla a la que pertenece la escena
         this.user_id = row.user_id; // ID del usuario propietario de la escena
+        this.rebuildObjectNavigationMap();
+    }
+
+    /**
+     * Recomponer la navegación desde el suelo y TODOS los muebles.
+     * Nunca marcar a mano una casilla como libre: puede contener otro mueble
+     * o pertenecer a terreno originalmente no transitable.
+     */
+    rebuildObjectNavigationMap() {
+        this.navigationMapBase = this.game_map.map(row => [...row]);
+        for (const object of this.objects) {
+            if (object.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE ||
+                object.type_of_behavior === CatalogItemTypeOfBehaviorEnum.WALKABLE_OVERLAY) continue;
+            for (const tile of object.occupied_tiles || []) {
+                if (!Array.isArray(tile) || tile.length !== 2) continue;
+                const [x, y] = tile;
+                if (Number.isInteger(x) && Number.isInteger(y) &&
+                    this.navigationMapBase[y] && this.navigationMapBase[y][x] === 0) {
+                    this.navigationMapBase[y][x] = 1;
+                }
+            }
+        }
     }
 
     /**
