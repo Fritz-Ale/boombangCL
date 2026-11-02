@@ -328,6 +328,13 @@ class CatalogItemCrudController extends CrudController
                 'tab' => 'Configuración',
             ],
             [
+                'name' => 'asset_rights_evidence',
+                'label' => 'Evidencia de autoría o licencia',
+                'type' => 'textarea',
+                'hint' => 'Anotar autor, licencia y comprobante. No activar imágenes de terceros sin autorización.',
+                'tab' => 'Configuración',
+            ],
+            [
                 'name' => 'map_size',
                 'label' => 'Tamaño del Mapa',
                 'type' => 'text',
