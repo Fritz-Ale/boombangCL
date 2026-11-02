@@ -44,6 +44,29 @@ docker compose cp api/public/uploads/. api:/var/www/html/public/uploads/
 
 No ejecutes este comando contra producción ni lo automatices sin resolver antes los permisos de uso de los assets.
 
+## La causa de las URL incorrectas en Docker/Nginx
+
+El Dockerfile del cliente compila Vue/Phaser y sirve `dist/` mediante Nginx, que no expone `/uploads` ni tiene reglas de proxy. Cuando el cliente se compilaba con `VITE_APP_ENV=local`, `PublicSceneLoader` solicitaba recursos relativos a ese Nginx, aunque las texturas existieran únicamente en el host Laravel. La corrección ahora usa `base_api_url`, enviado por Laravel, para fondos, NPC, flechas y objetos, y respeta rutas absolutas entregadas por la API.
+
+**Requisito de despliegue:** configurar `APP_URL` de Laravel con la URL pública real de la API accesible desde el navegador (HTTPS en sitios HTTPS), y permitir los orígenes del cliente mediante las políticas CORS correspondientes. No basta una URL interna de Docker como `http://api`. La compilación del frontend por sí sola no verifica la conectividad con Laravel.
+
+## Diagnóstico real del volumen Docker (sin modificar datos)
+
+El nuevo comando Artisan inspecciona los archivos reales que Laravel sirve desde `public/uploads`, también cuando Docker monta el volumen `api_uploads`:
+
+```bash
+docker compose exec api php artisan game:audit-public-scene-assets --scene=1
+docker compose exec api php artisan game:audit-public-scene-assets
+```
+
+También funciona fuera de Docker desde la carpeta `api`:
+
+```bash
+php artisan game:audit-public-scene-assets --scene=1
+```
+
+El comando muestra `APP_URL`, la ruta `public/` y el estado de los fondos. Devuelve error si faltan, están vacíos o existe una ruta no verificable. **No escribe ni extrae recursos ni modifica MySQL**. Aunque todos aparezcan como `OK`, falta verificar HTTP 200, HTTPS, CORS y la representación real de Phaser.
+
 ## Comprobación real antes de declarar solucionada UFO
 
 1. Confirmar que la base de datos utilizada por el juego contiene `public_scenes.id=1` con `assets_data` y la referencia al fondo.
