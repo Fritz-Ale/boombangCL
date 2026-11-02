@@ -11,27 +11,30 @@ class PublicSceneLoader {
 
         if (preload) {
             this.#preload(areaId, assets, npc, gameScene, baseApiUrl);
-            this.#loadItems(gameScene);
-            this.#loadArrows(gameScene);
+            this.#loadItems(gameScene, baseApiUrl);
+            this.#loadArrows(gameScene, baseApiUrl);
         }
         else {
             this.#load(areaId, assets, npc, gameScene);
         }
     }
 
-    static #assetUrl(value, baseApiUrl, environment) {
+    static #assetUrl(value, baseApiUrl) {
         if (typeof value !== 'string' || !value.trim()) return '';
-        if (/^(https?:|data:|blob:|\/\/)/i.test(value)) return value;
-        if (environment === 'local') return value;
-        return baseApiUrl + value.replace(/^\/+/, '');
+        const source = value.trim();
+        if (/^(https?:|data:|blob:|\/\/)/i.test(source)) return source;
+        // VITE_APP_ENV=local también puede estar en un bundle servido por
+        // nginx. Allí /uploads no existe: todos los recursos de escena están
+        // en el host público de Laravel, no en el host estático del cliente.
+        const path = source.replace(/^\/+/, '');
+        return baseApiUrl + path;
     }
 
     static #preload(areaId, assets, npc, gameScene, baseApiUrl) {
-        const viteEnv = import.meta.env.VITE_APP_ENV;
         assets.forEach((asset, index) => {
             if (!asset || typeof asset !== 'object') return;
             const spriteName = 'public_scene_' + areaId + '_item_' + index;
-            const assetSrc = this.#assetUrl(asset.image, baseApiUrl, viteEnv);
+            const assetSrc = this.#assetUrl(asset.image, baseApiUrl);
             // Phaser cannot load an empty URL. Skip it and report a missing
             // resource during rendering rather than crashing the whole scene.
             if (!assetSrc) return;
@@ -43,7 +46,7 @@ class PublicSceneLoader {
         });
         if (npc && npc.active) {
             const spriteName = 'public_scene_' + areaId + '_npc_' + (npc.spriteName ?? npc.sprite_name ?? npc.stripeName);
-            const npcSrc = this.#assetUrl(npc.image, baseApiUrl, viteEnv);
+            const npcSrc = this.#assetUrl(npc.image, baseApiUrl);
             if (!npcSrc) return;
             if (SceneUtils.isVideoFile(npcSrc)) {
                 gameScene.load.video(spriteName, npcSrc);
@@ -215,28 +218,31 @@ class PublicSceneLoader {
         gameScene.events?.emit('public-scene-asset-warning', detail);
     }
 
-    static #loadArrows(gameScene) {
-        if (!gameScene.sceneData.scenery.arrows || gameScene.sceneData.scenery.arrows.length === 0) {
-            return;
-        }
-        const viteEnv = import.meta.env.VITE_APP_ENV;
-        for (const arrow of gameScene.sceneData.scenery.arrows) {
-            const assetSpriteFile = viteEnv == 'local' ? arrow.image : arrow.image_url;
-            if (typeof assetSpriteFile !== 'string' || !assetSpriteFile.trim()) continue;
+    static #loadArrows(gameScene, baseApiUrl) {
+        const arrows = gameScene.sceneData.scenery.arrows;
+        if (!Array.isArray(arrows)) return;
+        for (const arrow of arrows) {
+            if (!arrow || typeof arrow !== 'object') continue;
+            const assetSpriteFile = this.#assetUrl(arrow.image_url || arrow.image, baseApiUrl);
+            if (!assetSpriteFile) continue;
             gameScene.load.image('arrow_' + arrow.sprite_name, assetSpriteFile);
         }
     }
 
-    static async #loadItems(gameScene) {
-        const viteEnv = import.meta.env.VITE_APP_ENV;
-        for (const item of (gameScene.sceneData.scenery.items || [])) {
-            const assetSpriteFile = viteEnv == 'local' ? item.sprite_file : item.sprite_file_url;
-            if (typeof assetSpriteFile === 'string' && assetSpriteFile.trim()) {
+    static #loadItems(gameScene, baseApiUrl) {
+        const items = gameScene.sceneData.scenery.items;
+        if (!Array.isArray(items)) return;
+        for (const item of items) {
+            if (!item || typeof item !== 'object') continue;
+            const assetSpriteFile = this.#assetUrl(item.sprite_file_url || item.sprite_file, baseApiUrl);
+            if (assetSpriteFile) {
                 gameScene.load.image('item_' + item.file_name, assetSpriteFile);
             }
             if (item.catch_file_name) {
-                const assetCatchSpriteFile = viteEnv == 'local' ? item.catch_sprite_file : item.catch_sprite_file_url;
-                if (typeof assetCatchSpriteFile === 'string' && assetCatchSpriteFile.trim()) {
+                const assetCatchSpriteFile = this.#assetUrl(
+                    item.catch_sprite_file_url || item.catch_sprite_file, baseApiUrl
+                );
+                if (assetCatchSpriteFile) {
                     gameScene.load.image('item_' + item.catch_file_name, assetCatchSpriteFile);
                 }
             }
