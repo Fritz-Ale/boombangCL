@@ -1,0 +1,58 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+
+test('placing item with string inventory ID accepts numeric socket ID and reserves tiles', async () => {
+  const source = fs.readFileSync(path.join(__dirname, '../src/controllers/game/private-scenes/PutItemPrivateSceneController.js'), 'utf8');
+  const sceneEvents = [], socketEvents = [];
+  const item = { id:'44', map_size:[[0,0]], occupied_tiles:[], type_of_behavior:0 };
+  const scene = { id:8, user_id:'3', scene_type:'private', objects:[], max_objects:20,
+    game_map:[[0,0],[0,0]], map_rows:2, map_cols:2, rebuildObjectNavigationMap() {},
+    emit(event, payload) {sceneEvents.push([event,payload]);} };
+  const user = { id:'3', currentArea:scene, inventory:[item] };
+  const socket = { id:'test', emit(event,payload) {socketEvents.push([event,payload]);} };
+  const sandbox = {module:{exports:{}}, console:{error() {}}, require(name) {
+    const deps = {
+      '../../../utils/Log':{error() {}},
+      '../../../collections/ConnectedUsersCollection':{getBySocketId:()=>user},
+      '../../../enums/SceneTypesEnum':{PRIVATE_SCENE:'private'},
+      '../../../enums/ResponseSocketsEnum':{SCENE_PUT_ITEM:'put', REMOVE_ITEM_FROM_INVENTORY:'remove'},
+      '../../../services-api/PrivateSceneApiService':{async putItem() {return {success:true};}},
+      '../../../enums/CatalogItemTypeOfBehaviorEnum':{WALKABLE:1,WALKABLE_OVERLAY:2}
+    };
+    if (!(name in deps)) throw new Error(name);
+    return deps[name];
+  }};
+  vm.runInNewContext(source,sandbox);
+  await sandbox.module.exports.main(socket,{}, {user_catalog_item_id:44,occupied_tiles:[[1,1]],is_move:false});
+  assert.equal(user.inventory.length,0);
+  assert.equal(scene.objects.length,1);
+  assert.equal(sceneEvents.filter(([event])=>event==='put').length,1);
+  assert.equal(socketEvents.filter(([event])=>event==='remove').length,1);
+  assert.equal(scene._catalogMutationPending,false);
+});
+test('moving existing object excludes itself from collision when serialized ID is a string', async () => {
+  const source = fs.readFileSync(path.join(__dirname, '../src/controllers/game/private-scenes/PutItemPrivateSceneController.js'), 'utf8');
+  let persisted=0;
+  const item = {id:'44',map_size:[[0,0]],occupied_tiles:[[0,0]],type_of_behavior:0};
+  const scene = {id:8,user_id:'3',scene_type:'private',objects:[item],max_objects:20,game_map:[[0,0],[0,0]],map_rows:2,map_cols:2,
+    rebuildObjectNavigationMap(){},emit(){}};
+  const user={id:'3',currentArea:scene,inventory:[]};
+  const socket={id:'test',emit(){}};
+  const dependencies={
+    '../../../utils/Log':{error(){}},
+    '../../../collections/ConnectedUsersCollection':{getBySocketId:()=>user},
+    '../../../enums/SceneTypesEnum':{PRIVATE_SCENE:'private'},
+    '../../../enums/ResponseSocketsEnum':{SCENE_PUT_ITEM:'put'},
+    '../../../services-api/PrivateSceneApiService':{async updateItemPosition(){persisted++;return {success:true};}},
+    '../../../enums/CatalogItemTypeOfBehaviorEnum':{WALKABLE:1,WALKABLE_OVERLAY:2}
+  };
+  const sandbox={module:{exports:{}},console:{error(){}},require(key){return dependencies[key];}};
+  vm.runInNewContext(source,sandbox);
+  await sandbox.module.exports.main(socket,{}, {user_catalog_item_id:44,occupied_tiles:[[0,0]],is_move:true});
+  assert.equal(persisted,1);
+  assert.equal(item.occupied_tiles[0][0],0);
+});
