@@ -14,7 +14,7 @@ un navegador conectado al juego, una base de datos operativa ni acceso al direct
 | Portal, header y footer; enfoque responsive, navegación y estados honestos | #6 | Tests de páginas y navegación |
 | Avatares de salas públicas y 630 ms/casilla | #7 | Tests de texturas, fallback y temporización |
 | Integridad de salas, mutex FIFO, puertas y límites del mapa | #9 | Tests de concurrencia y rutas |
-| API: token del emulador, ruta de desarrollo, PDO 8.5 | #11 | PHPUnit aislado/sintaxis en matriz PHP (ver CI) |
+| API: token del emulador, ruta de desarrollo, PDO 8.5 | #11 | Pruebas aisladas/sintaxis en matriz PHP (ver CI) |
 | Cliente Vue: CSS, lobby accesible, reintentos y limpieza Socket.IO | #12 | Tests y compilación Vite/Phaser |
 
 Los PRs se mantienen en borrador; primero revisar los resultados de CI y después las pruebas de integración.
@@ -49,6 +49,7 @@ cd ~/Desktop/Alejandro/proyecto/boombangCL
 git status
 node --test web/tests/*.test.cjs
 node --test client/tests/*.test.cjs
+cd server && npm ci --no-audit --no-fund && cd ..
 node --test server/tests/*.test.cjs
 cd client && npm ci && npm run build
 ```
