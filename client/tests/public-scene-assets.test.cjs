@@ -27,7 +27,7 @@ const loader = vm.runInNewContext(
 );
 
 function fakeScene(assets, { loadedImages = [], loadedVideos = [], npc = null } = {}) {
-    const result = { imageLoads: [], videoLoads: [], drawnImages: [], drawnVideos: [], warnings: [], cameraColor: null };
+    const result = { imageLoads: [], videoLoads: [], drawnImages: [], drawnVideos: [], notices: [], warnings: [], cameraColor: null };
     const sprite = () => {
         const object = {
             setOrigin: () => object,
@@ -37,6 +37,7 @@ function fakeScene(assets, { loadedImages = [], loadedVideos = [], npc = null } 
             setLoop: () => object,
             play: () => object,
             setScale: () => object,
+            setScrollFactor: () => object,
             setInteractive: () => object,
             on: () => object
         };
@@ -60,7 +61,8 @@ function fakeScene(assets, { loadedImages = [], loadedVideos = [], npc = null } 
         textures: { exists: (key) => loadedImages.includes(key) },
         add: {
             image: (...args) => { result.drawnImages.push(args); return sprite(); },
-            video: (...args) => { result.drawnVideos.push(args); return sprite(); }
+            video: (...args) => { result.drawnVideos.push(args); return sprite(); },
+            text: (...args) => { result.notices.push(args); return sprite(); }
         },
         scale: { width: 800, height: 600 },
         cameras: { main: { setBackgroundColor: value => { result.cameraColor = value; } } },
@@ -83,6 +85,8 @@ test('an empty UFO asset collection never queues blank Phaser URLs or throws', (
     assert.equal(result.videoLoads.length, 0);
     loader.main(gameScene, false);
     assert.equal(result.cameraColor, '#274d65');
+    assert.equal(result.notices.length, 1);
+    assert.match(result.notices[0][2], /Fondo del escenario/);
     assert.equal(result.drawnImages.length, 0);
     assert.ok(result.warnings.some(w => w.detail.code === 'background_missing'));
 });
@@ -105,6 +109,7 @@ test('valid photo background loads from Laravel and retains its artwork', () => 
     loader.main(gameScene, false);
     assert.equal(result.drawnImages.length, 1);
     assert.equal(result.cameraColor, null);
+    assert.equal(result.notices.length, 0);
     assert.equal(result.warnings.length, 0);
 });
 
