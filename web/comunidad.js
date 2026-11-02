@@ -18,8 +18,9 @@
         return response.json();
       })
       .then(data => {
-        if (!Array.isArray(data)) return;
+        if (!Array.isArray(data)) throw new Error('Formato de agenda incorrecto');
         const valid = data.filter(event => {
+          if (!event || typeof event !== 'object' || Array.isArray(event)) return false;
           const date = Date.parse(event.fecha_utc);
           return Number.isFinite(date) && date >= Date.now() &&
             typeof event.titulo === 'string' && event.titulo.trim() &&
@@ -41,7 +42,15 @@
           events.append(card);
         });
       })
-      .catch(() => { /* Mantener mensaje estático; no inventar eventos */ });
+      .catch(() => {
+        // No presentar un error de red como si no existieran eventos.
+        events.replaceChildren();
+        const status = document.createElement('p');
+        status.className = 'cl-empty';
+        status.setAttribute('role', 'status');
+        status.textContent = 'No se pudo cargar la agenda. Vuelve a intentarlo más tarde.';
+        events.append(status);
+      });
   }
   const form = document.getElementById('idea-form');
   if (form) form.addEventListener('submit', event => {
@@ -62,8 +71,9 @@
     url.searchParams.set('title', issueTitle);
     url.searchParams.set('body', issueBody);
     const opened = window.open(url.toString(), '_blank', 'noopener,noreferrer');
-    status.textContent = 'El borrador se abrió en GitHub; revisa su contenido antes de publicarlo. Se requiere cuenta de GitHub.';
-    if (!opened) {
+    if (opened) {
+      status.textContent = 'Se abrió el borrador de GitHub. Revísalo antes de publicarlo.';
+    } else {
       const link = document.createElement('a');
       link.href = url.toString(); link.target = '_blank'; link.rel = 'noopener noreferrer';
       link.textContent = 'Abrir propuesta en GitHub';
