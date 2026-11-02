@@ -90,7 +90,7 @@ class AddUserController {
         setupNameTagCleanup(gameScene);
 
         // Usar el nuevo sistema inteligente de avatares
-        const requestedAvatarId = userData.avatar_id;
+        const requestedAvatarId = Number(userData.avatar_id) || AvatarEnum.RASTA;
         const avatarSelection = smartAvatarSystem.getAvatarForUser(userData.id, requestedAvatarId);
 
         //console.log(`👤 Usuario ${userData.username}: solicitado=${requestedAvatarId}, usando=${avatarSelection.avatarId}, fallback=${avatarSelection.isFallback}`);
@@ -121,7 +121,7 @@ class AddUserController {
         }
 
         // Si estamos usando fallback, configurar listener para actualización automática
-        if (avatarSelection.isFallback) {
+        if (avatarSelection.isFallback || !gameScene.textures.exists(`${this.avatarName(user.avatarId)}_atlas`)) {
             this.setupSmartAvatarUpdateListener(gameScene, user);
         }
 
@@ -209,9 +209,10 @@ class AddUserController {
         // Verificar que el atlas existe antes de crear el sprite
         if (!gameScene.textures.exists(atlasKey)) {
             //console.error(`❌ Atlas no encontrado para avatar ${userData.avatar_id}: ${atlasKey}`);
-            // Usar un sprite por defecto o placeholder
-            const spriteAvatar = gameScene.add.sprite(0, 0);
-            spriteAvatar.setVisible(false); // Ocultar hasta que se cargue
+            // Nunca dejar al jugador invisible: placeholder visible mientras se carga el atlas.
+            const spriteAvatar = gameScene.add.sprite(0, 0, "__MISSING");
+            spriteAvatar.setScale(gameScene.sceneScaleFactor || 1);
+            spriteAvatar.setDepth(1);
             spriteAvatar._avatarId = userData.avatar_id;
             spriteAvatar._z = userData.z;
             return spriteAvatar;
@@ -308,7 +309,7 @@ class AddUserController {
         // 5) Crear imagen de fondo usando la textura
         // Obtener el frame actual para calcular la altura real del avatar
         const currentFrame = spriteAvatar.frame;
-        const avatarHeight = currentFrame.height * spriteAvatar.scaleY;
+        const avatarHeight = (currentFrame?.height || spriteAvatar.height || 64) * spriteAvatar.scaleY;
 
         const namePadding = 3 * gameConfig.DPI;
         // Posicionar el nombre completamente por encima del avatar
@@ -376,7 +377,7 @@ class AddUserController {
             const currentX = user.spriteAvatar.x;
             const currentY = user.spriteAvatar.y;
             const currentDepth = user.spriteAvatar.depth;
-            const currentZ = user.spriteAvatar._z;
+            const currentZ = user.position?.z ?? user.spriteAvatar._z;
 
             // Obtener el atlas key correcto para el nuevo avatar
             const avatarName = this.avatarName(newAvatarId);
@@ -540,36 +541,41 @@ class AddUserController {
      * Configura listener inteligente para actualización automática de avatar
      */
     static setupSmartAvatarUpdateListener(gameScene, user) {
-        // Escuchar cuando el avatar original esté listo
-        const onAvatarReady = (data) => {
-            if (data.userId === user.username && data.avatarId === user.originalAvatarId) {
-                //console.log(`🔄 Actualizando avatar de ${user.username} de ${data.previousId} a ${data.avatarId}`);
+        if (user.avatarUpdateListenerAttached) return;
+        user.avatarUpdateListenerAttached = true;
 
-                // Actualizar el avatar del usuario
-                this.updateUserAvatarSmart(gameScene, user, data.avatarId);
-
-                // Actualizar información en el sistema
-                smartAvatarSystem.updateUserAvatar(user.username, data.avatarId);
-
-                // Marcar como no-fallback
-                user.isFallbackAvatar = false;
-                user.currentAvatarId = data.avatarId;
+        const refresh = (avatarId) => {
+            // No modificar jugadores que ya salieron de esta escena.
+            if (gameScene.users[user.socketId] !== user) return;
+            const key = `${this.avatarName(avatarId)}_atlas`;
+            if (!gameScene.textures.exists(key)) return;
+            if (this.updateUserAvatarSmart(gameScene, user, avatarId)) {
+                smartAvatarSystem.updateUserAvatar(user.socketId, avatarId);
             }
         };
 
-        // Registrar listener
+        const onAvatarReady = (data) => {
+            // SmartAvatarSystem registra los usuarios por socket ID, no por username.
+            if (data.userId === user.socketId && data.avatarId === user.originalAvatarId) {
+                refresh(data.avatarId);
+            }
+        };
+        const onAtlasLoaded = (data) => {
+            if (data.avatarId === user.originalAvatarId) {
+                refresh(data.avatarId);
+            } else if (data.avatarId === user.currentAvatarId &&
+                       user.spriteAvatar?.texture?.key === "__MISSING") {
+                refresh(data.avatarId);
+            }
+        };
         smartAvatarSystem.on('userAvatarReady', onAvatarReady);
-
-        // Limpiar listener cuando el usuario se desconecte
-        if (user.cleanupCallbacks) {
-            user.cleanupCallbacks.push(() => {
-                smartAvatarSystem.off('userAvatarReady', onAvatarReady);
-            });
-        } else {
-            user.cleanupCallbacks = [() => {
-                smartAvatarSystem.off('userAvatarReady', onAvatarReady);
-            }];
-        }
+        smartAvatarSystem.on('avatarBecameAvailable', onAtlasLoaded);
+        user.cleanupCallbacks = user.cleanupCallbacks || [];
+        user.cleanupCallbacks.push(() => {
+            smartAvatarSystem.off('userAvatarReady', onAvatarReady);
+            smartAvatarSystem.off('avatarBecameAvailable', onAtlasLoaded);
+            user.avatarUpdateListenerAttached = false;
+        });
     }
 
     /**
@@ -627,13 +633,16 @@ class AddUserController {
             // Destruir sprite anterior
             user.spriteAvatar.destroy();
 
-            // Actualizar referencias
+            // Actualizar las referencias también para caminar y las animaciones.
+            newSpriteAvatar.setVisible(true);
             user.spriteAvatar = newSpriteAvatar;
             user.currentAvatarId = newAvatarId;
-
-            //console.log(`✅ Avatar actualizado exitosamente para ${user.username} a ${newAvatarId}`);
+            user.avatarId = newAvatarId;
+            user.isFallbackAvatar = newAvatarId !== user.originalAvatarId;
+            return true;
         } catch (error) {
-            //console.error(`❌ Error actualizando avatar para ${user.username}:`, error);
+            console.warn("No se pudo actualizar el avatar:", user.socketId, error);
+            return false;
         }
     }
 }
