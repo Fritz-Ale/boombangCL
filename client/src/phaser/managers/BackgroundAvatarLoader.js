@@ -62,6 +62,8 @@ class BackgroundAvatarLoader extends EventEmitter {
 
         this.currentScene = scene;
         this.isInitialized = true;
+        // cleanup() pausa el cargador: hay que reanudarlo al entrar a otra sala.
+        this.isPaused = false;
         this.stats.startTime = Date.now();
 
         //console.log("🚀 BackgroundAvatarLoader inicializado");
