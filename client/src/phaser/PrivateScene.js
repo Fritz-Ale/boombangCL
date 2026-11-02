@@ -318,7 +318,7 @@ export default class PrivateScene extends Phaser.Scene {
         listen(ResponseSocketsEnum.SCENE_PUT_ITEM, (data) => {
             //console.log('📦 SCENE_PUT_ITEM received:', data);
             if (data.item) {
-                const existingItem = this.sceneItems.find(i => i.id === data.item.id);
+                const existingItem = this.sceneItems.find(i => String(i.id) === String(data.item.id));
                 //console.log('  Existing item?', existingItem ? 'YES (moving)' : 'NO (new item)');
 
                 if (existingItem) {
@@ -349,7 +349,7 @@ export default class PrivateScene extends Phaser.Scene {
 
                     if (assetExists) {
                         //console.log('  ✅ Asset exists, adding item to scene');
-                        this.sceneItems.push(item);
+                        if (!this.sceneItems.some(existing => String(existing.id) === String(item.id))) this.sceneItems.push(item);
                         this.markOccupiedTiles();
                         this.renderSceneObjects();
                         if (this.moveModeActive) {
@@ -362,7 +362,7 @@ export default class PrivateScene extends Phaser.Scene {
                             this.load.video(textureName, assetSrc);
                             this.load.once(`filecomplete-video-${textureName}`, () => {
                                 //console.log('  ✅ Video loaded, adding item to scene');
-                                this.sceneItems.push(item);
+                                if (!this.sceneItems.some(existing => String(existing.id) === String(item.id))) this.sceneItems.push(item);
                                 this.markOccupiedTiles();
                                 this.renderSceneObjects();
                                 if (this.moveModeActive) {
@@ -405,7 +405,7 @@ export default class PrivateScene extends Phaser.Scene {
                 //console.log('Socket event received:', ResponseSocketsEnum.ROTATE_OBJECT);
             }
             if (data.item) {
-                const existingItem = this.sceneItems.find(i => i.id === data.item.id);
+                const existingItem = this.sceneItems.find(i => String(i.id) === String(data.item.id));
                 if (existingItem && existingItem.sprite) {
                     // Rotate the sprite visually (flip horizontally)
                     existingItem.sprite.setFlipX(!existingItem.sprite.flipX);
@@ -422,6 +422,14 @@ export default class PrivateScene extends Phaser.Scene {
             }
         });
 
+        listen('scene_item_error', (data) => {
+            // La operación no se guardó: devolver el control al usuario sin
+            // cambiar su inventario ni dejar bloqueados los botones del objeto.
+            if (this.htmlDetailPanel?.enableButtons) this.htmlDetailPanel.enableButtons();
+            const message = data?.message || 'No fue posible actualizar el objeto.';
+            console.warn('[BoomBangCL] ' + message);
+            this.vueComponent?.$emit?.('sceneItemError', message);
+        });
         listen(ResponseSocketsEnum.PRIVATE_SCENE_COLORS_UPDATED, (data) => {
             if (import.meta.env.VITE_APP_ENV === "local") {
                 //console.log('Socket event received:', ResponseSocketsEnum.PRIVATE_SCENE_COLORS_UPDATED);
