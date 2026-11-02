@@ -30,7 +30,10 @@ def normalized_member(name: str) -> Path | None:
     if not name or name.startswith("/") or "\0" in name:
         raise ValueError(f"Ruta insegura en ZIP: {name!r}")
     # Backslashes must not be interpreted as filesystem escape sequences.
-    parts = name.replace("\\", "/").split("/")
+    normalized = name.replace("\\", "/")
+    if normalized.startswith("./"):
+        normalized = normalized[2:]
+    parts = normalized.split("/")
     if any(part in {"", ".", ".."} for part in parts):
         raise ValueError(f"Ruta insegura en ZIP: {name!r}")
     if parts[:2] == ["public", "uploads"]:
