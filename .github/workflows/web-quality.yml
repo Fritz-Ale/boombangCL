@@ -30,3 +30,7 @@ jobs:
           sh web/build-pages.sh
           test -f web/screenshots/portada.png
           test -f web/screenshots/sala-publica.png
+      - name: Build Docker portal and verify published pages
+        run: |
+          docker build -f web/Dockerfile -t boombangcl-portal:ci .
+          docker run --rm --entrypoint sh boombangcl-portal:ci -c 'for file in index.html comunidad.html mejoras.html styles.css comunidad.css ui-improvements.css script.js comunidad.js eventos.json screenshots/portada.png; do test -f "/usr/share/nginx/html/$file" || exit 1; done'
