@@ -1,0 +1,35 @@
+name: Public scene asset recovery (UFO)
+
+on:
+  pull_request:
+    paths:
+      - 'client/src/utils/SceneUtils.js'
+      - 'client/src/phaser/loaders/PublicSceneLoader.js'
+      - 'client/tests/public-scene-asset-recovery.test.cjs'
+      - '.github/workflows/public-scene-asset-recovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-scene-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Regressions for missing UFO backgrounds and versioned video
+        run: node --test client/tests/public-scene-asset-recovery.test.cjs
+      - name: Install exact frontend dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile production Vue and Phaser HTML5 client
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
