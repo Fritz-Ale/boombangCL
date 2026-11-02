@@ -237,7 +237,7 @@ class CatalogItem extends Model
         }
 
         // Si llega un archivo en base64 o UploadedFile
-        if (is_file($value) && $value->isValid()) {
+        if ($value instanceof UploadedFile && $value->isValid()) {
             // generar nombre único
             $filename = Str::random(40) . '.' . $value->getClientOriginalExtension();
 
@@ -246,6 +246,12 @@ class CatalogItem extends Model
 
             // guardar en BD solo la ruta
             $this->attributes[$attribute_name] = $path;
+            return;
+        }
+
+        // Aceptar rutas verificadas de assets importados desde CLI.
+        if (is_string($value)) {
+            $this->attributes[$attribute_name] = $value;
         }
     }
 
@@ -263,7 +269,7 @@ class CatalogItem extends Model
         }
 
         // Si llega un archivo en base64 o UploadedFile
-        if (is_file($value) && $value->isValid()) {
+        if ($value instanceof UploadedFile && $value->isValid()) {
             // generar nombre único
             $filename = Str::random(40) . '.' . $value->getClientOriginalExtension();
 
@@ -272,6 +278,11 @@ class CatalogItem extends Model
 
             // guardar en BD solo la ruta
             $this->attributes[$attribute_name] = $path;
+            return;
+        }
+
+        if (is_string($value)) {
+            $this->attributes[$attribute_name] = $value;
         }
     }
 }
