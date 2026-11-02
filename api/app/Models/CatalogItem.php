@@ -69,7 +69,8 @@ class CatalogItem extends Model
         'is_reference_only',
         'reference_copy_count',
         'reference_source_url',
-        'asset_rights_status'
+        'asset_rights_status',
+        'asset_rights_evidence'
     ];
 
     public $translatable = [
