@@ -16,7 +16,7 @@ class DeletePrivateSceneController {
                 return;
             }
 
-            const { sceneId } = data;
+            const { sceneId } = data || {};
 
             if (!sceneId) {
                 socket.emit(ResponseSocketsEnum.ERROR_PRIVATE_SCENE_DELETE, {
@@ -100,7 +100,7 @@ class DeletePrivateSceneController {
 
             socket.emit(ResponseSocketsEnum.ERROR_PRIVATE_SCENE_DELETE, {
                 message: errorMessage,
-                sceneId: data.sceneId
+                sceneId: data?.sceneId
             });
         }
     }
