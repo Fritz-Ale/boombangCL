@@ -15,7 +15,7 @@ const drainSceneEntryEvents = vm.runInNewContext(
 const publicSceneSource = fs.readFileSync(path.join(sourceRoot, 'PublicScene.js'), 'utf8');
 const PublicScene = vm.runInNewContext(
     publicSceneSource
-        .replace(/^import .*;\s*$/gm, '')
+        .replace(/^import [^\n]+$/gm, '')
         .replace(/import\.meta\.env/g, '({})')
         .replace('export default class PublicScene', 'class PublicScene') +
         '\nPublicScene;',
