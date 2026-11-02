@@ -80,26 +80,14 @@ class BackgroundAvatarLoader extends EventEmitter {
      * Sincroniza el estado con el AvatarManager para evitar cargas duplicadas
      */
     syncWithAvatarManager() {
-        if (avatarManager.loadedAvatars) {
-            // Copiar avatares ya cargados desde AvatarManager
-            avatarManager.loadedAvatars.forEach(avatarId => {
+        // No confiar en marcas de carga de una escena anterior.
+        this.loadedAvatars.clear();
+        if (!this.currentScene?.textures) return;
+        for (const avatarId of Object.values(AvatarEnum)) {
+            const atlasKey = `${avatarManager.getAvatarName(avatarId)}_atlas`;
+            if (this.currentScene.textures.exists(atlasKey)) {
                 this.loadedAvatars.add(avatarId);
-            });
-        }
-
-        // También verificar texturas existentes en Phaser
-        if (this.currentScene && this.currentScene.textures) {
-            const allAvatars = Object.values(AvatarEnum);
-            for (const avatarId of allAvatars) {
-                const textureKey = `${avatarManager.getAvatarName(avatarId)}_atlas`;
-                if (this.currentScene.textures.exists(textureKey)) {
-                    this.loadedAvatars.add(avatarId);
-                }
             }
-        }
-
-        if (this.loadedAvatars.size > 0) {
-            //console.log(`🔄 Sincronizado ${this.loadedAvatars.size} avatares ya cargados desde AvatarManager y texturas de Phaser`);
         }
     }
 
