@@ -95,6 +95,20 @@ class PublicSceneLoader {
             // playing field completely black. This is a neutral fallback, not
             // a substitute for authorized BoomBang artwork.
             gameScene.cameras?.main?.setBackgroundColor('#274d65');
+            // Aviso dentro del juego: consola/eventos por sí solos no explican
+            // al jugador por qué el escenario no aparece. No sustituye el arte.
+            if (typeof gameScene.add?.text === 'function') {
+                gameScene.add.text(
+                    12, 12, 'Fondo del escenario temporalmente no disponible',
+                    {
+                        fontFamily: 'Arial, sans-serif',
+                        fontSize: '14px',
+                        color: '#ffffff',
+                        backgroundColor: '#274d65',
+                        padding: { x: 8, y: 6 }
+                    }
+                ).setScrollFactor(0).setDepth(9500);
+            }
             this.#reportMissing(gameScene, 'background_missing', 'public_scene_' + areaId);
         }
 
