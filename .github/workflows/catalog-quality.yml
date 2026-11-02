@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'api/app/Support/CatalogRarity.php'
+      - 'api/app/Support/CatalogPurchasePricing.php'
       - 'api/app/Support/PrivateScenePlacementValidator.php'
       - 'api/app/Console/Commands/**'
       - 'api/app/Models/CatalogItem.php'
@@ -14,6 +15,7 @@ on:
       - 'api/database/reference/**'
       - 'api/database/seeders/CatalogReferenceSeeder.php'
       - 'api/tests/Standalone/catalog-rarity.php'
+      - 'api/tests/Standalone/catalog-purchase-pricing.php'
       - 'api/tests/Standalone/private-scene-placement.php'
       - 'client/tests/**'
       - 'scripts/install_catalog_assets_local.py'
@@ -48,6 +50,7 @@ jobs:
       - name: Parse catalog and island PHP files
         run: |
           php -l api/app/Support/CatalogRarity.php
+          php -l api/app/Support/CatalogPurchasePricing.php
           php -l api/app/Support/PrivateScenePlacementValidator.php
           php -l api/tests/Standalone/private-scene-placement.php
           php -l api/app/Console/Commands/ImportLicensedCatalogArt.php
@@ -61,6 +64,7 @@ jobs:
       - name: Validate rarity boundaries and reference inventory
         run: |
           php api/tests/Standalone/catalog-rarity.php
+          php api/tests/Standalone/catalog-purchase-pricing.php
           php api/tests/Standalone/private-scene-placement.php
 
   client:
