@@ -8,6 +8,7 @@ import RequestSocketsEnum from "@/enums/RequestSocketsEnum.js";
 import ShadowColorsEnum from "@/enums/ShadowColorsEnum.js";
 import NameColorsEnum from "@/enums/NameColorsEnum.js";
 import smartAvatarSystem from "../../managers/SmartAvatarSystem.js";
+import avatarManager from "../../managers/AvatarManager.js";
 import AvatarEnum from "@/enums/AvatarEnum.js";
 import gameConfig from "@/config/gameConfig.js";
 //import SceneUtils from "../../../utils/SceneUtils.js";
@@ -217,6 +218,9 @@ class AddUserController {
             spriteAvatar._z = userData.z;
             return spriteAvatar;
         }
+
+        // El atlas puede estar en caché aunque sus animaciones aún no se hayan creado.
+        avatarManager.createAvatarAnimations(gameScene, userData.avatar_id);
 
         // Crear sprite con el atlas correcto
         const spriteAvatar = gameScene.add.sprite(0, 0, atlasKey);
@@ -593,7 +597,7 @@ class AddUserController {
             const currentX = user.spriteAvatar.x;
             const currentY = user.spriteAvatar.y;
             const currentDepth = user.spriteAvatar.depth;
-            const currentZ = user.spriteAvatar._z;
+            const currentZ = user.position?.z ?? user.spriteAvatar._z;
 
             // Obtener el atlas key correcto para el nuevo avatar
             const avatarName = this.avatarName(newAvatarId);
