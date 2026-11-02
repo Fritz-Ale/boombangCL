@@ -64,7 +64,12 @@ class CatalogItem extends Model
         'reward_golden_coins',
         'reward_silver_coins',
         'min_purchase_quantity',
-        'max_purchase_quantity'
+        'max_purchase_quantity',
+        'rarity_code',
+        'is_reference_only',
+        'reference_copy_count',
+        'reference_source_url',
+        'asset_rights_status'
     ];
 
     public $translatable = [
