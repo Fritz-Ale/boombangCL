@@ -28,13 +28,19 @@ export default {
     };
   },
   mounted() {
-    socket.off(ResponseSocketsEnum.REFRESH_USER_CREDITS);
-    socket.on(ResponseSocketsEnum.REFRESH_USER_CREDITS, (data) => {
-      this.gold = data.gold;
-      this.silver = data.silver;
-    });
-
+    // Registrar solo el listener de esta instancia: no eliminar los de otras pantallas.
+    this.onCreditsRefresh = (data) => {
+      if (!data) return;
+      if (Number.isFinite(Number(data.gold))) this.gold = Number(data.gold);
+      if (Number.isFinite(Number(data.silver))) this.silver = Number(data.silver);
+    };
+    socket.on(ResponseSocketsEnum.REFRESH_USER_CREDITS, this.onCreditsRefresh);
     socket.emit(RequestSocketsEnum.REFRESH_USER_CREDITS);
+  },
+  beforeUnmount() {
+    if (this.onCreditsRefresh) {
+      socket.off(ResponseSocketsEnum.REFRESH_USER_CREDITS, this.onCreditsRefresh);
+    }
   },
 };
 </script>
