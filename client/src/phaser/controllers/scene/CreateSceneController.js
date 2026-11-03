@@ -470,17 +470,28 @@ class CreateSceneController {
   }
 
   static async createUsers(gameScene, usersData, authUserData) {
-    // Crear los jugadores iniciales de manera secuencial para evitar condiciones de carrera
-    try {
-      for (let i = 0; i < usersData.length; i++) {
-        const userData = usersData[i];
-        // El listado inicial debe existir antes de marcar la escena como lista.
-        await AddUserController.processUser(gameScene, userData);
+    // Una ficha o atlas defectuoso no puede impedir que aparezcan los demás kekos.
+    // Mantener el procesamiento secuencial para conservar el orden de las capas.
+    const players = Array.isArray(usersData) ? usersData : [];
+    for (const userData of players) {
+      if (userData?.id == null) {
+        console.warn("[BoomBangCL] Se omitió un jugador sin identificador en la sala.");
+        continue;
       }
+      try {
+        await AddUserController.processUser(gameScene, userData);
+      } catch (error) {
+        console.error("[BoomBangCL] No se pudo crear el keko", userData.id, error);
+      }
+    }
 
-      SetUserCardController.main(gameScene, authUserData, authUserData);
-    } catch (error) {
-      console.error("🎮 CreateSceneController: Error creando usuarios:", error);
+    // Un error de la tarjeta de usuario tampoco debe bloquear toda la sala.
+    if (authUserData) {
+      try {
+        SetUserCardController.main(gameScene, authUserData, authUserData);
+      } catch (error) {
+        console.error("[BoomBangCL] Error al mostrar la ficha del usuario:", error);
+      }
     }
   }
 
