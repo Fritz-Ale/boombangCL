@@ -17,7 +17,7 @@ class GetPublicSceneUsersController {
             const scene = user.currentArea;
             let players = [];
             for (const user of scene.users) {
-                players.push(UserResource.publicProfile(user));
+                players.push(new UserResource(user).toPublicObject());
             }
             socket.emit(ResponseSocketsEnum.GET_PUBLIC_SCENE_USERS, {
                 players: players
