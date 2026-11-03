@@ -13,7 +13,7 @@
       v-if="isCoconutsInfoCardVisible"
       @close-coconuts-info="hideCoconutsInfoCard"
     />
-    <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" />
+    <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" @openShop="showShop" @openInventory="showInventory" />
     <NpcComponent
       v-if="showNpcModal"
       @close="closeNpcModal"
