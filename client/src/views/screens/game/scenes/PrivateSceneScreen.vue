@@ -15,7 +15,8 @@
     />
     <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" />
     <SceneQuickActions
-      :inventory-available="false"
+      :inventory-available="Boolean(sceneData?.myScene)"
+      @inventory="showInventory"
       @avatar="showAvatarSelection"
       @rankings="showRankings"
       @shop="showShop"
@@ -183,6 +184,14 @@ export default {
     },
     hideRankings() {
       this.isRankingsVisible = false;
+    },
+    showInventory() {
+      // Reutiliza el inventario HTML real de Phaser, no crea una mochila paralela.
+      if (!this.sceneData?.myScene) return;
+      const privateScene = this.$root.gamePhaser?.scene?.getScene("PrivateScene");
+      if (privateScene?.htmlInventory) {
+        privateScene.handleButtonClick("inventory");
+      }
     },
     showShop() {
       this.closeAllPanels();
