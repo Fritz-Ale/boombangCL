@@ -40,7 +40,17 @@
           </div>
         </div>
       </div>
-      <div class="base-chat__container__brujula" @click="exitToLobby">
+      <div class="base-chat__classic-actions" role="group" aria-label="Accesos rápidos de BoomBangCL">
+        <button type="button" class="base-chat__classic-text-button" title="B-Pad" @click="$emit('openBPad')">B-Pad</button>
+        <button type="button" class="base-chat__classic-text-button" title="Panel CEO" @click="$emit('openCEO')">CEO</button>
+        <button type="button" class="base-chat__classic-action" title="Catálogo" aria-label="Abrir catálogo" @click="$emit('openShop')">
+          <img :src="asset_shop_image" alt="" />
+        </button>
+        <button type="button" class="base-chat__classic-action" title="Mochila" aria-label="Abrir mochila" @click="$emit('openInventory')">
+          <img :src="asset_backpack_image" alt="" />
+        </button>
+      </div>
+      <div class="base-chat__container__brujula" @click="exitToLobby" role="button" tabindex="0" @keydown.enter.prevent="exitToLobby" @keydown.space.prevent="exitToLobby">
         <img :src="asset_brujula_image" :alt="$t('chat.brujula_alt')" />
       </div>
     </div>
@@ -50,6 +60,8 @@
 <script>
 import asset_base_image from "@/assets/game/basechat/base.webp";
 import asset_brujula_image from "@/assets/game/basechat/brujula.webp";
+import asset_shop_image from "@/assets/game/scene/ui/shop.webp";
+import asset_backpack_image from "@/assets/game/scene/ui/backpack.webp";
 import EmojisPickerComponent from "./base-chat/EmojisPickerComponent.vue";
 import UsersChatListComponent from "./base-chat/UsersChatListComponent.vue";
 import CreditsComponent from "./base-chat/CreditsComponent.vue";
@@ -66,6 +78,8 @@ export default {
     return {
       asset_base_image,
       asset_brujula_image,
+      asset_shop_image,
+      asset_backpack_image,
       message: "",
       showEmojiPicker: false,
       selectedUser: null,
@@ -288,6 +302,49 @@ export default {
   color: rgba(255, 255, 255, 0.541);
 }
 
+.base-chat__classic-actions {
+  position: absolute;
+  right: 105px;
+  top: -88px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 3;
+}
+.base-chat__classic-text-button {
+  min-height: 37px;
+  padding: 5px 9px;
+  border: 2px solid #0b568e;
+  border-radius: 12px;
+  background: linear-gradient(#4ac8f6, #0878bc);
+  color: white;
+  font-weight: bold;
+  text-shadow: 0 1px 1px #114364;
+  box-shadow: 0 3px 0 #084777;
+  cursor: pointer;
+}
+.base-chat__classic-action {
+  display: flex;
+  width: 50px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.base-chat__classic-action img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.base-chat__classic-action:hover,
+.base-chat__classic-action:focus-visible {
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+}
 .base-chat__container__brujula {
   position: absolute;
   right: 12px;

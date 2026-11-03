@@ -13,7 +13,9 @@
       v-if="isCoconutsInfoCardVisible"
       @close-coconuts-info="hideCoconutsInfoCard"
     />
-    <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" />
+    <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" @openShop="showShop" @openInventory="showInventory" @openBPad="openBPad" @openCEO="openCEO" />
+    <BPadComponent v-if="isBPadVisible" @close="isBPadVisible = false" />
+    <CeoPanelComponent v-if="isCEOVisible" @close="isCEOVisible = false" />
     <AvatarSelectionPopup
       v-if="isAvatarSelectionVisible"
       :authUser="sceneData.authUser"
@@ -47,6 +49,8 @@
 import socket from "../../../../sockets/socket.js";
 import UserCardComponent from "../../../components/game/scenes/UserCardComponent.vue";
 import BaseChatComponent from "../../../components/game/scenes/BaseChatComponent.vue";
+import BPadComponent from "../../../components/game/scenes/BPadComponent.vue";
+import CeoPanelComponent from "../../../components/game/scenes/CeoPanelComponent.vue";
 import RingInfoCardComponent from "../../../components/game/scenes/RingInfoCardComponent.vue";
 import CoconutsInfoCardComponent from "../../../components/game/scenes/CoconutsInfoCardComponent.vue";
 import AvatarSelectionPopup from "../../../components/game/scenes/AvatarSelectionPopup.vue";
@@ -76,6 +80,8 @@ export default {
       isNpcModalVisible: false,
       isInventoryVisible: false,
       isShopVisible: false,
+      isBPadVisible: false,
+      isCEOVisible: false,
       currentNpcId: null,
       currentNpcType: null,
     };
@@ -86,6 +92,8 @@ export default {
   components: {
     UserCardComponent,
     BaseChatComponent,
+    BPadComponent,
+    CeoPanelComponent,
     RingInfoCardComponent,
     CoconutsInfoCardComponent,
     AvatarSelectionPopup,
@@ -95,6 +103,8 @@ export default {
     ShopComponent,
   },
   methods: {
+    openBPad() { this.isCEOVisible = false; this.isBPadVisible = true; },
+    openCEO() { this.isBPadVisible = false; this.isCEOVisible = true; },
     /**
      * Cierra todos los paneles abiertos
      */
