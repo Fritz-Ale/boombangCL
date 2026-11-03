@@ -1,0 +1,27 @@
+/* Development milestones, sourced from the project's editorial roadmap. */
+.milestone-section{padding-top:65px}
+.milestone-heading,.home-milestones-head{display:flex;justify-content:space-between;gap:25px;align-items:end;flex-wrap:wrap;margin-bottom:28px}
+.milestone-heading h2,.home-milestones-head h2{font-size:clamp(2rem,3.9vw,3.4rem);margin:10px 0 12px}
+.milestone-heading p,.home-milestones-head p{max-width:700px;line-height:1.75;color:#5f7c84}
+.milestone-filters{display:flex;flex-wrap:wrap;gap:9px;margin:24px 0 14px}
+.milestone-filters button{border:2px solid #cce5df;background:#fff;color:#164d64;font:inherit;font-size:.85rem;font-weight:900;padding:10px 16px;min-height:44px;border-radius:50px;cursor:pointer}
+.milestone-filters button.is-active{background:#076f83;color:#fff;border-color:#076f83}
+.milestone-count{color:#567985;font-size:.85rem;font-weight:900;margin:12px 0 20px}
+.milestone-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.milestone-card{background:#fff;border:1px solid #dde9e2;border-radius:22px;padding:27px;box-shadow:0 12px 30px #1a566410;display:flex;flex-direction:column;gap:12px;min-width:0}
+.milestone-card[hidden]{display:none!important}
+.milestone-meta{display:flex;gap:9px;flex-wrap:wrap;align-items:center;font-size:.76rem}
+.milestone-meta time{color:#5e7982;font-weight:800}.milestone-meta span{font-weight:900;color:#087c85;background:#e0f7ed;border-radius:30px;padding:5px 11px}
+.milestone-card h3{font-size:1.4rem;line-height:1.35;margin:0}
+.milestone-card p{color:#617d84;line-height:1.75;font-size:.92rem;margin:0;flex:1}
+.milestone-card>a,.home-milestones-grid a{font-size:.9rem;font-weight:900;color:#087b85;text-decoration:underline;text-underline-offset:4px}
+.milestone-caveat{color:#64818a;font-size:.84rem;line-height:1.7;margin-top:25px}
+.home-milestones{background:#f0f9f0;padding:80px 0;border-top:1px solid #d5e9dd;border-bottom:1px solid #d5e9dd}
+.home-milestones-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.home-milestones-grid article{background:white;border:1px solid #d9e9df;border-radius:22px;padding:25px;display:flex;flex-direction:column;gap:10px}
+.home-milestones-grid time{font-size:.74rem;color:#567b84;font-weight:800}
+.home-milestones-grid article>span{font-size:.73rem;color:#05878d;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
+.home-milestones-grid h3{font-size:1.23rem;margin:0}
+.home-milestones-grid p{font-size:.88rem;color:#617b82;line-height:1.75;margin:0;flex:1}
+@media(max-width:860px){.home-milestones-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.milestone-grid,.home-milestones-grid{grid-template-columns:1fr}.milestone-heading,.home-milestones-head{align-items:start}.milestone-card{padding:22px}}

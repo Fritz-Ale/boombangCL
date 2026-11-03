@@ -32,11 +32,16 @@ class BotController extends Controller
 
         $token = Str::random(40);
         $gameServerUrl = config('app.emulator_docker_url');
+        $internalToken = (string) config('services.portal_bot.preauth_token');
+        if (!$internalToken || str_starts_with($internalToken, 'CHANGE_ME')) {
+            return response()->json(['error' => 'Internal bot authentication is not configured.'], 503);
+        }
 
         // Pre-authorize the token by sending it to the game server directly.
         // This request happens server-to-server within the Docker network.
         try {
-            $response = Http::withHeaders(['X-Emulator-Token' => config('app.emulator_api_token')])->post($gameServerUrl . '/internal/add-bot-token', [
+            $response = Http::withHeaders(['X-Bot-Preauth-Token' => $internalToken])
+                ->timeout(5)->post($gameServerUrl . '/internal/add-bot-token', [
                 'token' => $token
             ]);
 

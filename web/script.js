@@ -13,6 +13,14 @@
       menuButton.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
     });
     nav.querySelectorAll('a').forEach(link => link.addEventListener('click', close));
+    // When focus moves outside the open menu, keep its state in sync.
+    document.addEventListener('focusin', event => {
+      if (!nav.contains(event.target) && !menuButton.contains(event.target)) close();
+    });
+    // Avoid leaving a mobile-only menu expanded after resizing to desktop.
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 760 && nav.classList.contains('open')) close();
+    });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape') close();
     });

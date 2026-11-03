@@ -2,11 +2,19 @@ const Resource = require('./Resource');
 const GameClock = require('../utils/GameClock');
 
 class UserResource extends Resource {
-    // Usar solo para datos que podrán ver otros jugadores: nunca incluir
-    // token de sesión, herramientas administrativas o ajustes privados.
+    // Only expose information intended for other players. The full resource
+    // remains available for the authenticated player's own initialization.
     toPublicObject() {
         const { authJwt, admin_tools, lobby_tutorial, ...publicData } = this.toObject();
         return publicData;
+    }
+
+    static publicProfile(user) {
+        const profile = new UserResource().transform(user);
+        delete profile.authJwt;
+        delete profile.admin_tools;
+        delete profile.lobby_tutorial;
+        return profile;
     }
 
     transform(data) {

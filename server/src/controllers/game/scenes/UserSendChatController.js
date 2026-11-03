@@ -24,6 +24,12 @@ class UserSendChatController {
 
             //console.log(`[CHAT-DEBUG] User ${user.username} in area ${user.currentArea.id}`);
 
+            // Client payloads are untrusted; reject malformed messages before
+            // command parsing, truncation and language/mention processing.
+            if (!data || typeof data !== 'object' ||
+                typeof data.message !== 'string' || !data.message.trim()) {
+                return;
+            }
             if (this.#validateIfCommand(user, data)) {
                 //console.log(`[CHAT-DEBUG] Message was a command, returning`);
                 return;

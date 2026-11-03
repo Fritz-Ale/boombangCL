@@ -1,0 +1,14 @@
+# Local development database, independent of the production reverse proxy.
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${BOOMBANG_LOCAL_DB_PASSWORD:?Set BOOMBANG_LOCAL_DB_PASSWORD}
+    ports:
+      - '127.0.0.1:3307:3306'
+    volumes:
+      - boombang_local_db:/var/lib/mysql
+      - ./docker/db/init/create_databases.sql:/docker-entrypoint-initdb.d/create_databases.sql:ro
+volumes:
+  boombang_local_db:

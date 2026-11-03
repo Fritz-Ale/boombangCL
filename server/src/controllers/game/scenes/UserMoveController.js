@@ -18,6 +18,12 @@ class UserMoveController {
                 return;
             }
 
+            // Never index the map using untrusted or fractional coordinates.
+            // Invalid payloads are ignored rather than disconnecting the player.
+            if (!data || typeof data !== 'object' ||
+                !Number.isSafeInteger(data.x) || !Number.isSafeInteger(data.y)) {
+                return;
+            }
             const { x: targetX, y: targetY } = data;
 
             //validar que en la posicion no se encuentre otro usuario

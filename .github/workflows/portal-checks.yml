@@ -1,0 +1,185 @@
+name: Portal web - chequeos
+
+on:
+  pull_request:
+    paths:
+      - "README.md"
+      - "web/**"
+      - "client/**"
+      - "server/**"
+      - "api/app/Http/Controllers/Portal/**"
+      - "api/database/migrations/2026_10_31_220000_create_portal_tables.php"
+      - "api/database/migrations/2026_10_31_221000_create_portal_social_tables.php"
+      - "api/database/migrations/2026_10_31_222000_create_portal_reports_table.php"
+      - "api/tests/Feature/PortalFeatureTest.php"
+      - "server/src/config/server.js"
+      - "api/config/services.php"
+      - "api/app/Notifications/**"
+      - "api/.env.example"
+      - "api/routes/web.php"
+      - "api/app/Providers/AppServiceProvider.php"
+      - "api/app/Models/User.php"
+      - "api/app/Http/Middleware/EnsurePortalEmailVerified.php"
+      - "api/bootstrap/app.php"
+      - "api/database/migrations/2026_11_01_000000_add_portal_email_verification_flag_to_users.php"
+      - ".github/workflows/portal-checks.yml"
+      - ".github/workflows/pages-avances.yml"
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "client/**"
+      - "server/**"
+      - "api/app/Http/Controllers/Portal/**"
+      - "api/routes/web.php"
+      - "api/app/Providers/AppServiceProvider.php"
+      - "api/app/Models/User.php"
+      - "api/app/Http/Middleware/EnsurePortalEmailVerified.php"
+      - "api/bootstrap/app.php"
+      - "api/database/migrations/2026_11_01_000000_add_portal_email_verification_flag_to_users.php"
+      - ".github/workflows/portal-checks.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Revisar sintaxis JavaScript
+        run: |
+          for file in web/*.js web/tests/*.mjs web/scripts/*.mjs; do node --check "$file"; done
+      - name: Verificar enlaces y recursos del portal
+        run: node --test web/tests/*.test.mjs
+      - name: Revisar sintaxis servidor Node.js
+        run: node --check server/src/config/server.js
+      - name: Revisar sintaxis PHP
+        run: |
+          php -l api/routes/web.php
+          php -l api/app/Providers/AppServiceProvider.php
+          php -l api/bootstrap/app.php
+          php -l api/app/Models/User.php
+          php -l api/app/Http/Middleware/EnsurePortalEmailVerified.php
+          php -l api/database/migrations/2026_11_01_000000_add_portal_email_verification_flag_to_users.php
+          php -l api/database/migrations/2026_10_31_220000_create_portal_tables.php
+          php -l api/database/migrations/2026_10_31_221000_create_portal_social_tables.php
+          php -l api/database/migrations/2026_10_31_222000_create_portal_reports_table.php
+          find api/app/Http/Controllers/Portal api/app/Notifications -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Construir vista previa descargable, sin desplegar ni publicar
+        run: node web/scripts/build-progress-bundle.mjs _preview standalone
+      - name: Adjuntar vista previa privada para revisar desde GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: boombangcl-avances-vista-previa
+          path: |
+            _preview/index.html
+            _preview/LEEME.txt
+          retention-days: 14
+          if-no-files-found: error
+      - name: Validar configuración Nginx
+        run: |
+          docker run --rm -v "$PWD/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro" nginx:1.27-alpine nginx -t
+
+  server-smoke:
+    name: Transporte Node + Socket.IO
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - name: Instalar dependencias del servidor
+        run: npm ci --no-audit --no-fund
+      - name: Verificar API interna y conexión Socket.IO
+        run: node --test tests/*.test.cjs
+        env:
+          RUN_BOTS: "false"
+          NODE_ENV: test
+
+  client-build:
+    name: Cliente HTML5 Phaser + Vue
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Instalar dependencias reproducibles
+        run: npm ci --no-audit --no-fund
+      - name: Compilar cliente HTML5 de producción
+        run: npm run build
+      - name: Comprobar artefactos del cliente
+        run: |
+          test -f dist/index.html
+          test -d dist/assets
+          echo "Cliente HTML5 compilado. No se ha probado conexión a Socket.IO."
+
+  laravel-integration:
+    name: API Laravel + MariaDB
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MYSQL_ROOT_PASSWORD: testing-root
+          MYSQL_DATABASE: boombang_api
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    defaults:
+      run:
+        working-directory: api
+    env:
+      APP_ENV: testing
+      APP_DEBUG: "false"
+      APP_URL: http://127.0.0.1:8000
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: "3306"
+      DB_DATABASE: boombang_api
+      DB_USERNAME: root
+      DB_PASSWORD: testing-root
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      EMULATOR_API_TOKEN: dummy-ci-token
+      BCRYPT_ROUNDS: "4"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          extensions: mbstring, pdo_mysql, bcmath, gd, zip, intl, dom, curl, fileinfo
+          coverage: none
+      - name: Instalar dependencias PHP
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Preparar Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+      - name: Ejecutar migraciones MySQL
+        run: php artisan migrate --force --no-interaction
+      - name: Pruebas funcionales del portal
+        run: php artisan test --filter PortalFeatureTest --no-ansi

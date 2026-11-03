@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0c3444">
+<meta name="description" content="Comparte ideas, conversa con otros usuarios y participa en temas moderados del portal."><title>El foro de la isla. · BoomBang CL</title>
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="portal.css"><link rel="stylesheet" href="live.css">
+<script defer src="script.js"></script><script defer src="portal.js"></script><script defer src="portal-app.js"></script>
+</head><body class="portal-page">
+<a class="skip-link" href="#principal">Saltar al contenido</a>
+<div class="top-strip">✦ BoomBang CL · Comunidad independiente y en desarrollo</div>
+<header class="site-header"><div class="container header-inner">
+<a class="brand" href="index.html" aria-label="BoomBang CL, inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a>
+<button class="menu-button" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+<nav class="main-nav" id="main-nav" aria-label="Navegación principal"><a href="index.html">Inicio</a><a href="comunidad.html">Comunidad</a><a href="noticias.html">Noticias</a>
+<a href="foro.html" aria-current="page">Foro</a><a href="catalogo.html">Catálogo</a><a href="cuenta.html">Mi cuenta</a></nav>
+</div></header><main id="principal">
+<section class="portal-banner portal-compact"><div class="container"><span class="eyebrow light">UN LUGAR PARA COMPARTIR</span><h1>El foro de la isla.</h1><p>Comparte ideas, conversa con otros usuarios y participa en temas moderados del portal.</p></div></section>
+
+<section class="portal-section container portal-live" data-portal-app="forum">
+<div class="portal-live-status" data-api-status role="status" aria-live="polite">Cargando temas…</div>
+<div class="portal-form-grid portal-forum-layout">
+<div><div class="portal-heading"><span class="eyebrow orange">CONVERSACIONES</span><h2>Temas recientes</h2></div>
+<div data-forum-list class="portal-forum-list"></div><button class="button portal-button-alt" data-forum-next type="button" hidden>Ver más temas</button></div>
+<aside><div class="portal-form" data-forum-create-wrap hidden><h3>Crear un tema</h3>
+<form data-forum-create><label>Título<input name="title" maxlength="120" minlength="5" required></label>
+<label>Mensaje<textarea name="body" rows="5" minlength="10" maxlength="2000" required></textarea></label>
+<button class="button button-sun" type="submit">Publicar tema</button><p data-form-status class="portal-form-response" role="status"></p></form></div>
+<div class="portal-info-box" data-forum-login><h3>Únete a la conversación</h3><p>Para publicar temas o responder necesitas iniciar sesión.</p><a class="button button-sun" href="cuenta.html">Iniciar sesión</a></div>
+<div class="portal-info-box"><h3>Reglas de convivencia</h3><p>Respeta a los demás; no publiques datos personales, amenazas, spam ni contenido ofensivo. Los moderadores pueden retirar temas. Lee las <a href="normas.html">normas completas</a>.</p></div></aside>
+</div>
+<div class="portal-thread" data-thread-view hidden><button type="button" class="portal-backlink" data-forum-back>← Volver a los temas</button>
+<h2 data-thread-title></h2><p class="portal-thread-meta" data-thread-meta></p><p class="portal-thread-body" data-thread-body></p><div data-thread-actions></div>
+<h3>Respuestas</h3><div data-thread-replies></div>
+<form class="portal-form" data-forum-reply hidden><label>Tu respuesta<textarea name="body" minlength="2" maxlength="2000" rows="3" required></textarea></label><button type="submit" class="button button-sun">Responder</button><p data-form-status class="portal-form-response" role="status"></p></form>
+<div data-thread-login hidden><a href="cuenta.html">Inicia sesión para responder</a></div></div>
+</section>
+</main><footer class="site-footer"><div class="container"><div class="footer-top"><div><a class="brand footer-brand" href="index.html"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a><p>Proyecto independiente de preservación y desarrollo.<br>Esta web no es el sitio oficial de BoomBang.</p></div><nav><a href="comunidad.html">Comunidad</a><a href="noticias.html">Noticias</a><a href="foro.html">Foro</a><a href="chat.html">Chat</a><a href="ranking.html">Ranking</a><a href="ayuda.html">Ayuda</a></nav></div>
+<div class="footer-bottom"><span>© <span id="year">2026</span> BoomBang CL</span><a href="https://github.com/Fritz-Ale/boombangCL">Repositorio del proyecto</a></div></div></footer></body></html>

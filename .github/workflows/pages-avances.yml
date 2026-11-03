@@ -1,0 +1,82 @@
+name: Publicar sitio informativo BoomBang CL - GitHub Pages
+
+# Publica SOLO el sitio informativo estático, nunca Laravel ni formularios de cuentas.
+# Requiere habilitar Pages -> GitHub Actions en Settings del repositorio
+# y disponer de un plan que permita Pages para repositorios privados.
+on:
+  workflow_dispatch:
+  schedule:
+    # Refresca la fotografía del estado al menos una vez al día tras fusionar a main.
+    - cron: '15 9 * * *'
+  push:
+    branches: [main]
+    paths:
+      - "web/index.html"
+      - "web/comunidad.html"
+      - "web/noticias.html"
+      - "web/ayuda.html"
+      - "web/normas.html"
+      - "web/privacidad.html"
+      - "web/scripts/build-public-site.mjs"
+      - "web/pro-home.html"
+      - "web/site-professional.css"
+      - "web/site-game.css"
+      - "web/site-game.js"
+      - "web/scripts/build-professional-home.mjs"
+      - "web/scripts/enhance-public-site.mjs"
+      - "web/scripts/build-gallery.mjs"
+      - "web/scripts/build-milestones.mjs"
+      - "web/site-milestones.js"
+      - "web/site-milestones.css"
+      - "web/site-gallery.js"
+      - "web/site-gallery.css"
+      - "web/site-search.js"
+      - "web/site-search.css"
+      - "web/avance.html"
+      - "web/avance.css"
+      - "web/avance.js"
+      - "web/avance-data.json"
+      - "web/styles.css"
+      - "web/portal.css"
+      - "web/script.js"
+      - "web/portal.js"
+      - "doc/screenshots/**"
+      - ".github/workflows/pages-avances.yml"
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages-avances
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # Opt-in required even after the PR is merged. Publishing the progress
+    # status of a private repository must never be an accidental side-effect.
+    if: vars.ENABLE_PROGRESS_PAGES == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Construir web informativa navegable y galería
+        run: node web/scripts/build-public-site.mjs _site
+      - name: Generar fotografía de GitHub (sin publicar token)
+        env:
+          PROGRESS_GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node web/scripts/generate-progress-status.mjs _site/avance-github.json
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Desplegar web informativa BoomBang CL
+        id: deployment
+        uses: actions/deploy-pages@v4

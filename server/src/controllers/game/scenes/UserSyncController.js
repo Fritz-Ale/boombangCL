@@ -15,8 +15,10 @@ class UserSyncController {
 
         try {
             // Obtener todos los usuarios en la misma área
-            const areaUsers = user.currentArea.users.filter(areaUser => 
-                areaUser.socket.id !== socket.id
+            const areaUsers = user.currentArea.users.filter(areaUser =>
+                areaUser && areaUser.socket && areaUser.socket.id !== socket.id &&
+                areaUser.currentArea === user.currentArea &&
+                areaUser.currentAreaPosition
             );
 
             // Reenviar información de posición de cada usuario

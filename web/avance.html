@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0c3444">
+  <meta name="description" content="Consulta los avances de BoomBang CL: funciones implementadas, pendientes, pruebas de GitHub Actions y hoja de ruta de lanzamiento.">
+  <title>Avances del proyecto · BoomBang CL</title>
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="portal.css"><link rel="stylesheet" href="avance.css">
+  <script defer src="script.js"></script><script defer src="avance.js"></script>
+</head>
+<body class="portal-page">
+<a class="skip-link" href="#principal">Saltar al contenido</a>
+<div class="top-strip"><span aria-hidden="true">✦</span> BoomBang CL · Desarrollo abierto a seguimiento desde GitHub</div>
+<header class="site-header"><div class="container header-inner">
+<a class="brand" href="index.html" aria-label="BoomBang CL, inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a>
+<button class="menu-button" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+<nav class="main-nav" id="main-nav" aria-label="Navegación principal"><a href="index.html">Inicio</a><a href="comunidad.html">Comunidad</a><a href="noticias.html">Noticias</a><a href="avance.html" aria-current="page">Avances</a><a href="cuenta.html">Mi cuenta</a></nav>
+</div></header>
+<main id="principal">
+<section class="portal-banner portal-compact avance-hero">
+<div class="container avance-hero-grid">
+<div><span class="eyebrow light">SEGUIMIENTO DEL PROYECTO</span><h1>Así va nuestra <em>aventura.</em></h1>
+<p>Explora lo que ya está programado, lo que sigue en desarrollo y qué necesitamos antes de abrir BoomBang CL al público.</p>
+<div class="avance-actions"><a class="button button-sun" href="https://github.com/Fritz-Ale/boombangCL/issues/2">Ver hoja de ruta en GitHub ↗</a><a class="button button-ghost" href="https://github.com/Fritz-Ale/boombangCL/pull/1">Ver cambios del proyecto ↗</a></div></div>
+<div class="avance-hero-art" aria-hidden="true"><span></span><span></span><span></span><div>BOOMBANG CL <small>WORK IN PROGRESS</small></div></div>
+</div></section>
+<section class="container avance-section" aria-labelledby="avance-titulo">
+<div class="avance-titlebar"><div><span class="eyebrow orange">PANEL DE PROGRESO</span><h2 id="avance-titulo">¿Qué está listo?</h2><p>El avance de las tareas se calcula a partir de la hoja de ruta de este panel; no representa el porcentaje total de desarrollo del juego.</p></div>
+<div class="avance-snapshot">Fotografía del <strong data-captured>1 de noviembre de 2026</strong><span>Datos del repositorio, no una conexión de producción</span></div></div>
+<div class="avance-summary" aria-label="Resumen de tareas">
+<article class="avance-metric"><span class="avance-metric-label">Tareas implementadas</span><strong data-count-implemented>—</strong><small>En rama de desarrollo</small></article>
+<article class="avance-metric"><span class="avance-metric-label">Tareas pendientes</span><strong data-count-pending>—</strong><small>Antes de lanzar</small></article>
+<article class="avance-metric"><span class="avance-metric-label">Pruebas funcionales</span><strong data-count-tests>22/22</strong><small>118 aserciones Laravel · 25 pruebas web</small></article>
+<article class="avance-metric"><span class="avance-metric-label">Estado de publicación</span><strong class="avance-metric-word">En revisión</strong><small>Pull Request sin fusionar</small></article>
+</div>
+<div class="avance-progress-card">
+<div class="avance-progress-top"><div><strong>Seguimiento de tareas</strong><p><span data-done-detail>Se contabilizan tareas implementadas en la rama</span></p></div><output data-percentage>—</output></div>
+<div class="avance-progress-track" role="progressbar" aria-label="Proporción de tareas de esta hoja de ruta implementadas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span data-progress-bar></span></div>
+<p class="avance-warning"><strong>Importante:</strong> «Implementado» significa que hay código en la rama de trabajo, no que una función esté disponible públicamente o probada con usuarios reales.</p>
+</div>
+<div class="avance-toolbar"><div><h2>Etapas de desarrollo</h2><p>Filtra las tareas y revisa cada sección.</p></div><label>Mostrar tareas<select data-filter aria-label="Filtrar tareas"><option value="all">Todas las tareas</option><option value="implemented">Implementadas en código</option><option value="pending">Pendientes</option></select></label></div>
+<div class="avance-phases" id="avance-etapas" data-phases>
+<article class="avance-fallback"><h3>El detalle del avance se carga desde el archivo de seguimiento del proyecto.</h3><p>Si el panel no muestra las tareas, consulta la <a href="https://github.com/Fritz-Ale/boombangCL/issues/2">hoja de ruta en GitHub</a>.</p></article>
+</div>
+</section>
+<section class="avance-light"><div class="container avance-section">
+<div class="avance-titlebar"><div><span class="eyebrow orange">DATOS VERIFICADOS POR GITHUB</span><h2>Estado del repositorio</h2><p>Cuando el panel se publique con GitHub Pages, GitHub Actions preparará una fotografía del Pull Request, las pruebas y las casillas de la hoja de ruta, sin mostrar credenciales privadas.</p></div></div>
+<div class="avance-github-snapshot" aria-label="Resumen de GitHub">
+<div class="avance-snapshot-tile"><span>Pull Request #1</span><strong data-gh-pr>En revisión</strong><small data-gh-files>Consulta el PR para verificar cambios recientes</small></div>
+<div class="avance-snapshot-tile"><span>GitHub Actions</span><strong data-gh-checks>Ver pruebas</strong><small data-gh-run>Último resultado accesible desde GitHub</small></div>
+<div class="avance-snapshot-tile"><span>Hoja de ruta en GitHub</span><strong data-gh-roadmap>Ver tareas</strong><small data-gh-issue>Las tareas del panel se mantienen en la issue #2</small></div>
+</div>
+<p class="avance-gh-timestamp" data-gh-timestamp>En el portal local, consulta los enlaces de GitHub. El resumen automático se actualiza al desplegar GitHub Pages y no es en tiempo real.</p>
+</div></section>
+<section class="avance-light"><div class="container avance-section"><div class="avance-titlebar"><div><span class="eyebrow orange">TRAZABILIDAD</span><h2>Pruebas y cambios verificables</h2><p>GitHub conserva el historial de código y los resultados reales de cada ejecución.</p></div></div>
+<div class="avance-github-grid">
+<a class="avance-github-card" href="https://github.com/Fritz-Ale/boombangCL/pull/1"><span></span><h3>Pull Request #1</h3><p>Revisa qué archivos cambiaron y qué sigue pendiente de fusionar a main.</p><strong>Revisar cambios ↗</strong></a>
+<a class="avance-github-card" href="https://github.com/Fritz-Ale/boombangCL/actions"><span></span><h3>Pruebas automáticas</h3><p>Consulta si las comprobaciones de Laravel, MariaDB, JavaScript y Nginx aprobaron en la ejecución más reciente.</p><strong>Ver resultados actuales ↗</strong></a>
+<a class="avance-github-card" href="https://github.com/Fritz-Ale/boombangCL/issues/2"><span>🗺</span><h3>Hoja de ruta</h3><p>Una lista de tareas comprobable y actualizable desde GitHub, también en el teléfono.</p><strong>Ver tareas y pendientes ↗</strong></a>
+</div>
+<div class="avance-ci-note"><span class="avance-ci-dot"></span><div><strong>Última ejecución verificada: 22 pruebas Laravel (118 aserciones), 25 pruebas web y cuatro trabajos CI aprobados.</strong><p>Este resultado es una fotografía histórica: para conocer el estado actual, consulta GitHub Actions. La página no puede consultar directamente la API privada de GitHub sin credenciales y nunca te pedirá un token personal.</p></div><a href="https://github.com/Fritz-Ale/boombangCL/actions/runs/41293304577">Ver ejecución ↗</a></div>
+</div></section>
+<section class="container avance-section"><div class="avance-titlebar"><div><span class="eyebrow orange">HISTORIAL</span><h2>Últimos hitos registrados</h2><p>Notas del proyecto que pueden actualizarse junto al código.</p></div></div><div class="avance-timeline" data-updates></div>
+<div class="portal-notice"><strong>¿Dónde veo cambios nuevos?</strong> En <a href="https://github.com/Fritz-Ale/boombangCL/pull/1">el Pull Request</a> aparecen inmediatamente los commits; en <a href="https://github.com/Fritz-Ale/boombangCL/issues/2">la hoja de ruta</a> se actualizan tareas. Este panel resume ambos de forma editorial y no asegura sincronización en tiempo real.</div></section>
+</main><footer class="site-footer"><div class="container"><p>© <span id="year">2026</span> BoomBang CL · Proyecto independiente, sin afiliación oficial.</p><nav><a href="index.html">Inicio</a><a href="normas.html">Normas</a><a href="privacidad.html">Privacidad</a><a href="https://github.com/Fritz-Ale/boombangCL">GitHub</a></nav></div></footer>
+</body></html>

@@ -21,13 +21,26 @@ class UserJoinPublicSceneController {
                 //throw new Error("User not found");
                 return;
             }
-            const scene = data.menuType == MenuTypeEnum.PUBLIC_SCENE ?
+            // Reject malformed requests before looking up a scene or mutating
+            // player state. Only the two supported scene categories are valid.
+            if (!data || typeof data !== 'object' ||
+                (data.menuType !== MenuTypeEnum.PUBLIC_SCENE &&
+                 data.menuType !== MenuTypeEnum.GAME_SCENE) ||
+                typeof data.sceneUuid !== 'string' ||
+                !data.sceneUuid.trim() || data.sceneUuid.length > 128) {
+                socket.emit(ResponseSocketsEnum.JOIN_PUBLIC_SCENE, {
+                    success: false,
+                    message: 'Invalid scene request'
+                });
+                return;
+            }
+            const scene = data.menuType === MenuTypeEnum.PUBLIC_SCENE ?
                 PublicScenesCollection.getByUid(data.sceneUuid) :
                 GameScenesCollection.getByUid(data.sceneUuid);
             if (!scene) {
                 socket.emit(ResponseSocketsEnum.JOIN_PUBLIC_SCENE, {
                     success: false,
-                    message: 'La sala solicitada no existe'
+                    message: 'Scene not found'
                 });
                 return;
             }
@@ -46,14 +59,11 @@ class UserJoinPublicSceneController {
 
             try {
                 // Agregar usuario a la escena de manera atómica
-                user.setArea(scene);
                 const added = scene.addUser(user);
+                if (added) user.setArea(scene);
                 
                 if (!added) {
                     logger.log(`Failed to add user ${user.username} to scene ${scene.name}, user already present`, 'warn');
-                    if (!scene.containsUser(user)) {
-                        user.setArea(null);
-                    }
                     socket.emit(ResponseSocketsEnum.JOIN_PUBLIC_SCENE, {
                         success: false,
                         message: 'No se pudo ingresar a la sala'
@@ -64,7 +74,7 @@ class UserJoinPublicSceneController {
                 // Obtener la lista actualizada de usuarios
                 let sceneUsers = [];
                 for (const sceneUser of scene.users) {
-                    sceneUsers.push(await new UserResource(sceneUser).toPublicObject());
+                    sceneUsers.push(new UserResource(sceneUser).toPublicObject());
                 }
                 
                 // Enviar respuesta al usuario que se está uniendo
@@ -82,7 +92,7 @@ class UserJoinPublicSceneController {
                 
                 // Notificar a todos los demás usuarios sobre el nuevo usuario
                 scene.emitToAllExcept(ResponseSocketsEnum.NEW_USER_JOIN_SCENE, {
-                    user: await new UserResource(user).toPublicObject(),
+                    user: new UserResource(user).toPublicObject(),
                 }, user);
 
                 UpdatePublicScenesController.main(io);

@@ -9,7 +9,8 @@ class UserLeaveSceneController {
         try {
             const user = ConnectedUsersCollection.getBySocketId(socket.id);
             if (!user || !user.currentArea) {
-                throw new Error('User not found or not in any area');
+                // Duplicate leave events and unauthenticated sockets are harmless.
+                return;
             }
 
             if (user.isActionBlocked(AnimationEnum.LEAVE_AREA)) {

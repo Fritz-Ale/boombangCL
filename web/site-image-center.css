@@ -1,0 +1,81 @@
+/* Centrado uniforme de capturas de BoomBang CL (desktop, tablets y móviles).
+   Se prioriza mostrar la captura completa y sin recortar avatares ni escenarios. */
+.game-hero-layout,
+.game-world-grid,
+.game-feature-grid,
+.game-explorer-main,
+.gallery-grid,
+.portal-banner-grid,
+.preview-cols {min-width:0}
+.game-hero-display,
+.game-feature-art,
+.game-world-image,
+.game-explorer-image,
+.gallery-card>a,
+.preview-art,
+.preview-visual,
+.portal-banner-grid>img,
+.community-photo,
+.place-image,
+.play-visual {min-width:0}
+.game-hero-display {width:100%;max-width:720px;margin-inline:auto;justify-self:center}
+.game-display-head,.game-display-footer{text-align:center}
+.game-hero-display>img,
+.game-world-image img,
+.game-feature-art img,
+.game-explorer-image img,
+.gallery-card img,
+.preview-art img,
+.preview-visual img,
+.portal-banner-grid>img,
+.community-photo img,
+.place-image img,
+.play-visual>img {
+  display:block;
+  width:100%;
+  height:auto;
+  max-width:100%;
+  margin-inline:auto;
+  object-fit:contain!important;
+  object-position:50% 50%!important;
+  background:#e7f4f0;
+}
+/* Las proporciones fijas permiten centrar sin deformar o cortar imágenes. */
+.game-hero-display>img {aspect-ratio:8/5}
+.game-world-image {display:grid;place-items:center;background:#dbf0e8}
+.game-world-image img {aspect-ratio:4/3}
+.game-feature-art{display:grid;place-items:center}
+.game-feature-art img{aspect-ratio:4/3}
+.game-explorer-image{display:grid;place-items:center;background:#d6ebe8}
+.game-explorer-image img{aspect-ratio:16/9}
+.gallery-card>a{display:grid;place-items:center;background:#e7f4f0}
+.gallery-card img{aspect-ratio:8/5}
+.preview-art img,.preview-visual img{max-height:360px;aspect-ratio:8/5}
+.portal-banner-grid>img{max-height:390px;aspect-ratio:8/5}
+.community-photo img,.place-image img,.play-visual>img{aspect-ratio:8/5}
+/* La captura puede mostrar bandas laterales; es preferible a perder contenido. */
+.game-world-image img,.game-feature-art img,.gallery-card img{transition:filter .18s ease}
+.game-world-card:hover img,.game-feature:hover img,.gallery-card>a:hover img{transform:none!important;filter:brightness(1.025)}
+@media (max-width:1050px){
+ .game-hero-display{justify-self:center;transform:none}
+ .game-hero-layout>.game-hero-display{margin-inline:auto}
+}
+@media (max-width:820px){
+ .game-world-card-large .game-world-image img{aspect-ratio:8/5}
+ .game-hero-display{max-width:650px;margin-inline:auto}
+ .game-explorer-image img{aspect-ratio:8/5}
+ .gallery-card img{aspect-ratio:8/5}
+}
+@media (max-width:560px){
+ .game-site .game-hero-display{width:100%;margin-inline:auto;transform:none}
+ .game-display-head,.game-display-footer{justify-content:center;gap:12px}
+ .game-hero-display>img,.game-world-image img,.game-feature-art img,
+ .game-explorer-image img,.gallery-card img {object-position:center center!important}
+ .game-world-image img,.game-world-card-large .game-world-image img{aspect-ratio:4/3}
+ .game-hero-display>img{aspect-ratio:8/5}
+ .game-explorer-image img{aspect-ratio:4/3}
+ .portal-banner-grid>img{max-height:320px}
+}
+@media (prefers-reduced-motion:reduce){
+ .game-world-image img,.game-feature-art img,.gallery-card img{transition:none!important}
+}

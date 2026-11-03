@@ -11,7 +11,9 @@
   <title>BoombangCL · Tu isla, tu aventura</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%2309b5b5'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-size='42'%3E%F0%9F%8F%9D%EF%B8%8F%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="portal.css">
   <script src="script.js" defer></script>
+  <script src="portal.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#principal">Saltar al contenido</a>
@@ -21,7 +23,7 @@
       <a class="brand" href="#inicio" aria-label="BoombangCL, inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a>
       <button class="menu-button" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
       <nav id="main-nav" class="main-nav" aria-label="Navegación principal">
-        <a href="#mundo">El mundo</a><a href="#experiencias">Experiencias</a><a href="#comunidad">Comunidad</a><a href="#proyecto">El proyecto</a>
+        <a href="#mundo">El mundo</a><a href="comunidad.html">Comunidad</a><a href="noticias.html">Noticias</a><a href="foro.html">Foro</a><a href="social.html">Amigos y clanes</a><a href="avance.html">Avances</a><a href="cuenta.html">Mi cuenta</a>
         <a class="nav-cta" href="#jugar">¡Vamos a jugar! <span aria-hidden="true">↗</span></a>
       </nav>
     </div>
@@ -76,6 +78,28 @@
       <div class="community-copy" data-reveal><span class="eyebrow light">EL LADO BONITO DE LA ISLA</span><h2 id="community-title">Viejos amigos.<br><em>Nuevas historias.</em></h2><p>La esencia de BoomBang siempre ha sido su comunidad. Personaliza tu avatar, descubre rincones y haz que cada conexión cuente.</p><a class="button button-white" href="#jugar">Ser parte de la aventura <span aria-hidden="true">→</span></a></div>
       <div class="community-photo" data-reveal><img src="screenshots/personalizacion.png" alt="Captura del sistema de personalización de avatar" loading="lazy"><span class="community-bubble">¡Tu estilo, tus reglas! ✨</span></div>
     </div></section>
+
+    <section class="portal-preview-section" id="novedades" aria-labelledby="portal-preview-title">
+      <div class="container">
+        <div class="portal-preview-head" data-reveal>
+          <div><span class="eyebrow orange">TU PUNTO DE ENCUENTRO</span><h2 id="portal-preview-title">Un portal para <em>todos.</em></h2></div>
+          <p>Descubre nuevas páginas inspiradas en las funciones habituales de una comunidad de videojuegos, creadas específicamente para BoomBang CL.</p>
+        </div>
+        <div class="portal-preview-grid">
+          <a href="comunidad.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🏝️</span><h3>Comunidad y salas</h3><p>Explora escenarios, islas y las secciones sociales previstas para nuestro portal.</p><strong>Explorar comunidad →</strong></a>
+          <a href="noticias.html" class="portal-preview-card" data-reveal><span aria-hidden="true">📰</span><h3>Noticias del proyecto</h3><p>Conoce el código base y los próximos pasos sin confundirlos con noticias oficiales.</p><strong>Leer novedades →</strong></a>
+          <a href="ayuda.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🧭</span><h3>Guía para comenzar</h3><p>Cómo preparar el cliente HTML5 y los servicios de Laravel.</p><strong>Ver guía →</strong></a>
+          <a href="cuenta.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🪪</span><h3>Tu cuenta</h3><p>Regístrate e inicia sesión en el portal mediante la API de Laravel.</p><strong>Acceder →</strong></a>
+          <a href="foro.html" class="portal-preview-card" data-reveal><span aria-hidden="true">💬</span><h3>Foro</h3><p>Publica temas y responde a otras personas cuando la API esté activa.</p><strong>Ir al foro →</strong></a>
+          <a href="chat.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🗣️</span><h3>Chat del portal</h3><p>Mensajes persistentes para cuentas registradas, sin confundirlo con el chat dentro del juego.</p><strong>Entrar al chat →</strong></a>
+          <a href="catalogo.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🛍️</span><h3>Catálogo</h3><p>Consulta artículos activos de la base de datos del juego.</p><strong>Explorar objetos →</strong></a>
+          <a href="social.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🤝</span><h3>Amigos y clanes</h3><p>Envía solicitudes de amistad y crea clanes con invitaciones privadas.</p><strong>Conoce a tu gente →</strong></a>
+          <a href="avance.html" class="portal-preview-card" data-reveal><span aria-hidden="true">📊</span><h3>Avances de BoomBang CL</h3><p>Mira lo que ya está programado, las pruebas aprobadas y las tareas que faltan para lanzar el proyecto.</p><strong>Ver progreso del proyecto →</strong></a>
+          <a href="ranking.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🏆</span><h3>Clasificación</h3><p>Ve puntuaciones reales disponibles de minijuegos.</p><strong>Ver ranking →</strong></a>
+        </div>
+        <p class="portal-statusline">● El acceso, foro, chat, catálogo y rankings se conectan a Laravel si instalas las migraciones y ejecutas los servicios. Compras y pagos web permanecen desactivados.</p>
+      </div>
+    </section>
     <section class="project section-pad" id="proyecto" aria-labelledby="project-title"><div class="container">
       <div class="center-heading" data-reveal><span class="eyebrow orange">DESDE LA ISLA</span><h2 id="project-title">Una nueva etapa<br><span>para BoombangCL.</span></h2><p>Recuperamos el proyecto HTML5 como punto de partida para seguir construyendo. Esto es lo que puedes conocer hoy.</p></div>
       <div class="update-grid">
@@ -85,18 +109,18 @@
       </div>
     </div></section>
     <section class="join section-pad" id="jugar" aria-labelledby="join-title"><div class="container">
-      <div class="join-panel" data-reveal><div class="join-stars" aria-hidden="true">✦ · ✧ · ✦</div><span class="eyebrow light">TU PASAPORTE A LA ISLA</span><h2 id="join-title">¿Nos vemos<br><em>en BoombangCL?</em></h2><p>La portada ya está lista. Para entrar al juego, primero debes tener funcionando el cliente HTML5 y sus servicios.</p><a class="button button-sun" href="#acceso-local">Cómo jugar en local <span aria-hidden="true">↓</span></a><div id="acceso-local" class="join-note"><p>El juego todavía no está publicado para jugar desde Internet. Para probarlo en tu Mac, inicia Docker Desktop y ejecuta los servicios del repositorio:</p><p><code>docker compose up -d --build</code></p><p>Después abre <strong>http://play.boombang.com</strong> desde el mismo Mac, con los dominios locales y el proxy configurados según el <a href="https://github.com/Fritz-Ale/boombangCL#puesta-en-marcha-local" target="_blank" rel="noopener noreferrer">README de instalación</a>. Esta dirección no funciona como enlace público.</p></div></div>
+      <div class="join-panel" data-reveal><div class="join-stars" aria-hidden="true">✦ · ✧ · ✦</div><span class="eyebrow light">TU PASAPORTE A LA ISLA</span><h2 id="join-title">¿Nos vemos<br><em>en BoombangCL?</em></h2><p>La portada ya está lista. Para entrar al juego, primero debes tener funcionando el cliente HTML5 y sus servicios.</p><a class="button button-sun" href="ayuda.html">Abrir cliente local <span aria-hidden="true">↗</span></a><p class="join-note">Consulta la guía para acceder al cliente HTML5 local; el juego requiere los servicios del servidor en ejecución.</p></div>
     </div></section>
     <section class="faq section-pad" aria-labelledby="faq-title"><div class="container faq-grid">
       <div data-reveal><span class="eyebrow orange">TE CONTAMOS MÁS</span><h2 id="faq-title">Preguntas<br><em>de la isla.</em></h2><p>Lo que conviene saber antes de comenzar tu aventura.</p></div>
       <div class="faq-items" data-reveal>
         <details><summary>¿Qué es BoombangCL?<span aria-hidden="true">+</span></summary><p>Es un proyecto independiente de recuperación y continuidad de BoomBang HTML5, con cliente web, API y servidor multijugador.</p></details>
         <details><summary>¿Es la web oficial de BoomBang?<span aria-hidden="true">+</span></summary><p>No. BoombangCL es independiente, no está afiliado ni respaldado por los titulares originales de BoomBang.</p></details>
-        <details><summary>¿Ya puedo registrarme o jugar desde esta web?<span aria-hidden="true">+</span></summary><p>Esta versión es una portada informativa. El registro y el acceso online todavía no están integrados. La sección «Cómo jugar en local» indica cómo ejecutar el cliente desde tu Mac.</p></details>
+        <details><summary>¿Ya puedo registrarme o jugar desde esta web?<span aria-hidden="true">+</span></summary><p>Esta versión es una portada informativa. El registro y el acceso no están integrados aquí. El botón de juego abre la dirección local del cliente y requiere que los servicios estén configurados.</p></details>
         <details><summary>¿Puedo seguir el desarrollo?<span aria-hidden="true">+</span></summary><p>El código y la documentación se mantienen en el repositorio BoombangCL de GitHub. Algunas funciones podrán cambiar durante el desarrollo.</p></details>
       </div>
     </div></section>
   </main>
-  <footer class="site-footer"><div class="container"><div class="footer-top"><div><a class="brand footer-brand" href="#inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a><p>Un mundo de islas, amistad y aventura.<br>Hecho con cariño para una comunidad inolvidable.</p></div><nav aria-label="Enlaces de pie de página"><a href="#mundo">El mundo</a><a href="#comunidad">Comunidad</a><a href="#jugar">Cómo jugar</a><a href="https://github.com/Fritz-Ale/boombangCL" target="_blank" rel="noopener noreferrer">GitHub</a></nav></div><div class="footer-bottom"><span>© <span id="year">2026</span> BoombangCL · Proyecto independiente no oficial.</span><span>Basado en <a href="https://github.com/GenRubiio/boombang-html5" target="_blank" rel="noopener noreferrer">BoomBang HTML5</a> · <a href="https://github.com/Fritz-Ale/boombangCL/blob/main/LICENSE.txt" target="_blank" rel="noopener noreferrer">Licencia</a></span></div></div></footer>
+  <footer class="site-footer"><div class="container"><div class="footer-top"><div><a class="brand footer-brand" href="#inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a><p>Un mundo de islas, amistad y aventura.<br>Hecho con cariño para una comunidad inolvidable.</p></div><nav aria-label="Enlaces de pie de página"><a href="#mundo">El mundo</a><a href="comunidad.html">Comunidad</a><a href="foro.html">Foro</a><a href="chat.html">Chat</a><a href="ayuda.html">Cómo jugar</a><a href="normas.html">Normas</a><a href="privacidad.html">Privacidad</a><a href="https://github.com/Fritz-Ale/boombangCL" target="_blank" rel="noopener noreferrer">GitHub</a></nav></div><div class="footer-bottom"><span>© <span id="year">2026</span> BoombangCL · Proyecto independiente no oficial.</span><span>Basado en <a href="https://github.com/GenRubiio/boombang-html5" target="_blank" rel="noopener noreferrer">BoomBang HTML5</a> · <a href="https://github.com/Fritz-Ale/boombangCL/blob/main/LICENSE.txt" target="_blank" rel="noopener noreferrer">Licencia</a></span></div></div></footer>
 </body>
 </html>
