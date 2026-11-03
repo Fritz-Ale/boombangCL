@@ -41,6 +41,8 @@
         </div>
       </div>
       <div class="base-chat__classic-actions" role="group" aria-label="Accesos rápidos de BoomBangCL">
+        <button type="button" class="base-chat__classic-text-button" title="B-Pad" @click="$emit('openBPad')">B-Pad</button>
+        <button type="button" class="base-chat__classic-text-button" title="Panel CEO" @click="$emit('openCEO')">CEO</button>
         <button type="button" class="base-chat__classic-action" title="Catálogo" aria-label="Abrir catálogo" @click="$emit('openShop')">
           <img :src="asset_shop_image" alt="" />
         </button>
@@ -308,6 +310,18 @@ export default {
   align-items: center;
   gap: 8px;
   z-index: 3;
+}
+.base-chat__classic-text-button {
+  min-height: 37px;
+  padding: 5px 9px;
+  border: 2px solid #0b568e;
+  border-radius: 12px;
+  background: linear-gradient(#4ac8f6, #0878bc);
+  color: white;
+  font-weight: bold;
+  text-shadow: 0 1px 1px #114364;
+  box-shadow: 0 3px 0 #084777;
+  cursor: pointer;
 }
 .base-chat__classic-action {
   display: flex;
