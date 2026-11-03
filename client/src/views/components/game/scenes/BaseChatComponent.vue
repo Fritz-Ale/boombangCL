@@ -305,7 +305,7 @@ export default {
 .base-chat__classic-actions {
   position: absolute;
   right: 105px;
-  top: -36px;
+  top: -88px;
   display: flex;
   align-items: center;
   gap: 8px;
