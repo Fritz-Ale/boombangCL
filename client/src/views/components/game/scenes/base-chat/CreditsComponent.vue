@@ -8,6 +8,10 @@
       <img :src="asset_silver_image" alt="Silver" />
       <span>{{ silver }}</span>
     </div>
+    <div class="base-chat__container_credits-shell-container" title="Conchas: moneda futura de BoomBangCL">
+      <span class="shell-label">Conchas</span>
+      <span class="shell-value">{{ conchas === null ? '—' : conchas }}</span>
+    </div>
   </div>
 </template>
 
@@ -23,18 +27,26 @@ export default {
     return {
       gold: 0,
       silver: 0,
+      conchas: null,
+      creditsListener: null,
       asset_gold_image,
       asset_silver_image,
     };
   },
   mounted() {
-    socket.off(ResponseSocketsEnum.REFRESH_USER_CREDITS);
-    socket.on(ResponseSocketsEnum.REFRESH_USER_CREDITS, (data) => {
-      this.gold = data.gold;
-      this.silver = data.silver;
-    });
+    this.creditsListener = (data) => {
+      this.gold = data.gold ?? this.gold;
+      this.silver = data.silver ?? this.silver;
+      if (typeof data.conchas === "number") this.conchas = data.conchas;
+    };
+    socket.on(ResponseSocketsEnum.REFRESH_USER_CREDITS, this.creditsListener);
 
     socket.emit(RequestSocketsEnum.REFRESH_USER_CREDITS);
+  },
+  beforeUnmount() {
+    if (this.creditsListener) {
+      socket.off(ResponseSocketsEnum.REFRESH_USER_CREDITS, this.creditsListener);
+    }
   },
 };
 </script>
@@ -81,4 +93,24 @@ export default {
   object-fit: contain;
   position: absolute;
 }
+
+
+/* Third currency: display only a server-provided amount; no fabricated graphic. */
+.base-chat__container_credits-shell-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 69px;
+  height: 54px;
+  margin-top: 9px;
+  border: 2px solid #b8833a;
+  border-radius: 14px;
+  background: linear-gradient(#fff2c5, #d7a96a);
+  color: #654421;
+  font-size: 11px;
+  font-weight: bold;
+  text-shadow: 0 1px rgba(255,255,255,.75);
+}
+.shell-value { font-size: 16px; }
 </style>
