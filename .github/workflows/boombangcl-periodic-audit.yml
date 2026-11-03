@@ -1,0 +1,94 @@
+name: BoomBangCL - auditoria cada 30 minutos
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boombangcl-periodic-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Descargar version auditada
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Preparar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql
+          coverage: none
+
+      - name: Auditoria de sincronizacion de cliente y servidor
+        id: realtime
+        continue-on-error: true
+        run: |
+          node --test client/tests/live-state-sync.test.cjs client/tests/inventory-realtime.test.cjs client/tests/scene-socket-subscriptions.test.cjs server/tests/live-island-presence.test.cjs server/tests/live-purchase-decoration.test.cjs server/tests/live-purchase-concurrency.test.cjs server/tests/scene-exit-persistence.test.cjs server/tests/scene-object-id-consistency.test.cjs server/tests/island-deletion-db-first.test.cjs server/tests/island-delete-lobby-refresh.test.cjs server/tests/private-scenes-id-normalization.test.cjs
+
+      - name: Auditoria de seguridad Laravel/PHP
+        id: php
+        continue-on-error: true
+        run: |
+          set -e
+          php -l api/app/Http/Middleware/VerifyEmulatorToken.php
+          php -l api/config/database.php
+          php -l api/routes/api.php
+          php api/tests/Standalone/verify-emulator-token.php
+          php api/tests/Standalone/database-config.php
+
+      - name: Informe de auditoria
+        if: always()
+        env:
+          REALTIME_RESULT: ${{ steps.realtime.outcome }}
+          PHP_RESULT: ${{ steps.php.outcome }}
+          AUDIT_SHA: ${{ github.sha }}
+          AUDIT_RUN: ${{ github.run_id }}
+        run: |
+          {
+            echo '# BoomBangCL - Informe automatico'
+            echo
+            echo "- Fecha UTC: $(date -u '+%Y-%m-%d %H:%M:%S')"
+            echo "- Commit auditado: \`$AUDIT_SHA\`"
+            echo "- Pruebas de tiempo real: $REALTIME_RESULT"
+            echo "- Seguridad PHP: $PHP_RESULT"
+            echo "- Ejecucion: $AUDIT_RUN"
+            echo '- Elementos historicos investigados: no evaluados automaticamente'
+            echo '- Archivos incorporados y cambios en GitHub: ninguno; auditoria de solo lectura'
+            echo '- Despliegue: no ejecutado'
+            echo '- Pendiente: revisar logs de los pasos fallidos y contrastar cambios visuales con fuentes verificadas'
+          } | tee audit-report.md
+          cat audit-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar informe
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boombangcl-audit-${{ github.run_id }}
+          path: audit-report.md
+          retention-days: 14
+
+      - name: Marcar fallos para seguimiento
+        if: always()
+        env:
+          REALTIME_RESULT: ${{ steps.realtime.outcome }}
+          PHP_RESULT: ${{ steps.php.outcome }}
+        run: |
+          if [ "$REALTIME_RESULT" != success ] || [ "$PHP_RESULT" != success ]; then
+            echo 'Auditoria con errores: revisar el resumen y los logs.' >&2
+            exit 1
+          fi
