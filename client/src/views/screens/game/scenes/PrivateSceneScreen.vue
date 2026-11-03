@@ -13,7 +13,7 @@
       v-if="isCoconutsInfoCardVisible"
       @close-coconuts-info="hideCoconutsInfoCard"
     />
-    <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" @openBPad="openBPad" @openCEO="openCEO" />
+    <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" @openShop="showShop" @openInventory="showInventory" @openBPad="openBPad" @openCEO="openCEO" />
     <BPadComponent v-if="isBPadVisible" @close="isBPadVisible = false" />
     <CeoPanelComponent v-if="isCEOVisible" @close="isCEOVisible = false" />
     <div v-if="sceneItemError" class="scene-item-error" role="alert">{{ sceneItemError }}</div>
@@ -90,6 +90,11 @@ export default {
   methods: {
     openBPad() { this.isCEOVisible = false; this.isBPadVisible = true; },
     openCEO() { this.isBPadVisible = false; this.isCEOVisible = true; },
+    showInventory() {
+      this.closeAllPanels();
+      const scene = this.$root.gamePhaser?.scene?.getScene("PrivateScene");
+      if (scene?.htmlInventory) scene.htmlInventory.show();
+    },
     showSceneItemError(message) {
       this.sceneItemError = message;
       if (this.sceneItemErrorTimer) clearTimeout(this.sceneItemErrorTimer);
