@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Game\CeoPanelController;
 use App\Http\Middleware\VerifyEmulatorToken;
 use App\Http\Controllers\Internal\BotController;
 use App\Http\Controllers\Internal\ShopController;
@@ -82,6 +83,7 @@ Route::middleware(VerifyEmulatorToken::class)->group(function () {
      * Game API Routes
      */
     Route::middleware(['auth:api'])->group(function () {
+        Route::get('ceo/status', [CeoPanelController::class, 'status']);
         Route::prefix('auth')->group(function () {
             Route::post('jwt-auto-login', [LoginApiController::class, 'jwtAutoLogin']);
             Route::post('logout', [LogoutApiController::class, 'index']);
