@@ -1,3 +1,5 @@
+> **Regla obligatoria BoomBangCL:** antes de cualquier modificación leer [docs/BOOMBANG_FIDELIDAD_HISTORICA.md](docs/BOOMBANG_FIDELIDAD_HISTORICA.md). No introducir contenido visual ni funcional genérico; fundamentar referencias históricas, licencias y pruebas. Esta política complementa las convenciones siguientes.
+
 # AGENTS.md
 
 This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.

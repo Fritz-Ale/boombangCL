@@ -1,0 +1,46 @@
+name: BoomBangCL - auditoria programada
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boombangcl-auditoria-programada
+  cancel-in-progress: false
+
+jobs:
+  auditoria:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validar politica e inventario del repositorio
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s docs/BOOMBANG_FIDELIDAD_HISTORICA.md
+          test -s AGENTS.md
+          test -d client
+          test -d server
+          test -d api
+          test -f README.md
+          {
+            echo "## BoomBangCL: auditoría programada"
+            echo ""
+            echo "- Fecha UTC: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+            echo "- Commit: $GITHUB_SHA"
+            echo "- Política histórica: presente"
+            echo "- Módulos básicos: presentes"
+            echo "- Integridad mínima: superada"
+            echo "- Pruebas funcionales, seguridad, builds y agentes de corrección: **no ejecutados por este flujo**"
+            echo "- Cambios aplicados: ninguno (solo lectura)"
+            echo "- Despliegue: no ejecutado"
+            echo ""
+            echo "Este control no reemplaza las auditorías existentes ni garantiza ausencia de bugs."
+          } >> "$GITHUB_STEP_SUMMARY"
