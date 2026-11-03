@@ -87,6 +87,21 @@ export default class PrivateScene extends Phaser.Scene {
         return videoExtensions.includes(extension);
     }
 
+    // Always prefer the absolute URL emitted by the API. Relative /uploads
+    // paths in local mode otherwise resolve against Vite (port 5173).
+    resolveItemAssetUrl(item) {
+        const url = item?.spreadsheet_url || item?.spreadsheet;
+        if (typeof url !== 'string' || !url.trim()) return '';
+        const source = url.trim();
+        if (/^(https?:|data:|blob:|\/\/)/i.test(source)) return source;
+        const apiUrl = this.sceneData?.sceneConfig?.base_api_url ||
+            import.meta.env.VITE_API_URL || '';
+        if (apiUrl) return apiUrl.replace(/\/+$/, '') + '/' + source.replace(/^\/+/, '');
+        // Preserve root-relative URLs when no API origin is advertised.
+        // Vite can proxy /uploads and /storage to Laravel in development.
+        return source.startsWith('/') ? source : '/' + source;
+    }
+
     preload() {
         this.load.setCORS('anonymous');
         PrivateSceneLoader.main(this, true);
@@ -104,9 +119,13 @@ export default class PrivateScene extends Phaser.Scene {
         if (this.sceneData.myScene) {
             // Cargar dinámicamente los assets de inventario
             this.backpackUserItems.forEach(item => {
-                let assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
+                let assetSrc = this.resolveItemAssetUrl(item);
+                if (!assetSrc) {
+                    console.warn('[BoomBangCL] Imagen de objeto sin URL:', item.sprite_name);
+                    return;
+                }
                 // Detectar si es un video por la extensión
-                if (this.isVideoFile(assetSrc)) {
+                if (this.isVideoFile(assetSrc?.split(/[?#]/, 1)[0])) {
                     this.load.video(item.sprite_name, assetSrc);
                 } else {
                     this.load.image(item.sprite_name, assetSrc);
@@ -117,9 +136,13 @@ export default class PrivateScene extends Phaser.Scene {
         // Cargar objetos de escena existentes
         this.sceneItems.forEach(item => {
             if (!this.textures.exists(item.sprite_name) && !this.cache.video.exists(item.sprite_name)) {
-                let assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
+                let assetSrc = this.resolveItemAssetUrl(item);
+                if (!assetSrc) {
+                    console.warn('[BoomBangCL] Imagen de objeto sin URL:', item.sprite_name);
+                    return;
+                }
                 // Detectar si es un video por la extensión
-                if (this.isVideoFile(assetSrc)) {
+                if (this.isVideoFile(assetSrc?.split(/[?#]/, 1)[0])) {
                     this.load.video(item.sprite_name, assetSrc);
                 } else {
                     this.load.image(item.sprite_name, assetSrc);
@@ -334,8 +357,8 @@ export default class PrivateScene extends Phaser.Scene {
                     // It's a new item from inventory
                     const item = data.item;
                     const textureName = item.sprite_name;
-                    const assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
-                    const isVideo = this.isVideoFile(assetSrc);
+                    const assetSrc = this.resolveItemAssetUrl(item);
+                    const isVideo = this.isVideoFile(assetSrc?.split(/[?#]/, 1)[0]);
 
                     // Check if asset already exists (image or video)
                     const assetExists = isVideo ? this.cache.video.exists(textureName) : this.textures.exists(textureName);
@@ -1036,8 +1059,8 @@ export default class PrivateScene extends Phaser.Scene {
             // Crear o actualizar sprite
             if (!item.sprite) {
                 // Determinar si es video o imagen
-                const assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
-                const isVideo = this.isVideoFile(assetSrc);
+                const assetSrc = this.resolveItemAssetUrl(item);
+                const isVideo = this.isVideoFile(assetSrc?.split(/[?#]/, 1)[0]);
 
                 if (isVideo && this.cache.video.exists(item.sprite_name)) {
                     // Crear video sprite
