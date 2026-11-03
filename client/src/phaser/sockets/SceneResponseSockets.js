@@ -1,3 +1,4 @@
+import sceneSocketSubscriptions from "../utils/sceneSocketSubscriptions.js";
 import socket from "../../sockets/socket"; // Conexión Socket.io
 import UserSelectUserController from "../controllers/scene/UserSelectUserController";
 import UserUpdatePositionController from "../controllers/scene/UserUpdatePositionController";
@@ -17,70 +18,71 @@ import UserChangeAvatarController from "../controllers/scene/UserChangeAvatarCon
 
 class SceneResponseSockets {
     static main(gameScene) {
+        const { listen } = sceneSocketSubscriptions(gameScene, socket);
         // Escuchar cuando un nuevo jugador entra
-        socket.on(ResponseSocketsEnum.NEW_USER_JOIN_SCENE, (data) => {
+        listen(ResponseSocketsEnum.NEW_USER_JOIN_SCENE, (data) => {
             AddUserController.main(gameScene, data.user);
         });
 
         // Escuchar cuando un jugador se mueve
-        socket.on(ResponseSocketsEnum.USER_MOVE, (data) => {
+        listen(ResponseSocketsEnum.USER_MOVE, (data) => {
             MoveUserController.main(gameScene, data);
         });
 
-        socket.on(ResponseSocketsEnum.USER_LEFT_PUBLIC_SCENE, (data) => {
+        listen(ResponseSocketsEnum.USER_LEFT_PUBLIC_SCENE, (data) => {
             RemoveUserController.main(gameScene, data.socketId);
         });
 
-        socket.on(ResponseSocketsEnum.REMOVE_USER_SCENE, () => {
+        listen(ResponseSocketsEnum.REMOVE_USER_SCENE, () => {
             RemoveUserAreaController.main(gameScene);
         });
 
-        socket.on(ResponseSocketsEnum.USER_MOVE_DENIED, (data) => {
+        listen(ResponseSocketsEnum.USER_MOVE_DENIED, (data) => {
             UserMoveDeniedController.main(gameScene, data.id);
         });
 
-        socket.on(ResponseSocketsEnum.USER_SELECT_USER, (data) => {
+        listen(ResponseSocketsEnum.USER_SELECT_USER, (data) => {
             //console.log('User select user', data);
             UserSelectUserController.main(gameScene, data);
         });
 
-        socket.on(ResponseSocketsEnum.USER_UPDATE_POSITION, (data) => {
+        listen(ResponseSocketsEnum.USER_UPDATE_POSITION, (data) => {
             UserUpdatePositionController.main(gameScene, data);
         });
 
-        socket.on(ResponseSocketsEnum.SEND_UPPERCUT, (data) => {
+        listen(ResponseSocketsEnum.SEND_UPPERCUT, (data) => {
             SendUppercutAnimationController.main(gameScene, data);
         });
 
-        socket.on(ResponseSocketsEnum.SEND_EMOJI, (data) => {
+        listen(ResponseSocketsEnum.SEND_EMOJI, (data) => {
             UserSendEmojiController.main(gameScene, data);
         });
 
-        socket.on(ResponseSocketsEnum.SEND_CHAT, (data) => {
+        listen(ResponseSocketsEnum.SEND_CHAT, (data) => {
             UserSendChatController.main(gameScene, data);
         });
 
-        socket.on(ResponseSocketsEnum.USER_RECEIVE_EFFECT, (data) => {
+        listen(ResponseSocketsEnum.USER_RECEIVE_EFFECT, (data) => {
             UserReceiveEffectController.main(gameScene, data);
         });
 
-        socket.on(ResponseSocketsEnum.USER_RECEIVE_INTERACTION, (data) => {
+        listen(ResponseSocketsEnum.USER_RECEIVE_INTERACTION, (data) => {
             InteractionNotificationController.create(gameScene, data);
         });
 
-        socket.on(ResponseSocketsEnum.USER_CANCEL_INTERACTION, (data) => {
+        listen(ResponseSocketsEnum.USER_CANCEL_INTERACTION, (data) => {
             InteractionNotificationController.remove(data.fromUser);
         });
 
-        socket.on(ResponseSocketsEnum.USER_ACCEPT_INTERACTION, (data) => {
+        listen(ResponseSocketsEnum.USER_ACCEPT_INTERACTION, (data) => {
             InteractionNotificationController.remove(data.fromUser);
         });
 
-        socket.on(ResponseSocketsEnum.USERS_INTERACTION, (data) => {
+        listen(ResponseSocketsEnum.USERS_INTERACTION, (data) => {
             SendInteractionAnimationController.main(gameScene, data);
         });
 
-        socket.on(ResponseSocketsEnum.USER_CHANGE_AVATAR, (data) => {
+        listen(ResponseSocketsEnum.USER_CHANGE_AVATAR, (data) => {
             UserChangeAvatarController.main(gameScene, data);
         });
     }

@@ -71,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import socket from '@/sockets/socket';
 import RequestSocketsEnum from '@/enums/RequestSocketsEnum';
 import ResponseSocketsEnum from '@/enums/ResponseSocketsEnum';
@@ -153,15 +153,42 @@ const loadInventory = () => {
   socket.emit(RequestSocketsEnum.GET_PUBLIC_INVENTORY);
 };
 
-onMounted(() => {
-  loadInventory();
+// Mantener el inventario sincronizado mientras el panel está abierto. La compra
+// y las retiradas de la isla generan eventos; el snapshot sigue siendo la fuente
+// de verdad para una carga inicial o una reconciliación.
+const handleInventorySnapshot = (data) => {
+  loading.value = false;
+  if (data?.success !== false && Array.isArray(data?.inventory)) {
+    inventoryItems.value = data.inventory;
+  }
+};
+const handleItemAdded = (data) => {
+  const item = data?.item;
+  if (item?.id == null) return;
+  if (!inventoryItems.value.some(existing => String(existing.id) === String(item.id))) {
+    inventoryItems.value = [...inventoryItems.value, item];
+  }
+};
+const handleItemRemoved = (data) => {
+  if (data?.user_catalog_item_id == null) return;
+  inventoryItems.value = inventoryItems.value.filter(
+    item => String(item.id) !== String(data.user_catalog_item_id)
+  );
+};
+watch(totalPages, pages => {
+  currentPage.value = Math.min(currentPage.value, pages - 1);
+});
 
-  socket.on(ResponseSocketsEnum.PUBLIC_INVENTORY_DATA, (data) => {
-    loading.value = false;
-    if (data.inventory) {
-      inventoryItems.value = data.inventory;
-    }
-  });
+onMounted(() => {
+  socket.on(ResponseSocketsEnum.PUBLIC_INVENTORY_DATA, handleInventorySnapshot);
+  socket.on(ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY, handleItemAdded);
+  socket.on(ResponseSocketsEnum.REMOVE_ITEM_FROM_INVENTORY, handleItemRemoved);
+  loadInventory(); // Registrar handlers ANTES del snapshot para evitar carreras.
+});
+onUnmounted(() => {
+  socket.off(ResponseSocketsEnum.PUBLIC_INVENTORY_DATA, handleInventorySnapshot);
+  socket.off(ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY, handleItemAdded);
+  socket.off(ResponseSocketsEnum.REMOVE_ITEM_FROM_INVENTORY, handleItemRemoved);
 });
 </script>
 

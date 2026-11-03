@@ -75,7 +75,7 @@ export default {
         await this.initializePhaser();
       }
       // Esperar a que termine la precarga antes de cambiar a LOBBY
-      this.gamePhaser.events.on("globalPreloaderComplete", () => {
+      this.gamePhaser.events.once("globalPreloaderComplete", () => {
         this.isAuthenticated = true; // Activa GameScreens
         this.onUpdateLoading(false);
       });
@@ -161,17 +161,23 @@ export default {
       this.gamePhaser.canvas.style.height = gameConfig.GAME_HEIGHT + "px";
     },
     handleDisconnect() {
-      this.onUpdateLoading(true);
-      if (this.gamePhaser && this.gamePhaser.scene) {
-        this.gamePhaser.scene.stop("PublicScene");
-        this.gamePhaser.scene.stop("MinigameScene");
+      // Socket.IO puede reconectarse sin recargar HTML5. El emulador guarda
+      // la autenticación y la sala en el socket anterior: al perderlo, volver
+      // a la pantalla de acceso para recuperar la sesión mediante JWT.
+      this.isAuthenticated = false;
+      this.loading = false;
+      socket.user = null;
+      if (this.gamePhaser) {
+        this.gamePhaser.destroy(true);
+        this.gamePhaser = null;
       }
-      this.gamePhaser = null;
-      document.getElementById("phaser-container").innerHTML = "";
-      this.currentScreen = GameScreensEnum.LOGIN;
-      this.onUpdateLoading(false);
-
-      location.reload();
+      // AuthScreen/LoginForm realiza JWT_AUTO_LOGIN en cuanto vuelve el socket.
+      // No borrar el JWT por una desconexión temporal.
+    },
+    handleCriticalError() {
+      // Evita el bucle de reingreso automático si el servidor expulsa la sesión.
+      localStorage.removeItem("app_jwt");
+      this.handleDisconnect();
     },
     onUpdateLoading(value) {
       this.loading = value;
@@ -209,11 +215,9 @@ export default {
     socket.on("disconnect", this.handleDisconnect);
 
     // Detectar reconexión
-    socket.on("connect", () => {
-      //console.log("Reconectado al servidor");
-    });
 
-    socket.on("error_critical", this.handleDisconnect);
+
+    socket.on("error_critical", this.handleCriticalError);
 
     // Inicializar auto-escalado del juego
     this.rescaleGame();
@@ -222,8 +226,7 @@ export default {
   beforeUnmount() {
     // Remover listeners de socket para evitar fugas de memoria
     socket.off("disconnect", this.handleDisconnect);
-    socket.off("connect");
-    socket.off("error_critical", this.handleDisconnect);
+    socket.off("error_critical", this.handleCriticalError);
     
     // Remover listener de resize
     window.removeEventListener("resize", this.rescaleGame);

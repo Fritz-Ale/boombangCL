@@ -21,7 +21,7 @@ class SocketNotificationService
             $socketServerUrl = config('app.socket_server_url', 'http://localhost:3000');
             
             // Enviar notificación al servidor socket
-            $response = Http::timeout(5)->post("{$socketServerUrl}/api/notify-credits-update", [
+            $response = Http::timeout(5)->withHeaders(['X-Emulator-Token' => config('app.emulator_api_token')])->post("{$socketServerUrl}/api/notify-credits-update", [
                 'user_id' => $user->id,
                 'gold' => $user->gold_coins,
                 'silver' => $user->silver_coins,
@@ -51,7 +51,7 @@ class SocketNotificationService
     public static function notifyInventoryUpdate(User $user, array $items = [])
     {
         try {
-            $socketServerUrl = config('app.socket_server_url', 'http://localhost:3001');
+            $socketServerUrl = config('app.socket_server_url', 'http://localhost:3000');
             
             $response = Http::timeout(5)->post("{$socketServerUrl}/api/notify-inventory-update", [
                 'user_id' => $user->id,

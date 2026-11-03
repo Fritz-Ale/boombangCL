@@ -1,3 +1,4 @@
+import Phaser from "phaser";
 /**
  * Utilidad para calcular el oscurecimiento basado en la hora del juego
  */

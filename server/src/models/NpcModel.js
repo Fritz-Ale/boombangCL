@@ -2,7 +2,8 @@ class NpcModel {
     constructor(row) {
         this.id = row.id;
         this.type = row.type;
-        this.stripeName = row.stripe_name;
+        this.spriteName = row.sprite_name ?? row.stripe_name;
+        this.stripeName = this.spriteName; // Backwards compatibility
         this.name = row.name;
         this.description = row.description;
         this.image = row.image;

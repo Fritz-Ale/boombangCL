@@ -64,6 +64,10 @@ class UserJoinPublicSceneController {
                 
                 if (!added) {
                     logger.log(`Failed to add user ${user.username} to scene ${scene.name}, user already present`, 'warn');
+                    socket.emit(ResponseSocketsEnum.JOIN_PUBLIC_SCENE, {
+                        success: false,
+                        message: 'No se pudo ingresar a la sala'
+                    });
                     return;
                 }
                 

@@ -3,6 +3,7 @@ const ConnectedUsersCollection = require('../../../collections/ConnectedUsersCol
 const PrivateSceneApiService = require('../../../services-api/PrivateSceneApiService');
 const PrivateScenesCollection = require('../../../collections/PrivateScenesCollection');
 const RemoveUserFromSceneTask = require('../../../tasks/RemoveUserFromSceneTask');
+const GetPublicIslandsController = require('../islands/GetPublicIslandsController');
 
 class DeletePrivateSceneController {
     static async main(socket, io, data) {
@@ -15,7 +16,7 @@ class DeletePrivateSceneController {
                 return;
             }
 
-            const { sceneId } = data;
+            const { sceneId } = data || {};
 
             if (!sceneId) {
                 socket.emit(ResponseSocketsEnum.ERROR_PRIVATE_SCENE_DELETE, {
@@ -34,6 +35,19 @@ class DeletePrivateSceneController {
                 islandId = privateScene.island_id;
             }
 
+            // Llamar a la API para eliminar la escena
+            // La API se encargará de limpiar los objetos (poner private_scene_id a null)
+            const response = await PrivateSceneApiService.delete({
+                sceneId: sceneId
+            }, user);
+
+            if (response?.statusCode >= 400 || response?.success !== true) {
+                socket.emit(ResponseSocketsEnum.ERROR_PRIVATE_SCENE_DELETE, {
+                    message: response?.message || 'Failed to delete scene', sceneId
+                });
+                return;
+            }
+
             // Si la escena existe y tiene usuarios, expulsarlos
             if (privateScene && privateScene.users && privateScene.users.length > 0) {
                 // Hacer una copia del array de usuarios para evitar problemas al modificar durante la iteración
@@ -44,12 +58,6 @@ class DeletePrivateSceneController {
                     RemoveUserFromSceneTask.main(privateScene, sceneUser);
                 });
             }
-
-            // Llamar a la API para eliminar la escena
-            // La API se encargará de limpiar los objetos (poner private_scene_id a null)
-            const response = await PrivateSceneApiService.delete({
-                sceneId: sceneId
-            }, user);
 
             if (response.success) {
                 // Notificar a TODOS los usuarios viendo la isla (incluyendo el que eliminó)
@@ -72,6 +80,8 @@ class DeletePrivateSceneController {
                 if (PrivateScenesCollection.getById(sceneId)) {
                     PrivateScenesCollection.remove(sceneId);
                 }
+                // Todos los usuarios del lobby reciben el estado actual.
+                GetPublicIslandsController.broadcastToLobby();
             } else {
                 socket.emit(ResponseSocketsEnum.ERROR_PRIVATE_SCENE_DELETE, {
                     message: response.message || 'Failed to delete scene',
@@ -90,7 +100,7 @@ class DeletePrivateSceneController {
 
             socket.emit(ResponseSocketsEnum.ERROR_PRIVATE_SCENE_DELETE, {
                 message: errorMessage,
-                sceneId: data.sceneId
+                sceneId: data?.sceneId
             });
         }
     }

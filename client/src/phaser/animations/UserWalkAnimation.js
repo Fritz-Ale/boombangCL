@@ -14,6 +14,8 @@ class UserWalkAnimation {
      * @param {string} avatarId - Para usar la config apropiada
      */
     static playWalk(spriteAvatar, direction, avatarId, gameScene) {
+        // No iniciar animaciones hasta que el marcador sea reemplazado por un atlas real.
+        if (!spriteAvatar || spriteAvatar._isPlaceholderAvatar) return;
         if (UserEmojiAnimation.isFlying(spriteAvatar)) {
             UserEmojiAnimation.cancelFly(spriteAvatar, gameScene);
         }

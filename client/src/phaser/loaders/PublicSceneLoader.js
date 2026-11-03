@@ -4,25 +4,40 @@ import DarkeningUtils from "@/utils/DarkeningUtils";
 class PublicSceneLoader {
     static main(gameScene, preload = true) {
         const areaId = gameScene.sceneData.scenery.id;
-        const assets = gameScene.sceneData.scenery.assets_data.assets_data_repeatable || [];
+        const assetEntries = gameScene.sceneData.scenery.assets_data?.assets_data_repeatable;
+        const assets = Array.isArray(assetEntries) ? assetEntries : [];
         const npc = gameScene.sceneData.scenery.npc;
-        const baseApiUrl = gameScene.sceneData.scenery.base_api_url + '/';
+        const baseApiUrl = (gameScene.sceneData.scenery.base_api_url || '').replace(/\/$/, '') + '/';
 
         if (preload) {
             this.#preload(areaId, assets, npc, gameScene, baseApiUrl);
-            this.#loadItems(gameScene);
-            this.#loadArrows(gameScene);
+            this.#loadItems(gameScene, baseApiUrl);
+            this.#loadArrows(gameScene, baseApiUrl);
         }
         else {
             this.#load(areaId, assets, npc, gameScene);
         }
     }
 
+    static #assetUrl(value, baseApiUrl) {
+        if (typeof value !== 'string' || !value.trim()) return '';
+        const source = value.trim();
+        if (/^(https?:|data:|blob:|\/\/)/i.test(source)) return source;
+        // VITE_APP_ENV=local también puede estar en un bundle servido por
+        // nginx. Allí /uploads no existe: todos los recursos de escena están
+        // en el host público de Laravel, no en el host estático del cliente.
+        const path = source.replace(/^\/+/, '');
+        return baseApiUrl + path;
+    }
+
     static #preload(areaId, assets, npc, gameScene, baseApiUrl) {
-        const viteEnv = import.meta.env.VITE_APP_ENV;
         assets.forEach((asset, index) => {
+            if (!asset || typeof asset !== 'object') return;
             const spriteName = 'public_scene_' + areaId + '_item_' + index;
-            const assetSrc = viteEnv == 'local' ? asset.image : (baseApiUrl + asset.image);
+            const assetSrc = this.#assetUrl(asset.image, baseApiUrl);
+            // Phaser cannot load an empty URL. Skip it and report a missing
+            // resource during rendering rather than crashing the whole scene.
+            if (!assetSrc) return;
             if (SceneUtils.isVideoFile(assetSrc)) {
                 gameScene.load.video(spriteName, assetSrc);
             } else {
@@ -30,8 +45,9 @@ class PublicSceneLoader {
             }
         });
         if (npc && npc.active) {
-            const spriteName = 'public_scene_' + areaId + '_npc_' + npc.sprite_name;
-            const npcSrc = viteEnv == 'local' ? npc.image : (baseApiUrl + npc.image);
+            const spriteName = 'public_scene_' + areaId + '_npc_' + (npc.spriteName ?? npc.sprite_name ?? npc.stripeName);
+            const npcSrc = this.#assetUrl(npc.image, baseApiUrl);
+            if (!npcSrc) return;
             if (SceneUtils.isVideoFile(npcSrc)) {
                 gameScene.load.video(spriteName, npcSrc);
             } else {
@@ -44,7 +60,9 @@ class PublicSceneLoader {
         const gameTime = gameScene.sceneData.scenery.game_time;
         const roomHasDarkening = gameScene.sceneData.scenery.darkening;
 
+        let backgroundLoaded = false;
         assets.forEach((asset, index) => {
+            if (!asset || typeof asset !== 'object') return;
             const spriteName = 'public_scene_' + areaId + '_item_' + index;
             
             // Verificar si el item debe mostrarse según show_from y show_to
@@ -55,7 +73,7 @@ class PublicSceneLoader {
             );
 
             if (asset.is_background == 1) {
-                this.#loadBackground(gameScene, spriteName, gameTime, roomHasDarkening);
+                backgroundLoaded = this.#loadBackground(gameScene, spriteName) || backgroundLoaded;
             }
             else {
                 this.#loadSingleItem(gameScene, spriteName, {
@@ -63,7 +81,7 @@ class PublicSceneLoader {
                     x: parseInt(asset.position_x),
                     y: parseInt(asset.position_y),
                     custom_depth: parseInt(asset.depth),
-                    scale: parseInt(asset.scale) || null,
+                    scale: Number(asset.scale) || 1,
                     show_item: shouldShow,
                     show_controller: asset.show_controller == 1,
                     darkening: asset.darkening,
@@ -75,6 +93,14 @@ class PublicSceneLoader {
 
         this.#loadNpc(gameScene, npc, areaId);
 
+        if (!backgroundLoaded) {
+            // A missing or inaccessible historical sprite must not leave the
+            // playing field completely black. This is a neutral fallback, not
+            // a substitute for authorized BoomBang artwork.
+            gameScene.cameras?.main?.setBackgroundColor('#274d65');
+            this.#reportMissing(gameScene, 'background_missing', 'public_scene_' + areaId);
+        }
+
         //SceneUtils.moveItems(gameScene);
     }
 
@@ -82,10 +108,14 @@ class PublicSceneLoader {
         if (!item.show_item) {
             return; // Si no se debe mostrar el item, no hacemos nada
         }
+        if (!gameScene.cache.video.has(spriteName) && !gameScene.textures.exists(spriteName)) {
+            this.#reportMissing(gameScene, 'scene_item_missing', spriteName);
+            return;
+        }
 
         let sprite;
         const depth = item.custom_depth == 0 ? 0 : (item.custom_depth || item.y) * item.scale;
-        if (SceneUtils.isVideoFile(item.image)) {
+        if (gameScene.cache.video.has(spriteName)) {
             sprite = gameScene.add.video(item.x * item.scale, item.y * item.scale, spriteName)
                 .setOrigin(0.5, 1)
                 .setDepth(depth)
@@ -119,12 +149,19 @@ class PublicSceneLoader {
         }
         // Aplicar factor de escala para big_scene (los NPCs sí se escalan)
         const scaleFactor = gameScene.sceneScaleFactor || 1;
-        const finalScale = npcData.scale * scaleFactor;
+        const finalScale = (Number(npcData.scale) || 1) * scaleFactor;
 
-        const spriteName = 'public_scene_' + areaId + '_npc_' + npcData.spriteName;
+        const spriteName = 'public_scene_' + areaId + '_npc_' + (npcData.spriteName ?? npcData.sprite_name ?? npcData.stripeName);
+        const isVideo = gameScene.cache.video.has(spriteName);
+        if (!isVideo && !gameScene.textures.exists(spriteName)) {
+            this.#reportMissing(gameScene, 'npc_missing', spriteName);
+            return;
+        }
         let sprite;
 
-        if (SceneUtils.isVideoFile(npcData.image)) {
+        // Match the type that Phaser actually loaded, including signed URLs
+        // with query parameters, rather than testing the original raw path.
+        if (isVideo) {
             sprite = gameScene.add.video(npcData.positionX * scaleFactor, npcData.positionY * scaleFactor, spriteName);
             sprite.setOrigin(0.5, 1);
             sprite.setDepth(npcData.depth || npcData.positionY * scaleFactor);
@@ -154,33 +191,60 @@ class PublicSceneLoader {
         //SceneUtils.moveItem(gameScene, sprite);
     }
 
-    static #loadBackground(gameScene, spriteName, gameTime, roomHasDarkening) {
-        const background = gameScene.add.image(0, 0, spriteName).setOrigin(0);
+    static #loadBackground(gameScene, spriteName) {
+        const isVideo = gameScene.cache.video.has(spriteName);
+        if (!isVideo && !gameScene.textures.exists(spriteName)) {
+            this.#reportMissing(gameScene, 'background_texture_missing', spriteName);
+            return false;
+        }
+        const background = isVideo
+            ? gameScene.add.video(0, 0, spriteName)
+            : gameScene.add.image(0, 0, spriteName);
+        background.setOrigin(0);
         background.setDisplaySize(gameScene.scale.width, gameScene.scale.height);
-        background.setDepth(-1); // Asegurar que esté detrás de todo
+        background.setDepth(-1); // Mantener detrás de los demás elementos
+        if (isVideo) {
+            background.setLoop(true);
+            background.play(true);
+        }
         
         // El oscurecimiento ahora es global por escena, no por sprite
+        return true;
     }
 
-    static #loadArrows(gameScene) {
-        if (!gameScene.sceneData.scenery.arrows || gameScene.sceneData.scenery.arrows.length === 0) {
-            return;
-        }
-        const viteEnv = import.meta.env.VITE_APP_ENV;
-        for (const arrow of gameScene.sceneData.scenery.arrows) {
-            const assetSpriteFile = viteEnv == 'local' ? arrow.image : arrow.image_url;
+    static #reportMissing(gameScene, code, assetKey) {
+        const detail = { sceneId: gameScene.sceneData?.scenery?.id, code, assetKey };
+        console.warn('[BoomBangCL] Recurso de área pública no disponible:', detail);
+        gameScene.events?.emit('public-scene-asset-warning', detail);
+    }
+
+    static #loadArrows(gameScene, baseApiUrl) {
+        const arrows = gameScene.sceneData.scenery.arrows;
+        if (!Array.isArray(arrows)) return;
+        for (const arrow of arrows) {
+            if (!arrow || typeof arrow !== 'object') continue;
+            const assetSpriteFile = this.#assetUrl(arrow.image_url || arrow.image, baseApiUrl);
+            if (!assetSpriteFile) continue;
             gameScene.load.image('arrow_' + arrow.sprite_name, assetSpriteFile);
         }
     }
 
-    static async #loadItems(gameScene) {
-        const viteEnv = import.meta.env.VITE_APP_ENV;
-        for (const item of gameScene.sceneData.scenery.items) {
-            const assetSpriteFile = viteEnv == 'local' ? item.sprite_file : item.sprite_file_url;
-            gameScene.load.image('item_' + item.file_name, assetSpriteFile);
+    static #loadItems(gameScene, baseApiUrl) {
+        const items = gameScene.sceneData.scenery.items;
+        if (!Array.isArray(items)) return;
+        for (const item of items) {
+            if (!item || typeof item !== 'object') continue;
+            const assetSpriteFile = this.#assetUrl(item.sprite_file_url || item.sprite_file, baseApiUrl);
+            if (assetSpriteFile) {
+                gameScene.load.image('item_' + item.file_name, assetSpriteFile);
+            }
             if (item.catch_file_name) {
-                const assetCatchSpriteFile = viteEnv == 'local' ? item.catch_sprite_file : item.catch_sprite_file_url;
-                gameScene.load.image('item_' + item.catch_file_name, assetCatchSpriteFile);
+                const assetCatchSpriteFile = this.#assetUrl(
+                    item.catch_sprite_file_url || item.catch_sprite_file, baseApiUrl
+                );
+                if (assetCatchSpriteFile) {
+                    gameScene.load.image('item_' + item.catch_file_name, assetCatchSpriteFile);
+                }
             }
         }
     }

@@ -9,7 +9,6 @@ import SceneResponseSockets from "./sockets/SceneResponseSockets"; // Controlado
 import OverheadChatAnimation from "./animations/OverheadChatAnimation"; // Animación de chat
 import PublicSceneLoader from "./loaders/PublicSceneLoader"; // Precargador de escena
 import CreateSceneController from "./controllers/scene/CreateSceneController"; // Controlador de creación de escena
-import RemovePhaserSocketsUtil from "../utils/RemovePhaserSocketsUtil"; // Utilidad para eliminar sockets
 import TintManager from "./managers/TintManager"; // Gestor de tintes
 import PublicSceneResponse from "./sockets/PublicSceneResponse"; // Respuesta de escena pública
 import AvatarSystemController from "./controllers/AvatarSystemController.js"; // Nuevo sistema de avatares
@@ -26,6 +25,7 @@ import ButtonsPublicSceneHtml from "./html/public-scene/ButtonsPublicSceneHtml";
 import SceneUtils from "../utils/SceneUtils";
 import earlyEventBuffer from "../utils/EarlyEventBuffer"; // Buffer de eventos tempranos
 import AddUserController from "./controllers/scene/AddUserController"; // Para procesar usuarios del buffer
+import drainSceneEntryEvents from "./utils/drainSceneEntryEvents";
 
 
 export default class PublicScene extends Phaser.Scene {
@@ -42,9 +42,22 @@ export default class PublicScene extends Phaser.Scene {
         // Sistema de buffer de eventos
         this.isSceneReady = false;
         this.eventBuffer = [];
+        this.sceneGeneration = 0;
+        this._sceneClosed = false;
+        this._destroyHookRegistered = false;
     }
 
     init(data) {
+        // Reiniciar el estado cuando Phaser reutiliza esta instancia de sala.
+        this.sceneGeneration += 1;
+        this._sceneClosed = false;
+        this.isSceneReady = false;
+        this.eventBuffer = [];
+        this.avatarsEssentialReady = false;
+        this.allAvatarsReady = false;
+        this.avatarLoadingProgress = 0;
+        this.darkeningData = null;
+        this._nameTagCleanupHooked = false;
         this.sceneType = data.sceneType; // ID de la sala
         this.sceneData = data.sceneData; // Datos de la escena
         this.users = {}; // Objeto para almacenar jugadores en la sala
@@ -71,6 +84,13 @@ export default class PublicScene extends Phaser.Scene {
     }
 
     async create() {
+        const generation = this.sceneGeneration;
+        // Registrar la limpieza antes de cualquier await durante la creación.
+        this.events.once('shutdown', this.shutdown, this);
+        if (!this._destroyHookRegistered) {
+            this.events.once('destroy', this.destroy, this);
+            this._destroyHookRegistered = true;
+        }
         //console.log("🎮 Inicializando PublicScene...");
         
         if (!this.plugins.get('rexColorReplacePipeline')) {
@@ -120,13 +140,12 @@ export default class PublicScene extends Phaser.Scene {
         
         // Crear usuarios iniciales
         await CreateSceneController.main(this, this.sceneData);
-        
+        if (generation !== this.sceneGeneration) return;
+
         this.vueComponent.$emit("updateLoading", false);
 
         this.chatManager = new OverheadChatAnimation(this);
 
-        this.events.on('shutdown', this.shutdown, this);
-        this.events.on('destroy', this.destroy, this);
         this.scene.pauseOnBlur = false;
         this.scene.pauseOnHide = false;
 
@@ -136,34 +155,22 @@ export default class PublicScene extends Phaser.Scene {
         // Solo si existen elementos registrados por el loader
         SceneUtils.setupPublicMoveController(this);
         
-        // Marcar escena como lista
+        // Draining sin setTimeout: ninguna entrada rezagada sobrevive al cierre.
         this.isSceneReady = true;
-        
-        // Obtener eventos capturados por el EarlyEventBuffer
         const earlyEvents = earlyEventBuffer.deactivateAndFlush();
-        
-        // Agregar eventos tempranos al buffer de la escena
-        earlyEvents.forEach(event => {
+        for (const event of earlyEvents) {
+            if (event.data?.user?.id == null) continue;
             this.eventBuffer.push({
                 type: 'NEW_USER_JOIN_SCENE',
                 data: event.data,
                 callback: () => AddUserController.processUser(this, event.data.user)
             });
-        });
-        
-        // Procesar todos los eventos en buffer con un pequeño delay entre cada uno
-        const totalEvents = this.eventBuffer.length;
-        if (totalEvents > 0) {
-            this.eventBuffer.forEach((bufferedEvent, index) => {
-                setTimeout(() => {
-                    bufferedEvent.callback();
-                }, index * 100); // 100ms de delay entre cada evento
-            });
-            
-            // Limpiar buffer
-            this.eventBuffer = [];
         }
-        
+        const queuedEvents = this.eventBuffer;
+        this.eventBuffer = [];
+        const drained = await drainSceneEntryEvents(this, queuedEvents, generation);
+        if (!drained) return;
+
         // Notificar al VisibilityManager que la escena está completamente cargada
         if (window.visibilityManager) {
             window.visibilityManager.onSceneLoaded(this);
@@ -350,6 +357,9 @@ export default class PublicScene extends Phaser.Scene {
     }
 
     shutdown() {
+        if (this._sceneClosed) return;
+        this._sceneClosed = true;
+        this.sceneGeneration += 1; // Invalida trabajos asíncronos de la sala anterior.
         //console.log("🧹 Shutting down PublicScene...");
 
         // Limpiar buffer de eventos
@@ -371,7 +381,6 @@ export default class PublicScene extends Phaser.Scene {
             AvatarSystemController.removeUser(userId);
         });
 
-        RemovePhaserSocketsUtil.main(socket); // Eliminar eventos de socket
 
         if (this.chatManager) {
             this.chatManager.destroy();

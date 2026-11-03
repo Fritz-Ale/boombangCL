@@ -43,11 +43,15 @@ use App\Http\Controllers\Api\Game\Scene\SceneUserAvatarsApiController;
 use App\Http\Controllers\Api\Game\Config\PrivateSceneConfigApiController;
 use App\Http\Controllers\Api\Game\Scene\SceneUserDecorationsApiController;
 
-Route::prefix('test')->group(function () {
-    Route::prefix('auth')->group(function () {
-        Route::post('login', [LoginApiController::class, 'login']);
+// Endpoints de diagnóstico únicamente en entornos de desarrollo/pruebas.
+// Nunca exponer un segundo login sin el middleware del emulador en producción.
+if (app()->environment(['local', 'testing'])) {
+    Route::prefix('test')->group(function () {
+        Route::prefix('auth')->group(function () {
+            Route::post('login', [LoginApiController::class, 'login']);
+        });
     });
-});
+}
 
 Route::middleware(VerifyEmulatorToken::class)->group(function () {
     Route::prefix('auth')->group(function () {

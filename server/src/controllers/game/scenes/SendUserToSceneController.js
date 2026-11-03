@@ -12,21 +12,28 @@ const logger = new ConsoleLogger();
 class SendUserToSceneController {
     static async main(user, arrow) {
         try {
-            RemoveUserFromSceneTask.main(user.currentArea, user);
-
+            // Primero validar el destino: una puerta obsoleta no debe expulsar al jugador.
             let scene = PublicScenesCollection.getById(arrow.public_scene_id);
             if (!scene) {
                 scene = GameScenesCollection.getById(arrow.public_scene_id);
             }
 
             if (!scene) {
+                logger.log(`Ignoring invalid destination scene ${arrow.public_scene_id}`, 'warn');
                 return;
             }
+
+            // No retirar al usuario de su sala si el destino es el mismo.
+            if (scene === user.currentArea) return;
 
             // Usar el mutex global para sincronizar el acceso a la escena
             const release = await sceneMutex.acquire(scene.id);
 
             try {
+                // Desconectar de la sala origen solo una vez validado el destino.
+                if (user.currentArea) {
+                    RemoveUserFromSceneTask.main(user.currentArea, user);
+                }
                 // Agregar usuario a la escena de manera atómica
                 user.setArea(scene);
                 const added = scene.addUser(user, {
@@ -43,7 +50,7 @@ class SendUserToSceneController {
                 // Obtener la lista actualizada de usuarios
                 let sceneUsers = [];
                 for (const sceneUser of scene.users) {
-                    sceneUsers.push(await new UserResource(sceneUser).toObject());
+                    sceneUsers.push(await new UserResource(sceneUser).toPublicObject());
                 }
 
                 // Enviar respuesta al usuario que se está uniendo
@@ -61,7 +68,7 @@ class SendUserToSceneController {
 
                 // Notificar a todos los demás usuarios
                 scene.emitToAllExcept(ResponseSocketsEnum.NEW_USER_JOIN_SCENE, {
-                    user: await new UserResource(user).toObject(),
+                    user: await new UserResource(user).toPublicObject(),
                 }, user);
                 
             } finally {

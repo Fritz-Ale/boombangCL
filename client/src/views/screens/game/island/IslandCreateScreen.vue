@@ -132,13 +132,7 @@ export default {
         name: this.islandName,
         type: this.currentIslandConfig.id,
       });
-      socket.off(ResponseSocketsEnum.ISLAND_CREATE_ERROR);
-      socket.on(ResponseSocketsEnum.ISLAND_CREATE_ERROR, (response) => {
-        let message = response.message;
-        this.errorCreateIsland = true;
-        this.errorMessage = message;
-        this.isCreating = false;
-      });
+
     },
     handleImageLoad() {
       if (this.imagesLoaded) return;
@@ -171,10 +165,8 @@ export default {
     loadIslandsConfig() {
       // Emitir solicitud para obtener las configuraciones de islas
       socket.emit(RequestSocketsEnum.GET_ISLANDS_CONFIG);
-
-      // Escuchar respuesta exitosa
-      socket.off(ResponseSocketsEnum.GET_ISLANDS_CONFIG_SUCCESS);
-      socket.on(ResponseSocketsEnum.GET_ISLANDS_CONFIG_SUCCESS, (response) => {
+    },
+    handleIslandsConfigSuccess(response) {
         if (response.islands_config && response.islands_config.length > 0) {
           this.islandsConfig = response.islands_config;
           this.dataLoaded = true;
@@ -184,15 +176,16 @@ export default {
           this.dataLoaded = true;
           this.$emit("updateLoading", false);
         }
-      });
-
-      // Escuchar respuesta de error
-      socket.off(ResponseSocketsEnum.GET_ISLANDS_CONFIG_ERROR);
-      socket.on(ResponseSocketsEnum.GET_ISLANDS_CONFIG_ERROR, (response) => {
-        console.error(`IslandCreateScreen: Error al obtener islas - ${response.message}`);
-        this.dataLoaded = true;
-        this.$emit("updateLoading", false);
-      });
+    },
+    handleIslandsConfigError(response) {
+      console.error(`IslandCreateScreen: Error al obtener islas - ${response.message}`);
+      this.dataLoaded = true;
+      this.$emit("updateLoading", false);
+    },
+    handleCreateIslandError(response) {
+      this.errorCreateIsland = true;
+      this.errorMessage = response?.message || 'No fue posible crear la isla.';
+      this.isCreating = false;
     },
     goBackToLobby() {
       if (this.isCreating) return;
@@ -201,8 +194,16 @@ export default {
     },
   },
   created() {
+    socket.on(ResponseSocketsEnum.GET_ISLANDS_CONFIG_SUCCESS, this.handleIslandsConfigSuccess);
+    socket.on(ResponseSocketsEnum.GET_ISLANDS_CONFIG_ERROR, this.handleIslandsConfigError);
+    socket.on(ResponseSocketsEnum.ISLAND_CREATE_ERROR, this.handleCreateIslandError);
     this.$emit("updateLoading", true);
     this.loadIslandsConfig();
+  },
+  beforeUnmount() {
+    socket.off(ResponseSocketsEnum.GET_ISLANDS_CONFIG_SUCCESS, this.handleIslandsConfigSuccess);
+    socket.off(ResponseSocketsEnum.GET_ISLANDS_CONFIG_ERROR, this.handleIslandsConfigError);
+    socket.off(ResponseSocketsEnum.ISLAND_CREATE_ERROR, this.handleCreateIslandError);
   },
   mounted() {
     this.$nextTick(() => {

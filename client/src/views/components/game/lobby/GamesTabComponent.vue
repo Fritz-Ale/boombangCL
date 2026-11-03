@@ -34,7 +34,11 @@ export default {
     };
   },
   created() {
+    socket.on(ResponseSocketsEnum.UPDATE_GAME_SCENES, this.handleGamesUpdate);
     this.loadGames();
+  },
+  beforeUnmount() {
+    socket.off(ResponseSocketsEnum.UPDATE_GAME_SCENES, this.handleGamesUpdate);
   },
   mounted() {
     const { initScrollbars } = useOverlayScrollbars();
@@ -46,14 +50,14 @@ export default {
       this.isJoining = true;
       this.$emit("join-scene", sceneUuid, menuType);
     },
+    handleGamesUpdate(gameScenes) {
+      if (!Array.isArray(gameScenes)) return;
+      this.gameScenes = gameScenes;
+      this.isLoading = false;
+    },
     loadGames() {
       this.isLoading = true;
       socket.emit(RequestSocketsEnum.GET_GAME_SCENES);
-      socket.off(ResponseSocketsEnum.UPDATE_GAME_SCENES);
-      socket.on(ResponseSocketsEnum.UPDATE_GAME_SCENES, (gameScenes) => {
-        this.gameScenes = gameScenes;
-        this.isLoading = false;
-      });
     },
   },
 };

@@ -16,9 +16,11 @@ class PublicScenesTableSeeder extends Seeder
     {
         
 
-        \DB::table('public_scenes')->delete();
-        
-        \DB::table('public_scenes')->insert(array (
+        // El SQL importado y el panel administrativo pueden contener fondos,
+        // NPC, objetos y áreas que este seeder histórico no conoce. Nunca
+        // borrar ni reemplazar esas salas al ejecutar db:seed nuevamente.
+        // En instalaciones vacías, crear solamente las áreas de respaldo.
+        \DB::table('public_scenes')->insertOrIgnore(array (
             0 => 
             array (
                 'id' => 1,

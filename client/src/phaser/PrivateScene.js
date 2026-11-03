@@ -6,10 +6,10 @@ import asset_tile_image from "@/assets/game/scene/tile.webp";
 import asset_tile_small_image from "@/assets/game/scene/tile_small.png"; // Imagen del suelo pequeño
 import SceneRequestSockets from "./sockets/SceneRequestSockets";
 import SceneResponseSockets from "./sockets/SceneResponseSockets";
+import sceneSocketSubscriptions from "./utils/sceneSocketSubscriptions.js";
 import OverheadChatAnimation from "./animations/OverheadChatAnimation";
 import PrivateSceneLoader from "./loaders/PrivateSceneLoader";
 import CreateSceneController from "./controllers/scene/CreateSceneController";
-import RemovePhaserSocketsUtil from "../utils/RemovePhaserSocketsUtil";
 import TintManager from "./managers/TintManager";
 import AvatarSystemController from "./controllers/AvatarSystemController.js"; // Nuevo sistema de avatares
 import PrivateSceneUpdateColorsService from "./services/PrivateScene/PrivateSceneUpdateColorsService";
@@ -87,6 +87,21 @@ export default class PrivateScene extends Phaser.Scene {
         return videoExtensions.includes(extension);
     }
 
+    // Always prefer the absolute URL emitted by the API. Relative /uploads
+    // paths in local mode otherwise resolve against Vite (port 5173).
+    resolveItemAssetUrl(item) {
+        const url = item?.spreadsheet_url || item?.spreadsheet;
+        if (typeof url !== 'string' || !url.trim()) return '';
+        const source = url.trim();
+        if (/^(https?:|data:|blob:|\/\/)/i.test(source)) return source;
+        const apiUrl = this.sceneData?.sceneConfig?.base_api_url ||
+            import.meta.env.VITE_API_URL || '';
+        if (apiUrl) return apiUrl.replace(/\/+$/, '') + '/' + source.replace(/^\/+/, '');
+        // Preserve root-relative URLs when no API origin is advertised.
+        // Vite can proxy /uploads and /storage to Laravel in development.
+        return source.startsWith('/') ? source : '/' + source;
+    }
+
     preload() {
         this.load.setCORS('anonymous');
         PrivateSceneLoader.main(this, true);
@@ -104,9 +119,13 @@ export default class PrivateScene extends Phaser.Scene {
         if (this.sceneData.myScene) {
             // Cargar dinámicamente los assets de inventario
             this.backpackUserItems.forEach(item => {
-                let assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
+                let assetSrc = this.resolveItemAssetUrl(item);
+                if (!assetSrc) {
+                    console.warn('[BoomBangCL] Imagen de objeto sin URL:', item.sprite_name);
+                    return;
+                }
                 // Detectar si es un video por la extensión
-                if (this.isVideoFile(assetSrc)) {
+                if (this.isVideoFile(assetSrc?.split(/[?#]/, 1)[0])) {
                     this.load.video(item.sprite_name, assetSrc);
                 } else {
                     this.load.image(item.sprite_name, assetSrc);
@@ -117,9 +136,13 @@ export default class PrivateScene extends Phaser.Scene {
         // Cargar objetos de escena existentes
         this.sceneItems.forEach(item => {
             if (!this.textures.exists(item.sprite_name) && !this.cache.video.exists(item.sprite_name)) {
-                let assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
+                let assetSrc = this.resolveItemAssetUrl(item);
+                if (!assetSrc) {
+                    console.warn('[BoomBangCL] Imagen de objeto sin URL:', item.sprite_name);
+                    return;
+                }
                 // Detectar si es un video por la extensión
-                if (this.isVideoFile(assetSrc)) {
+                if (this.isVideoFile(assetSrc?.split(/[?#]/, 1)[0])) {
                     this.load.video(item.sprite_name, assetSrc);
                 } else {
                     this.load.image(item.sprite_name, assetSrc);
@@ -278,28 +301,32 @@ export default class PrivateScene extends Phaser.Scene {
     }
 
     handleSockets() {
-        socket.on(ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY, (data) => {
+        const { listen } = sceneSocketSubscriptions(this, socket);
+        listen(ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY, (data) => {
             if (import.meta.env.VITE_APP_ENV === "local") {
                 //console.log('Socket event received:', ResponseSocketsEnum.ADD_ITEM_TO_INVENTORY);
             }
-            if (data.item) {
-                this.inventoryItemsList.push(data.item);
+            // La BD confirmó la retirada y Socket.IO entrega el objeto completo.
+            // No confiar en IDs con el mismo tipo (el servidor puede serializar números/cadenas).
+            const item = data?.item;
+            if (item?.id != null && !this.inventoryItemsList.some(existing => String(existing.id) === String(item.id))) {
+                this.inventoryItemsList.push({ ...item, private_scene_id: null, occupied_tiles: [] });
                 this.updateHTMLInventoryUI();
             }
         });
-        socket.on(ResponseSocketsEnum.SCENE_REMOVE_ITEM, (data) => {
+        listen(ResponseSocketsEnum.SCENE_REMOVE_ITEM, (data) => {
             if (import.meta.env.VITE_APP_ENV === "local") {
                 //console.log('Socket event received:', ResponseSocketsEnum.SCENE_REMOVE_ITEM);
             }
             const itemId = data.user_catalog_item_id;
-            const itemToRemove = this.sceneItems.find(i => i.id === itemId);
+            const itemToRemove = this.sceneItems.find(i => String(i.id) === String(itemId));
 
             if (itemToRemove) {
                 // Eliminar sprite y del array de objetos de escena
                 if (itemToRemove.sprite) {
                     itemToRemove.sprite.destroy();
                 }
-                this.sceneItems = this.sceneItems.filter(i => i.id !== itemId);
+                this.sceneItems = this.sceneItems.filter(i => String(i.id) !== String(itemId));
 
                 // Actualizar escena
                 this.markOccupiedTiles();
@@ -311,10 +338,10 @@ export default class PrivateScene extends Phaser.Scene {
                 this.htmlDetailPanel.enableButtons();
             }
         });
-        socket.on(ResponseSocketsEnum.SCENE_PUT_ITEM, (data) => {
+        listen(ResponseSocketsEnum.SCENE_PUT_ITEM, (data) => {
             //console.log('📦 SCENE_PUT_ITEM received:', data);
             if (data.item) {
-                const existingItem = this.sceneItems.find(i => i.id === data.item.id);
+                const existingItem = this.sceneItems.find(i => String(i.id) === String(data.item.id));
                 //console.log('  Existing item?', existingItem ? 'YES (moving)' : 'NO (new item)');
 
                 if (existingItem) {
@@ -330,8 +357,8 @@ export default class PrivateScene extends Phaser.Scene {
                     // It's a new item from inventory
                     const item = data.item;
                     const textureName = item.sprite_name;
-                    const assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
-                    const isVideo = this.isVideoFile(assetSrc);
+                    const assetSrc = this.resolveItemAssetUrl(item);
+                    const isVideo = this.isVideoFile(assetSrc?.split(/[?#]/, 1)[0]);
 
                     // Check if asset already exists (image or video)
                     const assetExists = isVideo ? this.cache.video.exists(textureName) : this.textures.exists(textureName);
@@ -345,7 +372,7 @@ export default class PrivateScene extends Phaser.Scene {
 
                     if (assetExists) {
                         //console.log('  ✅ Asset exists, adding item to scene');
-                        this.sceneItems.push(item);
+                        if (!this.sceneItems.some(existing => String(existing.id) === String(item.id))) this.sceneItems.push(item);
                         this.markOccupiedTiles();
                         this.renderSceneObjects();
                         if (this.moveModeActive) {
@@ -358,7 +385,7 @@ export default class PrivateScene extends Phaser.Scene {
                             this.load.video(textureName, assetSrc);
                             this.load.once(`filecomplete-video-${textureName}`, () => {
                                 //console.log('  ✅ Video loaded, adding item to scene');
-                                this.sceneItems.push(item);
+                                if (!this.sceneItems.some(existing => String(existing.id) === String(item.id))) this.sceneItems.push(item);
                                 this.markOccupiedTiles();
                                 this.renderSceneObjects();
                                 if (this.moveModeActive) {
@@ -385,23 +412,23 @@ export default class PrivateScene extends Phaser.Scene {
                 //console.log('  ❌ No item in response data');
             }
         });
-        socket.on(ResponseSocketsEnum.REMOVE_ITEM_FROM_INVENTORY, (data) => {
+        listen(ResponseSocketsEnum.REMOVE_ITEM_FROM_INVENTORY, (data) => {
             if (import.meta.env.VITE_APP_ENV === "local") {
                 //console.log('Socket event received:', ResponseSocketsEnum.REMOVE_ITEM_FROM_INVENTORY);
             }
             const itemId = data.user_catalog_item_id;
-            const itemIndex = this.inventoryItemsList.findIndex(i => i.id === itemId);
+            const itemIndex = this.inventoryItemsList.findIndex(i => String(i.id) === String(itemId));
             if (itemIndex !== -1) {
                 this.inventoryItemsList.splice(itemIndex, 1);
                 this.updateHTMLInventoryUI();
             }
         });
-        socket.on(ResponseSocketsEnum.ROTATE_OBJECT, (data) => {
+        listen(ResponseSocketsEnum.ROTATE_OBJECT, (data) => {
             if (import.meta.env.VITE_APP_ENV === "local") {
                 //console.log('Socket event received:', ResponseSocketsEnum.ROTATE_OBJECT);
             }
             if (data.item) {
-                const existingItem = this.sceneItems.find(i => i.id === data.item.id);
+                const existingItem = this.sceneItems.find(i => String(i.id) === String(data.item.id));
                 if (existingItem && existingItem.sprite) {
                     // Rotate the sprite visually (flip horizontally)
                     existingItem.sprite.setFlipX(!existingItem.sprite.flipX);
@@ -418,7 +445,15 @@ export default class PrivateScene extends Phaser.Scene {
             }
         });
 
-        socket.on(ResponseSocketsEnum.PRIVATE_SCENE_COLORS_UPDATED, (data) => {
+        listen('scene_item_error', (data) => {
+            // La operación no se guardó: devolver el control al usuario sin
+            // cambiar su inventario ni dejar bloqueados los botones del objeto.
+            if (this.htmlDetailPanel?.enableButtons) this.htmlDetailPanel.enableButtons();
+            const message = data?.message || 'No fue posible actualizar el objeto.';
+            console.warn('[BoomBangCL] ' + message);
+            this.vueComponent?.showSceneItemError?.(message);
+        });
+        listen(ResponseSocketsEnum.PRIVATE_SCENE_COLORS_UPDATED, (data) => {
             if (import.meta.env.VITE_APP_ENV === "local") {
                 //console.log('Socket event received:', ResponseSocketsEnum.PRIVATE_SCENE_COLORS_UPDATED);
             }
@@ -1024,8 +1059,8 @@ export default class PrivateScene extends Phaser.Scene {
             // Crear o actualizar sprite
             if (!item.sprite) {
                 // Determinar si es video o imagen
-                const assetSrc = import.meta.env.VITE_APP_ENV == 'local' ? item.spreadsheet : item.spreadsheet_url;
-                const isVideo = this.isVideoFile(assetSrc);
+                const assetSrc = this.resolveItemAssetUrl(item);
+                const isVideo = this.isVideoFile(assetSrc?.split(/[?#]/, 1)[0]);
 
                 if (isVideo && this.cache.video.exists(item.sprite_name)) {
                     // Crear video sprite
@@ -1184,7 +1219,6 @@ export default class PrivateScene extends Phaser.Scene {
         // Limpiar el buffer global de eventos tempranos
         earlyEventBuffer.clear();
 
-        RemovePhaserSocketsUtil.main(socket);
         if (this.chatManager) {
             this.chatManager.destroy();
             this.chatManager = null;

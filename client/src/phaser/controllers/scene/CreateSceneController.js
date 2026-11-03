@@ -1,3 +1,4 @@
+import Phaser from "phaser";
 import AddUserController from "./AddUserController.js";
 import socket from "../../../sockets/socket.js"; // Conexión Socket.io
 import RequestSocketsEnum from "../../../enums/RequestSocketsEnum.js";
@@ -473,7 +474,8 @@ class CreateSceneController {
     try {
       for (let i = 0; i < usersData.length; i++) {
         const userData = usersData[i];
-        await AddUserController.main(gameScene, userData);
+        // El listado inicial debe existir antes de marcar la escena como lista.
+        await AddUserController.processUser(gameScene, userData);
       }
 
       SetUserCardController.main(gameScene, authUserData, authUserData);

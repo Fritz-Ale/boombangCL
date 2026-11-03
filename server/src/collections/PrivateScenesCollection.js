@@ -8,7 +8,7 @@ class PrivateScenesCollection {
     }
 
     getById(id) {
-        return this.collection.get(id);
+        return this.collection.get(id) ?? Array.from(this.collection.values()).find(scene => String(scene.id) === String(id));
     }
 
     getAll() {
@@ -16,11 +16,17 @@ class PrivateScenesCollection {
     }
 
     getByIslandId(islandId) {
-        return Array.from(this.collection.values()).filter(scene => scene.island_id === islandId);
+        return Array.from(this.collection.values()).filter(scene => String(scene.island_id) === String(islandId));
     }
 
     remove(id) {
-        this.collection.delete(id);
+        if (this.collection.delete(id)) return;
+        for (const [key, scene] of this.collection) {
+            if (String(scene.id) === String(id)) {
+                this.collection.delete(key);
+                return;
+            }
+        }
     }
 }
 

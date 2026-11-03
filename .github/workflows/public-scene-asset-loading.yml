@@ -1,0 +1,82 @@
+name: Public scene asset loading regressions
+
+on:
+  pull_request:
+    paths:
+      - 'client/src/phaser/loaders/PublicSceneLoader.js'
+      - 'client/src/utils/SceneUtils.js'
+      - 'client/tests/public-scene-assets.test.cjs'
+      - 'api/app/Support/PublicSceneAssetInspector.php'
+      - 'api/app/Console/Commands/AuditPublicSceneAssets.php'
+      - 'api/tests/Standalone/public-scene-asset-inspector.php'
+      - 'scripts/audit_public_scene_assets.py'
+      - 'scripts/install_public_scene_assets_local.py'
+      - 'scripts/tests/test_install_public_scene_assets_local.py'
+      - 'boombang_api.sql'
+      - 'api/public/uploads.zip'
+      - '.github/workflows/public-scene-asset-loading.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-scene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Simulate UFO assets and missing textures without browser
+        run: node --test client/tests/public-scene-assets.test.cjs
+      - name: Install locked frontend dependencies
+        working-directory: client
+        run: npm ci --no-audit --no-fund
+      - name: Compile Vue and Phaser application
+        working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
+
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check syntax of SQL-to-ZIP auditor
+        run: python3 -m py_compile scripts/audit_public_scene_assets.py
+      - name: Check original UFO background actually exists in uploads.zip
+        run: python3 scripts/audit_public_scene_assets.py --require-ufo
+      - name: Validate optional local extraction and path security
+        run: |
+          python3 -m py_compile scripts/install_public_scene_assets_local.py
+          python3 -m unittest discover -s scripts/tests -p 'test_install_public_scene_assets_local.py' -v
+          python3 scripts/install_public_scene_assets_local.py
+      - name: Keep only asset metadata, not copyrighted artwork
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-scene-asset-metadata
+          path: public-scene-assets-report.json
+          retention-days: 14
+
+  laravel-runtime:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.2', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: Validate Artisan command syntax
+        run: |
+          php -l api/app/Support/PublicSceneAssetInspector.php
+          php -l api/app/Console/Commands/AuditPublicSceneAssets.php
+      - name: Test live-public-filesystem inspection logic without a database
+        run: php api/tests/Standalone/public-scene-asset-inspector.php
