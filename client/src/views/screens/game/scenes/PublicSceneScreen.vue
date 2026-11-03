@@ -14,6 +14,13 @@
       @close-coconuts-info="hideCoconutsInfoCard"
     />
     <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" />
+    <SceneQuickActions
+      :inventory-available="true"
+      @avatar="showAvatarSelection"
+      @rankings="showRankings"
+      @inventory="showInventory"
+      @shop="showShop"
+    />
     <AvatarSelectionPopup
       v-if="isAvatarSelectionVisible"
       :authUser="sceneData.authUser"
@@ -47,6 +54,7 @@
 import socket from "../../../../sockets/socket.js";
 import UserCardComponent from "../../../components/game/scenes/UserCardComponent.vue";
 import BaseChatComponent from "../../../components/game/scenes/BaseChatComponent.vue";
+import SceneQuickActions from "../../../components/game/scenes/SceneQuickActions.vue";
 import RingInfoCardComponent from "../../../components/game/scenes/RingInfoCardComponent.vue";
 import CoconutsInfoCardComponent from "../../../components/game/scenes/CoconutsInfoCardComponent.vue";
 import AvatarSelectionPopup from "../../../components/game/scenes/AvatarSelectionPopup.vue";
@@ -86,6 +94,7 @@ export default {
   components: {
     UserCardComponent,
     BaseChatComponent,
+    SceneQuickActions,
     RingInfoCardComponent,
     CoconutsInfoCardComponent,
     AvatarSelectionPopup,
