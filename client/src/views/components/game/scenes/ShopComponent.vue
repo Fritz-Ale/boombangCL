@@ -274,6 +274,12 @@ export default {
 
       // Manejar pagos con Stripe
       if (this.selectedItem.price_type === 'stripe_payment') {
+        // El checkout debe ser habilitado solo tras verificar webhooks y permisos.
+        if (import.meta.env.VITE_ENABLE_STRIPE_CHECKOUT !== 'true') {
+          this.purchaseMessage = 'Los pagos con dinero real no están disponibles por ahora.';
+          this.purchaseMessageType = 'error';
+          return;
+        }
         this.handleStripePayment();
         return;
       }
@@ -298,12 +304,24 @@ export default {
     },
 
     async handleStripePayment() {
+      if (import.meta.env.VITE_ENABLE_STRIPE_CHECKOUT !== 'true') {
+        this.purchaseMessage = 'Los pagos con dinero real no están disponibles por ahora.';
+        this.purchaseMessageType = 'error';
+        return;
+      }
+
       try {
         this.purchasing = true;
         this.purchaseMessage = this.$t("shop.processing_payment");
 
-        // Crear checkout session con la API
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+        // No enviar JWT a destinos implicitos (localhost/terceros) en produccion.
+        const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+        if (!/^https?:\/\//i.test(apiBaseUrl)) {
+          throw new Error('Configura VITE_API_BASE_URL antes de habilitar Stripe.');
+        }
+        if (import.meta.env.VITE_APP_ENV !== 'local' && !apiBaseUrl.startsWith('https://')) {
+          throw new Error('Stripe requiere una API HTTPS en produccion.');
+        }
         const jwtToken = localStorage.getItem("app_jwt");
         
         if (!jwtToken) {
@@ -336,7 +354,6 @@ export default {
         }
 
         // Abrir Stripe Checkout en nueva ventana
-        console.log('Opening Stripe Checkout:', data.checkout_url);
         const stripeWindow = window.open(data.checkout_url, '_blank', 'width=800,height=700');
         
         if (!stripeWindow) {
@@ -345,43 +362,25 @@ export default {
 
         // Escuchar el mensaje de retorno de la ventana de pago
         const messageListener = (event) => {
-          // Permitir tanto localhost:8000 como el dominio configurado
-          const allowedOrigins = [
-            'http://localhost:8000',
-            'http://127.0.0.1:8000',
-            import.meta.env.VITE_WEB_BASE_URL
-          ].filter(Boolean);
-          
-          if (!allowedOrigins.some(origin => event.origin === origin)) {
+          // Aceptar solo mensajes de la ventana abierta y de nuestros origenes.
+          // Nunca compartir el JWT con una ventana secundaria.
+          if (event.source !== stripeWindow) return;
+          const allowedOrigins = [apiBaseUrl, import.meta.env.VITE_WEB_BASE_URL]
+            .filter(Boolean)
+            .map(value => {
+              try { return new URL(value).origin; } catch { return null; }
+            })
+            .filter(Boolean);
+          if (!allowedOrigins.includes(event.origin) || !event.data || typeof event.data !== 'object') {
             return;
           }
 
-          if (event.data.type === 'request_jwt_for_stripe') {
-            // La ventana de Stripe solicita el JWT para procesar el pago
-            const jwtToken = localStorage.getItem("app_jwt");
-            
-            if (jwtToken && event.source) {
-              event.source.postMessage({
-                type: 'jwt_response',
-                jwt: jwtToken
-              }, event.origin);
-            } else {
-              event.source.postMessage({
-                type: 'jwt_not_found'
-              }, event.origin);
-            }
-
-          } else if (event.data.type === 'stripe_payment_success') {
+          if (event.data.type === 'stripe_payment_success') {
+            // Un postMessage NO verifica pagos ni autoriza cambiar el saldo.
+            // La acreditacion real debe ocurrir en Laravel/webhook y reflejarse via Socket.IO.
             this.purchasing = false;
-            this.purchaseMessage = this.$t("shop.purchase_success");
-            this.purchaseMessageType = "success";
-            
-            // Actualizar créditos del usuario si es necesario
-            if (event.data.user) {
-              this.$emit("purchase-success", event.data.user);
-            }
-
-            // Resetear cantidad
+            this.purchaseMessage = 'Pago enviado. Esperando confirmacion del servidor.';
+            this.purchaseMessageType = null;
             this.selectedQuantity = 1;
 
             // Cerrar ventana de Stripe si sigue abierta
