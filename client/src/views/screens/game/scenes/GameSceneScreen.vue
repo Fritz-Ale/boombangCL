@@ -14,6 +14,13 @@
       @close-coconuts-info="hideCoconutsInfoCard"
     />
     <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" />
+    <SceneQuickActions
+      :inventory-available="true"
+      @avatar="showAvatarSelection"
+      @rankings="showRankings"
+      @inventory="showInventory"
+      @shop="showShop"
+    />
     <NpcComponent
       v-if="showNpcModal"
       @close="closeNpcModal"
@@ -49,6 +56,7 @@ import UserCardComponent from "../../../components/game/scenes/UserCardComponent
 import RingInfoCardComponent from "../../../components/game/scenes/RingInfoCardComponent.vue";
 import CoconutsInfoCardComponent from "../../../components/game/scenes/CoconutsInfoCardComponent.vue";
 import BaseChatComponent from "../../../components/game/scenes/BaseChatComponent.vue";
+import SceneQuickActions from "../../../components/game/scenes/SceneQuickActions.vue";
 import RequestSocketsEnum from "../../../../enums/RequestSocketsEnum.js";
 import NpcComponent from "../../../components/game/scenes/minigame/NpcComponent.vue";
 import AvatarSelectionPopup from "../../../components/game/scenes/AvatarSelectionPopup.vue";
@@ -85,6 +93,7 @@ export default {
   components: {
     UserCardComponent,
     BaseChatComponent,
+    SceneQuickActions,
     NpcComponent,
     RingInfoCardComponent,
     CoconutsInfoCardComponent,
