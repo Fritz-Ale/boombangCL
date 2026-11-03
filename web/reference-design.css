@@ -1,0 +1,32 @@
+/* Ajustes de la portada de BoomBangCL, derivados de medidas de la inspeccion
+   visual aportada el 03-11-2026. Estilos y recursos propios; sin copiar CSS externo. */
+:root {
+  --bb-reference-lime: #a5df57;
+  --bb-reference-sky: #82cdf2;
+  --bb-reference-honey: #f6c04b;
+  --bb-reference-lilac: #c9a4ee;
+}
+/* Las cuatro tarjetas de la portada siguen el orden cromatico registrado. */
+#mondo .feature-card { border-radius: 20px; }
+#world-title { text-wrap: balance; }
+#mondo .feature-coral, #mundo .feature-coral { background: var(--bb-reference-lime); }
+#mundo .feature-mint { background: var(--bb-reference-sky); }
+#mundo .feature-violet { background: var(--bb-reference-honey); }
+#mundo .feature-yellow { background: var(--bb-reference-lilac); }
+#mundo .feature-card { border-radius: 20px; color: #243747; border: 2px solid rgba(43,65,70,.08); }
+#mundo .feature-card h3 { font-family: "Arial Rounded MT Bold", "Trebuchet MS", Arial, sans-serif; letter-spacing: -.025em; }
+#mundo .feature-card .feature-icon { border-radius: 18px; }
+/* La captura muestra header horizontal de unos 88 px a 1019 px de viewport.
+   Mantener navegacion legible y colapsarla en pantallas estrechas. */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .site-header .header-inner { min-height: 88px; gap: 12px; }
+  .site-header .main-nav { gap: clamp(7px, 1vw, 14px); }
+  .site-header .main-nav > a { font-size: clamp(.65rem, .93vw, .84rem); }
+}
+@media (max-width: 760px) {
+  #mundo .feature-card { min-height: 210px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #mundo .feature-card { transition: none; }
+  #mundo .feature-card:hover { transform: none; }
+}
