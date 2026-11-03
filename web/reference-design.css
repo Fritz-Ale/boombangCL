@@ -7,9 +7,8 @@
   --bb-reference-lilac: #c9a4ee;
 }
 /* Las cuatro tarjetas de la portada siguen el orden cromatico registrado. */
-#mondo .feature-card { border-radius: 20px; }
 #world-title { text-wrap: balance; }
-#mondo .feature-coral, #mundo .feature-coral { background: var(--bb-reference-lime); }
+#mundo .feature-coral { background: var(--bb-reference-lime); }
 #mundo .feature-mint { background: var(--bb-reference-sky); }
 #mundo .feature-violet { background: var(--bb-reference-honey); }
 #mundo .feature-yellow { background: var(--bb-reference-lilac); }
