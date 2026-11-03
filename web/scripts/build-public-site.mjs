@@ -17,7 +17,7 @@ const root = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const web = join(root, 'web');
 const shots = join(root, 'doc', 'screenshots');
 const readonlyPages = ['index','comunidad','noticias','ayuda','normas','privacidad','avance'];
-const assets = ['styles.css','portal.css','avance.css','script.js','portal.js','avance.js','avance-data.json'];
+const assets = ['reference-design.css','styles.css','portal.css','avance.css','script.js','portal.js','avance.js','avance-data.json'];
 const screenshots = ['portada.png','lobby.png','sala-publica.png','sala-privada.png','islas.png','golden-ring.png','personalizacion.png','ranking.png','catalogo.png'];
 
 const menu = [

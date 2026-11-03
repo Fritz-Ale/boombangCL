@@ -28,7 +28,7 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "../web/public/favicon/web-app-manifest-512x512.png"
+      "icon": "assets/favicon.ico"
     },
     "nsis": {
       "oneClick": false,

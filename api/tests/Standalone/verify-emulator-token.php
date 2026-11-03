@@ -56,7 +56,8 @@ namespace {
         ['sin cabecera con token válido', 'long-random-token', null, 'production', 401],
         ['token incorrecto', 'long-random-token', 'wrong-token', 'production', 401],
         ['token correcto', 'long-random-token', 'long-random-token', 'production', 200],
-        ['desarrollo local', null, null, 'local', 200],
+        ['desarrollo local sin configuración', null, null, 'local', 503],
+        ['desarrollo local autenticado', 'long-random-token', 'long-random-token', 'local', 200],
     ];
     foreach ($cases as [$name, $configured, $provided, $environment, $expected]) {
         $actual = $run($configured, $provided, $environment)->status;

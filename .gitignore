@@ -10,3 +10,7 @@ logs/
 **/auth.json
 **/.env.production
 **/.env.local
+
+# Copias locales de configuración con credenciales
+.env.backup*
+**/.env.backup*

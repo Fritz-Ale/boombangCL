@@ -32,6 +32,7 @@ export default defineConfig({
     sourcemap: false,
     // Enable chunk splitting to reduce bundle size
     rollupOptions: {
+      maxParallelFileOps: 3,
       // Suppress dynamic import warnings for intentional circular dependency avoidance
       onwarn(warning, warn) {
         // Suppress warnings about dynamic imports for modules that are also statically imported
@@ -59,8 +60,6 @@ export default defineConfig({
             './src/phaser/loaders/CachedAtlasLoader.js'
           ]
         },
-        // Limit chunk size
-        maxParallelFileOps: 3,
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]'
