@@ -177,7 +177,6 @@ export default {
   data() {
     return {
       mailStore: useMailStore(),
-      apiUrl: import.meta.env.VITE_API_URL || "http://api.boombang.com",
     };
   },
 
