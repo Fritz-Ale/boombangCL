@@ -82,6 +82,11 @@ class AddUserController {
     }
 
     static async processUser(gameScene, userData) {
+        // Algunos eventos llegan incompletos durante reconexiones o cambios de sala.
+        // Ignorarlos sin interrumpir el renderizado del resto de los jugadores.
+        if (userData?.id == null || !gameScene?.users || gameScene._sceneClosed) {
+            return;
+        }
         if (gameScene.users[userData.id]) {
             return;
         }
