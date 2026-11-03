@@ -318,7 +318,8 @@ export default class PrivateScene extends Phaser.Scene {
             if (import.meta.env.VITE_APP_ENV === "local") {
                 //console.log('Socket event received:', ResponseSocketsEnum.SCENE_REMOVE_ITEM);
             }
-            const itemId = data.user_catalog_item_id;
+            const itemId = data?.user_catalog_item_id;
+            if (itemId == null) return;
             const itemToRemove = this.sceneItems.find(i => String(i.id) === String(itemId));
 
             if (itemToRemove) {
@@ -358,7 +359,12 @@ export default class PrivateScene extends Phaser.Scene {
                     const item = data.item;
                     const textureName = item.sprite_name;
                     const assetSrc = this.resolveItemAssetUrl(item);
-                    const isVideo = this.isVideoFile(assetSrc?.split(/[?#]/, 1)[0]);
+                    if (!assetSrc) {
+                        console.warn('[BoomBangCL] Falta el recurso del objeto:', item.sprite_name);
+                        this.vueComponent?.showSceneItemError?.('No se pudo cargar la imagen del objeto.');
+                        return;
+                    }
+                    const isVideo = this.isVideoFile(assetSrc.split(/[?#]/, 1)[0]);
 
                     // Check if asset already exists (image or video)
                     const assetExists = isVideo ? this.cache.video.exists(textureName) : this.textures.exists(textureName);
@@ -396,7 +402,7 @@ export default class PrivateScene extends Phaser.Scene {
                             this.load.image(textureName, assetSrc);
                             this.load.once(`filecomplete-image-${textureName}`, () => {
                                 //console.log('  ✅ Image loaded, adding item to scene');
-                                this.sceneItems.push(item);
+                                if (!this.sceneItems.some(existing => String(existing.id) === String(item.id))) this.sceneItems.push(item);
                                 this.markOccupiedTiles();
                                 this.renderSceneObjects();
                                 if (this.moveModeActive) {
@@ -416,7 +422,8 @@ export default class PrivateScene extends Phaser.Scene {
             if (import.meta.env.VITE_APP_ENV === "local") {
                 //console.log('Socket event received:', ResponseSocketsEnum.REMOVE_ITEM_FROM_INVENTORY);
             }
-            const itemId = data.user_catalog_item_id;
+            const itemId = data?.user_catalog_item_id;
+            if (itemId == null) return;
             const itemIndex = this.inventoryItemsList.findIndex(i => String(i.id) === String(itemId));
             if (itemIndex !== -1) {
                 this.inventoryItemsList.splice(itemIndex, 1);
