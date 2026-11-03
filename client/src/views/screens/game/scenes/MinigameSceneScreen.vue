@@ -13,7 +13,9 @@
       v-if="isCoconutsInfoCardVisible"
       @close-coconuts-info="hideCoconutsInfoCard"
     />
-    <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" />
+    <BaseChatComponent @exitLobby="exitToLobby" @sendMessage="sendMessage" @openBPad="openBPad" @openCEO="openCEO" />
+    <BPadComponent v-if="isBPadVisible" @close="isBPadVisible = false" />
+    <CeoPanelComponent v-if="isCEOVisible" @close="isCEOVisible = false" />
     <CounterMinigameComponent v-if="showCounter" :counter="counter" />
     <AlertMinigameComponent
       v-if="showAlert"
@@ -34,6 +36,8 @@ import UserCardComponent from "../../../components/game/scenes/UserCardComponent
 import RingInfoCardComponent from "../../../components/game/scenes/RingInfoCardComponent.vue";
 import CoconutsInfoCardComponent from "../../../components/game/scenes/CoconutsInfoCardComponent.vue";
 import BaseChatComponent from "../../../components/game/scenes/BaseChatComponent.vue";
+import BPadComponent from "../../../components/game/scenes/BPadComponent.vue";
+import CeoPanelComponent from "../../../components/game/scenes/CeoPanelComponent.vue";
 import CounterMinigameComponent from "../../../components/game/minigames/CounterMinigameComponent.vue";
 import AlertMinigameComponent from "../../../components/game/minigames/AlertMinigameComponent.vue";
 import AvatarSelectionPopup from "../../../components/game/scenes/AvatarSelectionPopup.vue";
@@ -63,6 +67,8 @@ export default {
       isRingInfoCardVisible: false,
       isCoconutsInfoCardVisible: false,
       isAvatarSelectionVisible: false,
+      isBPadVisible: false,
+      isCEOVisible: false,
     };
   },
   created() {
@@ -71,6 +77,8 @@ export default {
   components: {
     UserCardComponent,
     BaseChatComponent,
+    BPadComponent,
+    CeoPanelComponent,
     CounterMinigameComponent,
     AlertMinigameComponent,
     RingInfoCardComponent,
@@ -78,6 +86,8 @@ export default {
     AvatarSelectionPopup,
   },
   methods: {
+    openBPad() { this.isCEOVisible = false; this.isBPadVisible = true; },
+    openCEO() { this.isBPadVisible = false; this.isCEOVisible = true; },
     initializeGame() {
       const gamePhaser = this.$root.gamePhaser;
 
