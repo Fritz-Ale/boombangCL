@@ -18,7 +18,7 @@ const web = join(root, 'web');
 const shots = join(root, 'doc', 'screenshots');
 const readonlyPages = ['index','comunidad','noticias','ayuda','normas','privacidad','avance'];
 const assets = ['styles.css','portal.css','reference-design.css','heritage.css','avance.css','script.js','portal.js','avance.js','avance-data.json'];
-const screenshots = ['portada.png','lobby.png','sala-publica.png','sala-privada.png','islas.png','golden-ring.png','personalizacion.png','ranking.png','catalogo.png'];
+const screenshots = ['portada.png','lobby.png','sala-publica.png','sala-privada.png','islas.png','golden-ring.png','personalizacion.png','ranking.png','catalogo.png','inventario.png'];
 
 const menu = [
   ['Inicio','index.html'], ['Comunidad','comunidad.html'], ['Noticias','noticias.html'],
