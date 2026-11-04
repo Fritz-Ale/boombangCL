@@ -207,10 +207,10 @@ test('removing furniture is scoped to the authorized scene in Laravel and Node',
   const start = php.indexOf('public function removeItem(');
   const end = php.indexOf('public function ', start + 1);
   const body = php.slice(start, end);
-  assert.match(body, /'private_scene_id' => 'required\\|integer\\|exists:private_scenes,id'/);
-  assert.match(body, /PrivateScene::findOrFail\\(\\$validated\\['private_scene_id'\\]\\)/);
-  assert.match(body, /\\$scene->user_id != \\$user->id/);
-  assert.match(body, /\\$scene->island->user_id != \\$user->id/);
-  assert.match(body, /where\\('private_scene_id', \\$scene->id\\)/);
-  assert.match(node, /PrivateSceneApiService\\.removeItem\\(\\{\\s*private_scene_id: scene\\.id,/);
+  assert.match(body, /'private_scene_id' => 'required\|integer\|exists:private_scenes,id'/);
+  assert.match(body, /PrivateScene::findOrFail\(\$validated\['private_scene_id'\]\)/);
+  assert.match(body, /\$scene->user_id != \$user->id/);
+  assert.match(body, /\$scene->island->user_id != \$user->id/);
+  assert.match(body, /where\('private_scene_id', \$scene->id\)/);
+  assert.match(node, /PrivateSceneApiService\.removeItem\(\{\s*private_scene_id: scene\.id,/);
 });
