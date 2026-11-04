@@ -65,3 +65,21 @@ test('la portada adopta jerarquia auditada sin inventar datos de BoomBang.tv', (
   assert.doesNotMatch(home, /api\.boombang\.tv\/api\/avatar/);
   assert.doesNotMatch(home, /static\.boombang\.tv\/web\/assets/);
 });
+
+test('comunidad muestra las 31 salas documentadas y conserva los enlaces reales del proyecto', () => {
+  const community = read('web/comunidad.html');
+  const rooms = [...community.matchAll(/class="portal-area bbcl-verified-room"/g)];
+  assert.equal(rooms.length, 31, 'cantidad de nombres observados en la auditoria');
+  for (const area of ['Ring','Pantano','Igloo','Jardín Secreto','Beluga Beach','U.F.O','BaoBab','Mano Oculta']) {
+    assert.ok(community.includes('>'+area+'</h3>'), 'sala verificada: '+area);
+  }
+  for (const area of ['Ranking','Amigos','Clanes','Salas','Galería','Concursos y eventos','Catálogo']) {
+    assert.ok(community.includes('>'+area+'</a>'), 'apartado de comunidad: '+area);
+  }
+  assert.match(community, /sin datos de ocupación de BBCL/);
+  assert.doesNotMatch(community, /[\p{Emoji_Presentation}\uFE0F]/gu);
+  assert.doesNotMatch(community, /static\.boombang\.tv|api\.boombang\.tv/);
+  assert.match(community, /href="community-archive\.css"/);
+  assert.match(read('web/Dockerfile'), /web\/community-archive\.css/);
+  assert.match(read('web/scripts/build-public-site.mjs'), /'community-archive\.css'/);
+});
