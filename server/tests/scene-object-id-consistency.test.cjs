@@ -159,3 +159,22 @@ test('rechaza mover un mueble que declara pertenecer a otra isla', async () => {
   assert.equal(scene._catalogMutationPending,false);
   assert.deepEqual(emitted,['scene_item_error']);
 });
+
+
+test('Laravel confirms successful decoration mutations before Socket.IO updates local state', () => {
+  const php = fs.readFileSync(path.join(__dirname,
+    '../../api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php'), 'utf8');
+  const service = fs.readFileSync(path.join(__dirname,
+    '../src/services-api/PrivateSceneApiService.js'), 'utf8');
+  assert.match(service, /response\?\.success !== true/);
+  for (const method of ['removeItem', 'putItem', 'updateItemPosition']) {
+    const start = php.indexOf('public function ' + method + '(');
+    assert.ok(start !== -1, method + ' exists');
+    const next = php.indexOf('public function ', start + 1);
+    const body = php.slice(start, next === -1 ? undefined : next);
+    assert.match(body, /if \(\$responseUpdate == 0\)/, method + ' checks database update');
+    assert.match(body, /return \$this->successResponse\(\);/, method + ' acknowledges persistence');
+    assert.ok(body.indexOf('return $this->successResponse();') > body.indexOf('if ($responseUpdate == 0)'),
+      method + ' only acknowledges after the database update check');
+  }
+});

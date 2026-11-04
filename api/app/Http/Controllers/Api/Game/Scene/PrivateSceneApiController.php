@@ -124,6 +124,8 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
             if ($responseUpdate == 0) {
                 throw new Exception('Item does not belong to the current private scene or does not exist.');
             }
+
+            return $this->successResponse();
         } catch (Exception $e) {
             return $this->handleException($e);
         }
@@ -149,6 +151,8 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
             if ($responseUpdate == 0) {
                 throw new Exception('Item does not belong to the current user or does not exist.');
             }
+
+            return $this->successResponse();
         } catch (Exception $e) {
             return $this->handleException($e);
         }
@@ -172,6 +176,8 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
             if ($responseUpdate == 0) {
                 throw new Exception('Item does not belong to the current user or does not exist.');
             }
+
+            return $this->successResponse();
         } catch (Exception $e) {
             return $this->handleException($e);
         }
