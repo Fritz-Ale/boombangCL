@@ -56,3 +56,38 @@ test('moving existing object excludes itself from collision when serialized ID i
   assert.equal(persisted,1);
   assert.equal(item.occupied_tiles[0][0],0);
 });
+
+test('retirar muebles valida ids antes de consultar API y acepta cadenas decimales validas', async () => {
+  const source = fs.readFileSync(path.join(__dirname, '../src/controllers/game/private-scenes/RemoveItemPrivateSceneController.js'), 'utf8');
+  const item = {id:'44',private_scene_id:8,occupied_tiles:[[0,0]]};
+  const notifications=[];
+  let persisted=0;
+  const scene = {id:8,user_id:'3',scene_type:'private',objects:[item],rebuildObjectNavigationMap(){},
+    emit(event,payload){notifications.push([event,payload]);}};
+  const user={id:'3',currentArea:scene,inventory:[]};
+  const deps={
+    '../../../utils/Log':{error(){}},
+    '../../../collections/ConnectedUsersCollection':{getBySocketId:()=>user},
+    '../../../enums/SceneTypesEnum':{PRIVATE_SCENE:'private'},
+    '../../../enums/ResponseSocketsEnum':{SCENE_REMOVE_ITEM:'scene_remove',ADD_ITEM_TO_INVENTORY:'add'},
+    '../../../services-api/PrivateSceneApiService':{async removeItem(){persisted++;return {success:true};}}
+  };
+  const sandbox={module:{exports:{}},console:{error(){}},require(key){return deps[key];}};
+  vm.runInNewContext(source,sandbox);
+  const outbound=[];
+  const socket={id:'test',emit(event,payload){outbound.push([event,payload]);}};
+  for(const invalid of [null,undefined,-1,0,'0','44x','1e3',{},[],1.2,Number.MAX_SAFE_INTEGER+1]){
+    await sandbox.module.exports.main(socket,{}, {user_catalog_item_id:invalid});
+  }
+  assert.equal(persisted,0);
+  assert.equal(scene.objects.length,1);
+  assert.equal(user.inventory.length,0);
+  assert.equal(scene._catalogMutationPending,undefined);
+  await sandbox.module.exports.main(socket,{}, {user_catalog_item_id:'44'});
+  assert.equal(persisted,1);
+  assert.equal(scene.objects.length,0);
+  assert.equal(user.inventory.length,1);
+  assert.equal(scene._catalogMutationPending,false);
+  assert.equal(notifications.length,1);
+  assert.equal(outbound.filter(([event])=>event==='add').length,1);
+});
