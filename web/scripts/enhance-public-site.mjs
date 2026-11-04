@@ -7,7 +7,6 @@ import {resolve,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {writeGalleryAssets,galleryItems} from './build-gallery.mjs';
 import {newsMilestones,homeMilestones} from './build-milestones.mjs';
-import {renderProfessionalHomepage} from './build-professional-home.mjs';
 
 const web=resolve(fileURLToPath(new URL('../',import.meta.url)));
 const base='https://fritz-ale.github.io/boombangCL/';
@@ -182,8 +181,9 @@ export async function enhancePublicSite(directory,roadmap) {
 
  await copyFile(join(web,'site-game.js'),join(output,'site-game.js'));
  for(const filename of (await readdir(output)).filter(name=>name.endsWith('.html'))) {
-   let html=filename==='index.html' ? addMetadata('index.html',await renderProfessionalHomepage(roadmap))
-     : await readFile(join(output,filename),'utf8');
+   // One source of truth: serve web/index.html in Docker and static Pages.
+   // Do not overwrite the reviewed screenshot-only homepage with pro-home.html.
+   let html=await readFile(join(output,filename),'utf8');
    if(filename!=='index.html'){
      html=html
        .replace(/(<div class="top-strip"[^>]*>)(?:<span[^>]*>✦<\/span>\s*|✦\s*)/,'$1')
@@ -201,13 +201,16 @@ export async function enhancePublicSite(directory,roadmap) {
    html=html.replace(/[\p{Emoji_Presentation}\uFE0F]/gu,'');
    html=html.replace(/(<span class="brand-sun" aria-hidden="true">)✳(<\/span>)/g,'$1$2');
    html=html.replace(/(<div class="top-strip"[^>]*>)\s*✦\s*/g,'$1');
-   if(!html.includes('href="site-professional.css"'))
-     html=html.replace('</head>','<link rel="stylesheet" href="site-professional.css"></head>');
-   if(!html.includes('href="site-game.css"'))
-     html=html.replace('</head>','<link rel="stylesheet" href="site-game.css"></head>');
-   // Load after all theme styles so image framing wins at every breakpoint.
-   if(!html.includes('href="site-image-center.css"'))
-     html=html.replace('</head>','<link rel="stylesheet" href="site-image-center.css"></head>');
+   // Legacy portal pages retain their existing theme. The archive homepage
+   // must not receive those global rules, which override its own typography.
+   if(filename!=='index.html') {
+     if(!html.includes('href="site-professional.css"'))
+       html=html.replace('</head>','<link rel="stylesheet" href="site-professional.css"></head>');
+     if(!html.includes('href="site-game.css"'))
+       html=html.replace('</head>','<link rel="stylesheet" href="site-game.css"></head>');
+     if(!html.includes('href="site-image-center.css"'))
+       html=html.replace('</head>','<link rel="stylesheet" href="site-image-center.css"></head>');
+   }
    await writeFile(join(output,filename),html);
  }
 
