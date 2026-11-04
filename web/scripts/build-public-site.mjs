@@ -101,7 +101,45 @@ export function transformReadonlyPage(name, html) {
   return result;
 }
 
+const auditedSections = {
+  'catalogo.html': {
+    heading: 'Categorías históricas del catálogo',
+    intro: 'La auditoría pública identifica estas seis clasificaciones. No implica que BBCL tenga objetos, precios o ventas disponibles.',
+    labels: ['Único','Casi único','LTD','Muy rare','Rare','Medallas'],
+    screenshot: 'catalogo.png',
+    note: 'La imagen procede de la captura conservada del cliente HTML5. La clasificación de objetos y sus precios requieren registros propios y revisados.'
+  },
+  'ranking.html': {
+    heading: 'Clasificaciones de la comunidad',
+    intro: 'La referencia documenta cuatro apartados. No se importan puntuaciones, nombres de jugadores ni resultados de BoomBang.tv.',
+    labels: ['Puntos de logro','Medallas','Minijuegos','Clanes'],
+    screenshot: 'ranking.png',
+    note: 'Se muestra una captura existente del proyecto. Las posiciones reales solo podrán mostrarse desde el backend de BBCL.'
+  },
+  'foro.html': {
+    heading: 'Áreas del foro documentadas',
+    intro: 'Organización temática extraída de la auditoría pública; no son publicaciones de usuarios ni un foro operativo.',
+    labels: ['Foro Oficial de BoomBang','BoomBang','OffTopic','Temas Técnicos'],
+    screenshot: null,
+    note: 'Crear temas, respuestas, denuncias y apelaciones requiere autenticación, moderación y base de datos propias.'
+  }
+};
+function auditedReferencePage(path,title,description) {
+  const source = auditedSections[path];
+  const items = source.labels.map(label => '<li>'+label+'</li>').join('');
+  const media = source.screenshot ? '<figure class="preview-art"><img src="screenshots/'+source.screenshot+'" alt="Captura existente del cliente BBCL, no datos en tiempo real" loading="lazy"><figcaption>Captura conservada en el repositorio BBCL.</figcaption></figure>' : '';
+  return shell(path,title,`<section class="portal-banner portal-compact"><div class="container"><span class="eyebrow light">REFERENCIA DOCUMENTADA · BBCL</span><h1>${title}</h1><p>${description}</p></div></section>
+  <section class="portal-section container"><div class="preview-cols"><div>
+  <h2>${source.heading}</h2><p>${source.intro}</p>
+  <ul class="bbcl-audited-list">${items}</ul>
+  <p>${source.note}</p>
+  <div class="portal-notice"><strong>Funcionalidad pendiente:</strong> esta vista es informativa, no ofrece compras, resultados en vivo ni publicación de mensajes.</div>
+  <div class="preview-links"><a class="button button-sun" href="comunidad.html">Volver a Comunidad</a><a class="button portal-button-alt" href="pendientes.html">Qué falta para lanzar</a><a class="button portal-button-alt" href="index.html">Inicio</a></div>
+  </div>${media}</div></section>`);
+}
+
 function unavailablePage(path, title, emoji, description) {
+  if (auditedSections[path]) return auditedReferencePage(path,title,description);
   const media = path === 'ranking.html' ? 'ranking.png' : path === 'catalogo.html' ? 'catalogo.png' : null;
   const right = media ? `<img src="screenshots/${media}" alt="Captura ilustrativa sin datos en vivo" loading="lazy">` :
     '<span aria-hidden="true">' + emoji + '</span>';
