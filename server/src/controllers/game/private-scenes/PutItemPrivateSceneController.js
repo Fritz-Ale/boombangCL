@@ -44,6 +44,11 @@ class PutItemPrivateSceneController {
                     throw new Error('Item to move not found in the scene');
                 }
 
+                // Impedir que un objeto asociado a otra isla sea movido por esta sala.
+                if (String(itemToMove.private_scene_id) !== String(scene.id)) {
+                    throw new Error('Item does not belong to the current private scene');
+                }
+
                 if (!this.#validateOccupiedTiles(user.currentArea, occupied_tiles, user, user_catalog_item_id, true)) {
                     throw new Error('Occupied tiles validation failed for move');
                 }
