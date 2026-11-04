@@ -7,7 +7,6 @@ import {resolve,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {writeGalleryAssets,galleryItems} from './build-gallery.mjs';
 import {newsMilestones,homeMilestones} from './build-milestones.mjs';
-import {renderProfessionalHomepage} from './build-professional-home.mjs';
 
 const web=resolve(fileURLToPath(new URL('../',import.meta.url)));
 const base='https://fritz-ale.github.io/boombangCL/';
