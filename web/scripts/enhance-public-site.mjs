@@ -178,8 +178,7 @@ export async function enhancePublicSite(directory,roadmap) {
 
  await copyFile(join(web,'site-game.js'),join(output,'site-game.js'));
  for(const filename of (await readdir(output)).filter(name=>name.endsWith('.html'))) {
-   let html=filename==='index.html' ? addMetadata('index.html',await renderProfessionalHomepage(roadmap))
-     : await readFile(join(output,filename),'utf8');
+   let html=await readFile(join(output,filename),'utf8');
    if(filename!=='index.html'){
      html=html
        .replace(/(<div class="top-strip"[^>]*>)(?:<span[^>]*>✦<\/span>\s*|✦\s*)/,'$1')
