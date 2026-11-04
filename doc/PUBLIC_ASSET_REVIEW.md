@@ -21,12 +21,13 @@ El archivo `LICENSE.txt` del repositorio declara **«Todos los derechos reservad
 | `personalizacion.png` | Avatares y Galería | Por verificar |
 | `ranking.png` | Galería y rankings ilustrativos | Por verificar |
 | `catalogo.png` | Objetos y Galería | Por verificar |
+| `inventario.png` | Mochila e inventario de la portada documental | Por verificar |
 
-Otros recursos que existen en la carpeta de origen, como `admin.png` e `inventario.png`, no forman parte de la lista de nueve capturas publicada automáticamente.
+Otros recursos, como `admin.png`, siguen sin publicarse automáticamente. `inventario.png` se agregó a la lista pública solo para la portada documental de la rama `fix/portal-capturas-reales-20261103`; su licencia permanece pendiente.
 
 ## Comprobaciones técnicas incluidas
 
-- La versión pública usa una lista cerrada de nueve capturas en `web/scripts/build-public-site.mjs` y `web/scripts/build-gallery.mjs`.
+- La versión pública propuesta utiliza una lista cerrada de diez capturas en `web/scripts/build-public-site.mjs`. La galería sigue mostrando sus nueve capturas existentes.
 - Los tests verifican que las imágenes referenciadas existan y que todas las rutas locales sean resolubles.
 - El centrado de imágenes se resuelve por CSS (`web/site-image-center.css`), sin modificar ni reexportar las imágenes originales.
 - Las capturas se señalan como **referencia del código fuente** y no como juego conectado en tiempo real.
