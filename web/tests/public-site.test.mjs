@@ -30,7 +30,7 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     assert.doesNotMatch(homeTitle, /[\p{Emoji_Presentation}\uFE0F]/gu);
     assert.doesNotMatch(homeTitle, /class="game-scene-number"|\b0[123] \/ (?:EXPLORACIÓN|COMUNIDAD|DIVERSIÓN)/);
     assert.doesNotMatch(homeTitle, /data-game-scene-count>\d/);
-    assert.match(homeTitle, /class="game-scene-marker"/);
+    assert.match(homeTitle, /class="archive-intro"/);
     for (const filename of result.pages) {
       const content = await readFile(join(dir,filename),'utf8');
       assert.doesNotMatch(content, /[\p{Emoji_Presentation}\uFE0F]/gu, filename + ': standard emoji are prohibited');
@@ -40,9 +40,9 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     assert.match(proCss, /prefers-reduced-motion/);
     assert.match(homeTitle, /href="site-professional.css"/);
     assert.match(homeTitle, /href="site-game.css"/);
-    assert.match(homeTitle, /src="site-game.js"/);
-    assert.match(homeTitle, /data-game-explorer/);
-    assert.equal((homeTitle.match(/data-game-scene="/g)||[]).length, 3);
+    assert.match(homeTitle, /href="heritage.css"/);
+    assert.match(homeTitle, /src="screenshots\/portada\.png"/);
+    assert.equal((homeTitle.match(/class="archive-capture"/g)||[]).length, 8);
     const gameCss = await readFile(join(dir,'site-game.css'),'utf8');
     const gameJs = await readFile(join(dir,'site-game.js'),'utf8');
     const imageCss = await readFile(join(dir,'site-image-center.css'),'utf8');
@@ -64,7 +64,7 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     assert.match(gameJs, /aria-pressed/);
     assert.doesNotMatch(gameJs, /Authorization|GITHUB_TOKEN|innerHTML|api\.github\.com/);
     assert.doesNotMatch(homeTitle, /🥳|🌴|Tu isla\.|¡Vamos a jugar!|¡Hey, hola!/);
-    assert.match(homeTitle, /El servidor multijugador todavía no está disponible/);
+    assert.match(homeTitle, /El servidor multijugador aún no cuenta con una dirección pública verificada/);
     const searchPage = await readFile(join(dir,'buscar.html'),'utf8');
     const galleryPage = await readFile(join(dir,'galeria.html'),'utf8');
     const galleryJs = await readFile(join(dir,'site-gallery.js'),'utf8');
@@ -74,12 +74,12 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     const account = await readFile(join(dir,'cuenta.html'),'utf8');
     const news = await readFile(join(dir,'noticias.html'),'utf8');
     const blockers = await readFile(join(dir,'pendientes.html'),'utf8');
-    assert.match(homepage, /Las islas te/);
+    assert.match(homepage, /El mundo de BoomBang, en sus propios archivos/);
     assert.match(homepage, /href="index.html"/);
     assert.match(homepage, /href="comunidad.html"/);
     assert.match(homepage, /href="buscar.html"/);
     assert.match(homepage, /href="galeria.html"/);
-    assert.match(homepage, /Descubre el mundo/);
+    assert.match(homepage, /Ver las salas y las islas/);
     assert.match(galleryPage, /ARCHIVO VISUAL/);
     assert.match(galleryPage, /site-gallery.css/);
     assert.match(galleryPage, /data-gallery-filter="all"/);
@@ -87,10 +87,10 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     assert.equal((galleryPage.match(/class="gallery-card"/g) || []).length,9);
     assert.match(galleryPage, /Imágenes de referencia, no del servidor en vivo/);
     assert.doesNotMatch(galleryJs, /innerHTML|Authorization|api\.github\.com/);
-    assert.match(homepage, /id="progress-title"/);
-    assert.match(homepage, /href="#explorador"/);
+    assert.match(homepage, /id="kekos-title"/);
+    assert.match(homepage, /href="#mundo"/);
     assert.doesNotMatch(homepage, /Jugar ahora|Jugadores conectados|Jugando en vivo/);
-    assert.match(homepage, /class="game-progress-number"><strong>11<\/strong><span>\/ 20<\/span>/);
+    assert.match(homepage, /src="screenshots\/inventario\.png"/);
     assert.match(homepage, /rel="canonical"/);
     assert.match(homepage, /og:description/);
     assert.match(searchPage, /data-site-search/);

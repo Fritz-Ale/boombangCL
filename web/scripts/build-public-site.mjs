@@ -17,8 +17,8 @@ const root = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const web = join(root, 'web');
 const shots = join(root, 'doc', 'screenshots');
 const readonlyPages = ['index','comunidad','noticias','ayuda','normas','privacidad','avance'];
-const assets = ['styles.css','portal.css','reference-design.css','avance.css','script.js','portal.js','avance.js','avance-data.json'];
-const screenshots = ['portada.png','lobby.png','sala-publica.png','sala-privada.png','islas.png','golden-ring.png','personalizacion.png','ranking.png','catalogo.png'];
+const assets = ['styles.css','portal.css','reference-design.css','heritage.css','avance.css','script.js','portal.js','avance.js','avance-data.json'];
+const screenshots = ['portada.png','lobby.png','sala-publica.png','sala-privada.png','islas.png','golden-ring.png','personalizacion.png','ranking.png','catalogo.png','inventario.png'];
 
 const menu = [
   ['Inicio','index.html'], ['Comunidad','comunidad.html'], ['Noticias','noticias.html'],
@@ -68,7 +68,7 @@ export function transformReadonlyPage(name, html) {
   if (!html.includes('<main id="principal">')) throw new Error('Missing main: ' + page);
   const originalNav = /<nav\b[^>]*\bid="main-nav"[^>]*>[\s\S]*?<\/nav>/;
   if (!originalNav.test(html)) throw new Error('Missing navigation: ' + page);
-  let result = html.replace(originalNav, navbar(page))
+  let result = (name === 'index' ? html : html.replace(originalNav, navbar(page)))
     .replace(/<script\b[^>]*src="portal-app\.js"[^>]*><\/script>/g, '')
     .replace(/<link rel="stylesheet" href="live\.css">/g, '')
     .replace(/<a\b[^>]*href="http:\/\/play\.boombang\.com"[^>]*>[\s\S]*?<\/a>/g,

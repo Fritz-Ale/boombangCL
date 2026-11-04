@@ -51,9 +51,9 @@ test('public news and homepage have working milestone HTML even without JavaScri
     assert.match(news,/Galería pública de imágenes del proyecto/);
     assert.match(news,/No son noticias de BoomBang.tv/);
     assert.match(news,/site-milestones.js/);
-    assert.match(home,/id="news-title"/);
-    assert.equal((home.match(/<article><time datetime="/g)||[]).length,3);
-    assert.match(home,/href="noticias.html#hitos-reales"/);
+    assert.match(home,/href="noticias.html"/);
+    assert.match(home,/src="screenshots\/sala-publica\.png"/);
+    assert.doesNotMatch(home,/id="news-title"|<article><time datetime="/);
     assert.match(home,/site-professional.css/);
     assert.match(css,/prefers-reduced-motion|milestone-card/);
     assert.match(js,/aria-pressed/);

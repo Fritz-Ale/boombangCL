@@ -7,7 +7,6 @@ import {resolve,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {writeGalleryAssets,galleryItems} from './build-gallery.mjs';
 import {newsMilestones,homeMilestones} from './build-milestones.mjs';
-import {renderProfessionalHomepage} from './build-professional-home.mjs';
 
 const web=resolve(fileURLToPath(new URL('../',import.meta.url)));
 const base='https://fritz-ale.github.io/boombangCL/';
@@ -149,12 +148,9 @@ export async function enhancePublicSite(directory,roadmap) {
      html=html.replace('</main>',promo+'</main>');
    }
    if(filename==='index.html'){
-     if(!html.includes('<section class="intro section-pad"')) throw new Error('Homepage progress anchor missing');
-     html=html.replace('<section class="intro section-pad"',homepageProgress(tasks)+'<section class="intro section-pad"');
-     const projectAnchor='<section class="project section-pad"';
-     if(!html.includes(projectAnchor))throw new Error('Homepage latest-updates anchor missing');
-     html=html.replace(projectAnchor,homeMilestones(roadmap)+projectAnchor);
-     html=html.replace('</head>','<link rel="stylesheet" href="site-milestones.css"></head>');
+     if(!html.includes('class="archive-intro"')) throw new Error('Homepage must use the real-project screenshot layout');
+     // Mantener la portada revisada: no insertar campañas ni arte generico.
+     // Los hitos comprobables siguen disponibles en avance.html y noticias.html.
      html=html.replace('El botón de juego abre la dirección local del cliente y requiere que los servicios estén configurados.',
        'La página para jugar explica qué servicios faltan. No hay servidor multijugador público activo.');
    }
@@ -182,8 +178,7 @@ export async function enhancePublicSite(directory,roadmap) {
 
  await copyFile(join(web,'site-game.js'),join(output,'site-game.js'));
  for(const filename of (await readdir(output)).filter(name=>name.endsWith('.html'))) {
-   let html=filename==='index.html' ? addMetadata('index.html',await renderProfessionalHomepage(roadmap))
-     : await readFile(join(output,filename),'utf8');
+   let html=await readFile(join(output,filename),'utf8');
    if(filename!=='index.html'){
      html=html
        .replace(/(<div class="top-strip"[^>]*>)(?:<span[^>]*>✦<\/span>\s*|✦\s*)/,'$1')
@@ -208,6 +203,8 @@ export async function enhancePublicSite(directory,roadmap) {
    // Load after all theme styles so image framing wins at every breakpoint.
    if(!html.includes('href="site-image-center.css"'))
      html=html.replace('</head>','<link rel="stylesheet" href="site-image-center.css"></head>');
+   // Heritage CSS debe cerrar la cascada para la portada documental.
+   if(filename==='index.html') html=html.replace('</head>','<link rel="stylesheet" href="heritage.css"></head>');
    await writeFile(join(output,filename),html);
  }
 
