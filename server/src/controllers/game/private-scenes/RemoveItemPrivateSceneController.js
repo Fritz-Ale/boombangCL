@@ -21,7 +21,7 @@ class RemoveItemPrivateSceneController {
             // Rechazar identificadores no enteros antes de reservar la escena
             // o consultar Laravel. Aceptar número o cadena decimal segura.
             const rawId = data?.user_catalog_item_id;
-            const userCatalogItemId = typeof rawId === 'number' || (typeof rawId === 'string' && /^[1-9]\\d*$/.test(rawId))
+            const userCatalogItemId = typeof rawId === 'number' || (typeof rawId === 'string' && /^[1-9][0-9]*$/.test(rawId))
                 ? Number(rawId) : NaN;
             if (!Number.isSafeInteger(userCatalogItemId) || userCatalogItemId < 1) {
                 throw new Error('ID de objeto inválido');
