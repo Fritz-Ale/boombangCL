@@ -35,7 +35,7 @@ body.archive-home { margin:0; font-family:Arial,Helvetica,sans-serif; background
 .archive-hero-image img,.archive-feature img,.archive-access img { width:100%; aspect-ratio:16/10; object-fit:contain; background:#e7eff0; }
 .archive-home figcaption { padding:11px 14px; font-size:.82rem; color:#345a69; background:#fff; }
 .archive-home figcaption code { font-size:.83em; overflow-wrap:anywhere; }
-.archive-section { padding:70px 0; }
+.archive-section,.archive-home .intro.section-pad,.archive-home .project.section-pad { padding:70px 0; }
 .archive-alt { background:#e5f0f0; border-block:1px solid var(--line); }
 .archive-heading { margin-bottom:28px; max-width:710px; }
 .archive-home h2 { font-size:clamp(1.85rem,3.4vw,3rem); line-height:1.15; letter-spacing:-.035em; margin-bottom:18px; }
@@ -71,7 +71,7 @@ body.archive-home { margin:0; font-family:Arial,Helvetica,sans-serif; background
 @media(max-width:620px) {
  .archive-container { width:min(100% - 26px,1120px); }
  .archive-hero { padding:37px 0; }
- .archive-section { padding:42px 0; }
+ .archive-section,.archive-home .intro.section-pad,.archive-home .project.section-pad { padding:42px 0; }
  .archive-gallery-two { grid-template-columns:1fr; }
  .archive-gallery img { height:auto; max-height:330px; }
  .archive-footer-layout { flex-direction:column; }
