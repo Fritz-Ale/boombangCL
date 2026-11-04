@@ -3,125 +3,87 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#0c3444">
-  <meta name="description" content="BoombangCL: una aventura tropical para explorar, crear islas, conocer amigos y disfrutar del mundo BoomBang HTML5. Proyecto independiente de preservación.">
+  <meta name="theme-color" content="#153348">
+  <meta name="description" content="BoomBang CL: conoce el proyecto HTML5 mediante capturas reales del cliente, sus salas, islas, personajes, inventario y catálogo.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="BoombangCL · Tu isla, tu aventura">
-  <meta property="og:description" content="Explora un mundo de islas, amistades y aventuras. Un proyecto independiente basado en BoomBang HTML5.">
-  <title>BoombangCL · Tu isla, tu aventura</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%2309b5b5'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-size='42'%3E%F0%9F%8F%9D%EF%B8%8F%3C/text%3E%3C/svg%3E">
+  <meta property="og:title" content="BoomBang CL · Archivo visual del cliente HTML5">
+  <meta property="og:description" content="Salas, kekos, islas y objetos en capturas del repositorio de BoomBang CL.">
+  <title>BoomBang CL · El mundo del juego</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="portal.css">
-  <link rel="stylesheet" href="reference-design.css">
-  <script src="script.js" defer></script>
-  <script src="portal.js" defer></script>
+  <link rel="stylesheet" href="heritage.css">
+  <script defer src="script.js"></script>
 </head>
-<body>
+<body class="archive-home">
   <a class="skip-link" href="#principal">Saltar al contenido</a>
-  <div class="top-strip"><span aria-hidden="true">✦</span> ¡Una isla llena de historias te espera! <a href="#mundo">Descubre BoombangCL <span aria-hidden="true">→</span></a></div>
-  <header class="site-header" id="arriba">
+  <header class="site-header archive-header">
     <div class="container header-inner">
-      <a class="brand" href="#inicio" aria-label="BoombangCL, inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a>
+      <a class="brand archive-brand" href="index.html" aria-label="BoomBang CL, inicio"><span>BoomBang</span><strong>CL</strong></a>
       <button class="menu-button" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
       <nav id="main-nav" class="main-nav" aria-label="Navegación principal">
-        <a href="#mundo">El mundo</a><a href="comunidad.html">Comunidad</a><a href="noticias.html">Noticias</a><a href="foro.html">Foro</a><a href="social.html">Amigos y clanes</a><a href="avance.html">Avances</a><a href="cuenta.html">Mi cuenta</a>
-        <a class="nav-cta" href="#jugar">¡Vamos a jugar! <span aria-hidden="true">↗</span></a>
+        <a href="index.html" aria-current="page">Inicio</a>
+        <a href="#mundo">Salas e islas</a>
+        <a href="#kekos">Kekos</a>
+        <a href="#objetos">Objetos</a>
+        <a href="comunidad.html">Comunidad</a>
+        <a href="noticias.html">Noticias</a>
+        <a href="avance.html">Avances</a>
+        <a href="ayuda.html" class="nav-cta">Cómo acceder</a>
       </nav>
     </div>
   </header>
   <main id="principal">
-    <section class="hero" id="inicio" aria-labelledby="hero-title">
-      <div class="hero-orb hero-orb-one" aria-hidden="true"></div><div class="hero-orb hero-orb-two" aria-hidden="true"></div>
-      <div class="container hero-grid">
-        <div class="hero-copy" data-reveal>
-          <span class="eyebrow light"><span aria-hidden="true">✳</span> BIENVENIDO A BOOMBANGCL</span>
-          <h1 id="hero-title">Tu isla.<br>Tu gente.<br><em>Tu aventura.</em></h1>
-          <p>Hay mundos que nunca se olvidan. Regresa a un lugar de islas tropicales, personajes únicos y nuevos momentos para compartir.</p>
-          <div class="hero-actions"><a class="button button-sun" href="#jugar">Descubre cómo jugar <span aria-hidden="true">↗</span></a><a class="button button-ghost" href="#mundo">Explorar el mundo <span aria-hidden="true">↓</span></a></div>
-          <div class="hero-caption"><span class="avatar-dots" aria-hidden="true"><i>☀</i><i>♥</i><i>✦</i></span><span>Un proyecto hecho para mantener viva la aventura</span></div>
+    <section class="archive-intro" id="inicio" aria-labelledby="hero-title">
+      <div class="container archive-intro-grid">
+        <div class="archive-intro-copy">
+          <p class="archive-kicker">Proyecto independiente · Cliente HTML5</p>
+          <h1 id="hero-title">El mundo de BoomBang, en sus propios archivos.</h1>
+          <p>Salas, personajes, islas y objetos del proyecto BoomBang HTML5. Aquí se muestran capturas incluidas en el repositorio, sin personajes ni escenarios inventados.</p>
+          <div class="archive-actions">
+            <a class="archive-action archive-action-primary" href="#mundo">Ver las salas y las islas</a>
+            <a class="archive-action archive-action-secondary" href="#jugar">Estado del juego</a>
+          </div>
+          <p class="archive-disclaimer">La portada es informativa. No representa jugadores conectados ni una partida en vivo.</p>
         </div>
-        <div class="hero-art" data-reveal>
-          <div class="sun-disc" aria-hidden="true"></div><div class="floating-spark spark-a" aria-hidden="true">✦</div><div class="floating-spark spark-b" aria-hidden="true">✳</div>
-          <div class="photo-frame"><div class="photo-topline"><span class="window-dots"><i></i><i></i><i></i></span><span>POSTAL DESDE LA ISLA</span><span aria-hidden="true">✿</span></div><img src="screenshots/portada.png" alt="Imagen del proyecto BoomBang HTML5" fetchpriority="high"><div class="photo-bottom"><span>UN MUNDO POR DESCUBRIR</span><span aria-hidden="true">✴ ✴ ✴</span></div></div>
-          <div class="art-sticker sticker-top"><span aria-hidden="true">🌴</span> ¡Bienvenido!</div><div class="art-sticker sticker-bottom"><span aria-hidden="true">💬</span> ¡Hey, hola!</div>
-        </div>
+        <figure class="archive-main-shot">
+          <img src="screenshots/portada.png" alt="Captura de la portada del cliente BoomBang HTML5 conservada en el repositorio" width="1200" height="750" fetchpriority="high">
+          <figcaption>Captura del cliente · Archivo del proyecto</figcaption>
+        </figure>
       </div>
-      <div class="hero-bottom" aria-hidden="true"><svg viewBox="0 0 1440 125" preserveAspectRatio="none"><path fill="#fffaf1" d="M0,60 C180,130 320,5 530,59 C795,136 960,0 1180,48 C1300,77 1385,92 1440,67 L1440,125 L0,125Z"/></svg></div>
     </section>
-    <section class="intro section-pad" id="mundo" aria-labelledby="world-title">
+    <section class="archive-section" id="mundo" aria-labelledby="world-title">
       <div class="container">
-        <div class="center-heading" data-reveal><span class="eyebrow orange">EL MUNDO DE BOOMBANGCL</span><h2 id="world-title">Pequeñas islas.<br><span>Grandes historias.</span></h2><p>Un universo social donde lo importante no es solo el lugar al que llegas, sino con quién compartes el camino.</p></div>
-        <div class="feature-grid">
-          <article class="feature-card feature-coral" data-reveal><div class="feature-icon" aria-hidden="true">🏝️</div><h3>Crea tu isla</h3><p>Un rincón a tu manera. Construye, decora y hazlo tuyo.</p><span class="feature-number">01 / EXPLORA</span></article>
-          <article class="feature-card feature-mint" data-reveal><div class="feature-icon" aria-hidden="true">💬</div><h3>Haz amigos</h3><p>Conoce gente, conversa y crea recuerdos inolvidables.</p><span class="feature-number">02 / CONECTA</span></article>
-          <article class="feature-card feature-violet" data-reveal><div class="feature-icon" aria-hidden="true">🎭</div><h3>Sé tú mismo</h3><p>Elige tu avatar y dale un estilo único a tu personaje.</p><span class="feature-number">03 / EXPRESA</span></article>
-          <article class="feature-card feature-yellow" data-reveal><div class="feature-icon" aria-hidden="true">🏆</div><h3>Diviértete</h3><p>Comparte desafíos, risas y revanchas con tus amigos.</p><span class="feature-number">04 / JUEGA</span></article>
+        <div class="archive-heading"><p class="archive-kicker">Escenarios del cliente</p><h2 id="world-title">Salas e islas</h2><p>Las imágenes siguientes proceden de los archivos de BoomBangCL; no son recreaciones ni imágenes generadas.</p></div>
+        <div class="archive-grid archive-grid-world">
+          <figure class="archive-capture"><img src="screenshots/sala-publica.png" alt="Sala pública del cliente BoomBang HTML5" loading="lazy"><figcaption><strong>Salas públicas</strong><span>Captura del juego</span></figcaption></figure>
+          <figure class="archive-capture"><img src="screenshots/islas.png" alt="Vista de islas del cliente BoomBang HTML5" loading="lazy"><figcaption><strong>Islas</strong><span>Captura del juego</span></figcaption></figure>
+          <figure class="archive-capture"><img src="screenshots/sala-privada.png" alt="Sala privada y su decoración en el cliente BoomBang HTML5" loading="lazy"><figcaption><strong>Salas privadas</strong><span>Captura del juego</span></figcaption></figure>
+          <figure class="archive-capture"><img src="screenshots/lobby.png" alt="Vestíbulo del cliente BoomBang HTML5" loading="lazy"><figcaption><strong>Vestíbulo</strong><span>Captura del juego</span></figcaption></figure>
         </div>
       </div>
     </section>
-    <section class="places section-pad" id="experiencias" aria-labelledby="places-title">
-      <div class="container">
-        <div class="section-head" data-reveal><div><span class="eyebrow aqua">TU PRÓXIMO DESTINO</span><h2 id="places-title">¿Dónde nos<br><em>vemos hoy?</em></h2></div><p>Las salas, islas y rincones del proyecto BoomBang HTML5 ya forman parte del código de BoombangCL.</p></div>
-        <div class="places-grid">
-          <article class="place-card place-large" data-reveal><div class="place-image"><img src="screenshots/sala-publica.png" alt="Captura de una sala pública del juego" loading="lazy"></div><div class="place-info"><span>SALAS PÚBLICAS</span><h3>Siempre hay un lugar para un hola.</h3><p>Recorre escenarios, encuentra jugadores y explora el mapa.</p></div></article>
-          <article class="place-card" data-reveal><div class="place-image"><img src="screenshots/islas.png" alt="Captura del sistema de islas" loading="lazy"></div><div class="place-info"><span>TU PROPIO ESPACIO</span><h3>Una isla a tu estilo.</h3><p>Imagina, personaliza y comparte.</p></div></article>
-          <article class="place-card" data-reveal><div class="place-image"><img src="screenshots/sala-privada.png" alt="Captura de una sala privada decorada" loading="lazy"></div><div class="place-info"><span>MILES DE IDEAS</span><h3>Cada sala cuenta algo.</h3><p>Tu creatividad tiene su rincón.</p></div></article>
-        </div>
+    <section class="archive-section archive-section-alt" id="kekos" aria-labelledby="kekos-title">
+      <div class="container archive-feature">
+        <div class="archive-feature-text"><p class="archive-kicker">Personajes</p><h2 id="kekos-title">Kekos y personalización</h2><p>El diseño de los personajes se muestra tal como aparece en la captura disponible de la personalización del cliente. No se sustituyen por avatares genéricos.</p><a class="archive-inline-link" href="comunidad.html">Conocer la comunidad</a></div>
+        <figure class="archive-capture"><img src="screenshots/personalizacion.png" alt="Pantalla de personalización de los personajes del cliente" loading="lazy"><figcaption><strong>Personalización</strong><span>Captura del cliente</span></figcaption></figure>
       </div>
     </section>
-    <section class="play-section section-pad" aria-labelledby="play-title">
-      <div class="container play-grid">
-        <div class="play-visual" data-reveal><div class="ring-background"></div><img src="screenshots/golden-ring.png" alt="Captura del minijuego Golden Ring" loading="lazy"><span class="ring-badge">★ GOLDEN RING ★</span></div>
-        <div class="play-copy" data-reveal><span class="eyebrow orange">LA DIVERSIÓN NO SE DETIENE</span><h2 id="play-title">Amigos de día.<br><em>Rivales de juego.</em></h2><p>¿Listo para una revancha? El código base incluye Golden Ring, con partidas multijugador, puntuaciones y recompensas.</p><div class="check-row"><span>✦ Desafíos multijugador</span><span>✦ Rankings y recompensas</span></div><a class="text-link" href="#jugar">Conoce cómo entrar <span aria-hidden="true">→</span></a></div>
-      </div>
+    <section class="archive-section" id="objetos" aria-labelledby="objects-title">
+      <div class="container"><div class="archive-heading"><p class="archive-kicker">Contenido del juego</p><h2 id="objects-title">Objetos, inventario y minijuegos</h2><p>Vistas del catálogo, la mochila y Golden Ring incluidas en los archivos del repositorio. No se ofrecen compras públicas sin una API segura.</p></div>
+      <div class="archive-grid archive-grid-three">
+        <figure class="archive-capture"><img src="screenshots/catalogo.png" alt="Catálogo de objetos del cliente" loading="lazy"><figcaption><strong>Catálogo de objetos</strong><span>Vista de referencia</span></figcaption></figure>
+        <figure class="archive-capture"><img src="screenshots/inventario.png" alt="Inventario de objetos del cliente" loading="lazy"><figcaption><strong>Mochila e inventario</strong><span>Vista de referencia</span></figcaption></figure>
+        <figure class="archive-capture"><img src="screenshots/golden-ring.png" alt="Captura del minijuego Golden Ring" loading="lazy"><figcaption><strong>Golden Ring</strong><span>Captura del juego</span></figcaption></figure>
+      </div></div>
     </section>
-    <section class="community section-pad" id="comunidad" aria-labelledby="community-title"><div class="container community-grid">
-      <div class="community-copy" data-reveal><span class="eyebrow light">EL LADO BONITO DE LA ISLA</span><h2 id="community-title">Viejos amigos.<br><em>Nuevas historias.</em></h2><p>La esencia de BoomBang siempre ha sido su comunidad. Personaliza tu avatar, descubre rincones y haz que cada conexión cuente.</p><a class="button button-white" href="#jugar">Ser parte de la aventura <span aria-hidden="true">→</span></a></div>
-      <div class="community-photo" data-reveal><img src="screenshots/personalizacion.png" alt="Captura del sistema de personalización de avatar" loading="lazy"><span class="community-bubble">¡Tu estilo, tus reglas! ✨</span></div>
-    </div></section>
-
-    <section class="portal-preview-section" id="novedades" aria-labelledby="portal-preview-title">
-      <div class="container">
-        <div class="portal-preview-head" data-reveal>
-          <div><span class="eyebrow orange">TU PUNTO DE ENCUENTRO</span><h2 id="portal-preview-title">Un portal para <em>todos.</em></h2></div>
-          <p>Descubre nuevas páginas inspiradas en las funciones habituales de una comunidad de videojuegos, creadas específicamente para BoomBang CL.</p>
-        </div>
-        <div class="portal-preview-grid">
-          <a href="comunidad.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🏝️</span><h3>Comunidad y salas</h3><p>Explora escenarios, islas y las secciones sociales previstas para nuestro portal.</p><strong>Explorar comunidad →</strong></a>
-          <a href="noticias.html" class="portal-preview-card" data-reveal><span aria-hidden="true">📰</span><h3>Noticias del proyecto</h3><p>Conoce el código base y los próximos pasos sin confundirlos con noticias oficiales.</p><strong>Leer novedades →</strong></a>
-          <a href="ayuda.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🧭</span><h3>Guía para comenzar</h3><p>Cómo preparar el cliente HTML5 y los servicios de Laravel.</p><strong>Ver guía →</strong></a>
-          <a href="cuenta.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🪪</span><h3>Tu cuenta</h3><p>Regístrate e inicia sesión en el portal mediante la API de Laravel.</p><strong>Acceder →</strong></a>
-          <a href="foro.html" class="portal-preview-card" data-reveal><span aria-hidden="true">💬</span><h3>Foro</h3><p>Publica temas y responde a otras personas cuando la API esté activa.</p><strong>Ir al foro →</strong></a>
-          <a href="chat.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🗣️</span><h3>Chat del portal</h3><p>Mensajes persistentes para cuentas registradas, sin confundirlo con el chat dentro del juego.</p><strong>Entrar al chat →</strong></a>
-          <a href="catalogo.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🛍️</span><h3>Catálogo</h3><p>Consulta artículos activos de la base de datos del juego.</p><strong>Explorar objetos →</strong></a>
-          <a href="social.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🤝</span><h3>Amigos y clanes</h3><p>Envía solicitudes de amistad y crea clanes con invitaciones privadas.</p><strong>Conoce a tu gente →</strong></a>
-          <a href="avance.html" class="portal-preview-card" data-reveal><span aria-hidden="true">📊</span><h3>Avances de BoomBang CL</h3><p>Mira lo que ya está programado, las pruebas aprobadas y las tareas que faltan para lanzar el proyecto.</p><strong>Ver progreso del proyecto →</strong></a>
-          <a href="ranking.html" class="portal-preview-card" data-reveal><span aria-hidden="true">🏆</span><h3>Clasificación</h3><p>Ve puntuaciones reales disponibles de minijuegos.</p><strong>Ver ranking →</strong></a>
-        </div>
-        <p class="portal-statusline">● El acceso, foro, chat, catálogo y rankings se conectan a Laravel si instalas las migraciones y ejecutas los servicios. Compras y pagos web permanecen desactivados.</p>
-      </div>
-    </section>
-    <section class="project section-pad" id="proyecto" aria-labelledby="project-title"><div class="container">
-      <div class="center-heading" data-reveal><span class="eyebrow orange">DESDE LA ISLA</span><h2 id="project-title">Una nueva etapa<br><span>para BoombangCL.</span></h2><p>Recuperamos el proyecto HTML5 como punto de partida para seguir construyendo. Esto es lo que puedes conocer hoy.</p></div>
-      <div class="update-grid">
-        <article class="update-card" data-reveal><div class="update-art art-one" aria-hidden="true"><span>🏝️</span></div><div class="update-body"><span class="update-label">PRESERVACIÓN</span><h3>El mundo original, una nueva oportunidad</h3><p>Conservamos la estructura del cliente, servidor, API y recursos como base del proyecto.</p></div></article>
-        <article class="update-card" data-reveal><div class="update-art art-two" aria-hidden="true"><span>🛠️</span></div><div class="update-body"><span class="update-label">DESARROLLO</span><h3>Una web propia para nuestra comunidad</h3><p>Esta portada es el primer paso hacia futuros servicios públicos de BoombangCL.</p></div></article>
-        <article class="update-card" data-reveal><div class="update-art art-three" aria-hidden="true"><span>💛</span></div><div class="update-body"><span class="update-label">COMUNIDAD</span><h3>Muchos recuerdos por delante</h3><p>Amistades, juegos e islas: una experiencia que queremos seguir mejorando.</p></div></article>
-      </div>
-    </div></section>
-    <section class="join section-pad" id="jugar" aria-labelledby="join-title"><div class="container">
-      <div class="join-panel" data-reveal><div class="join-stars" aria-hidden="true">✦ · ✧ · ✦</div><span class="eyebrow light">TU PASAPORTE A LA ISLA</span><h2 id="join-title">¿Nos vemos<br><em>en BoombangCL?</em></h2><p>La portada ya está lista. Para entrar al juego, primero debes tener funcionando el cliente HTML5 y sus servicios.</p><a class="button button-sun" href="ayuda.html">Abrir cliente local <span aria-hidden="true">↗</span></a><p class="join-note">Consulta la guía para acceder al cliente HTML5 local; el juego requiere los servicios del servidor en ejecución.</p></div>
-    </div></section>
-    <section class="faq section-pad" aria-labelledby="faq-title"><div class="container faq-grid">
-      <div data-reveal><span class="eyebrow orange">TE CONTAMOS MÁS</span><h2 id="faq-title">Preguntas<br><em>de la isla.</em></h2><p>Lo que conviene saber antes de comenzar tu aventura.</p></div>
-      <div class="faq-items" data-reveal>
-        <details><summary>¿Qué es BoombangCL?<span aria-hidden="true">+</span></summary><p>Es un proyecto independiente de recuperación y continuidad de BoomBang HTML5, con cliente web, API y servidor multijugador.</p></details>
-        <details><summary>¿Es la web oficial de BoomBang?<span aria-hidden="true">+</span></summary><p>No. BoombangCL es independiente, no está afiliado ni respaldado por los titulares originales de BoomBang.</p></details>
-        <details><summary>¿Ya puedo registrarme o jugar desde esta web?<span aria-hidden="true">+</span></summary><p>Esta versión es una portada informativa. El registro y el acceso no están integrados aquí. El botón de juego abre la dirección local del cliente y requiere que los servicios estén configurados.</p></details>
-        <details><summary>¿Puedo seguir el desarrollo?<span aria-hidden="true">+</span></summary><p>El código y la documentación se mantienen en el repositorio BoombangCL de GitHub. Algunas funciones podrán cambiar durante el desarrollo.</p></details>
-      </div>
+    <section class="archive-section archive-access" id="jugar" aria-labelledby="play-title"><div class="container archive-access-inner">
+      <div><p class="archive-kicker">Acceso al juego</p><h2 id="play-title">Cliente HTML5 en desarrollo</h2><p>El servidor multijugador aún no cuenta con una dirección pública verificada. La guía explica cómo utilizar el cliente y los servicios en un entorno local. No solicitamos credenciales en esta portada.</p></div>
+      <div class="archive-actions"><a class="archive-action archive-action-primary" href="ayuda.html">Ver guía de acceso</a><a class="archive-action archive-action-secondary" href="avance.html">Ver avances reales</a></div>
     </div></section>
   </main>
-  <footer class="site-footer"><div class="container"><div class="footer-top"><div><a class="brand footer-brand" href="#inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a><p>Un mundo de islas, amistad y aventura.<br>Hecho con cariño para una comunidad inolvidable.</p></div><nav aria-label="Enlaces de pie de página"><a href="#mundo">El mundo</a><a href="comunidad.html">Comunidad</a><a href="foro.html">Foro</a><a href="chat.html">Chat</a><a href="ayuda.html">Cómo jugar</a><a href="normas.html">Normas</a><a href="privacidad.html">Privacidad</a><a href="https://github.com/Fritz-Ale/boombangCL" target="_blank" rel="noopener noreferrer">GitHub</a></nav></div><div class="footer-bottom"><span>© <span id="year">2026</span> BoombangCL · Proyecto independiente no oficial.</span><span>Basado en <a href="https://github.com/GenRubiio/boombang-html5" target="_blank" rel="noopener noreferrer">BoomBang HTML5</a> · <a href="https://github.com/Fritz-Ale/boombangCL/blob/main/LICENSE.txt" target="_blank" rel="noopener noreferrer">Licencia</a></span></div></div></footer>
+  <footer class="site-footer archive-footer"><div class="container archive-footer-inner">
+    <p>© <span id="year">2026</span> BoomBang CL · Proyecto independiente y no oficial.</p>
+    <nav aria-label="Enlaces del pie de página"><a href="index.html">Inicio</a><a href="normas.html">Normas</a><a href="privacidad.html">Privacidad</a><a href="https://github.com/Fritz-Ale/boombangCL" rel="noopener noreferrer">Repositorio GitHub</a></nav>
+  </div></footer>
 </body>
 </html>
