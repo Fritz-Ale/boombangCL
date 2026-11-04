@@ -68,7 +68,7 @@ export function transformReadonlyPage(name, html) {
   if (!html.includes('<main id="principal">')) throw new Error('Missing main: ' + page);
   const originalNav = /<nav\b[^>]*\bid="main-nav"[^>]*>[\s\S]*?<\/nav>/;
   if (!originalNav.test(html)) throw new Error('Missing navigation: ' + page);
-  let result = html.replace(originalNav, navbar(page))
+  let result = (name === 'index' ? html : html.replace(originalNav, navbar(page)))
     .replace(/<script\b[^>]*src="portal-app\.js"[^>]*><\/script>/g, '')
     .replace(/<link rel="stylesheet" href="live\.css">/g, '')
     .replace(/<a\b[^>]*href="http:\/\/play\.boombang\.com"[^>]*>[\s\S]*?<\/a>/g,
