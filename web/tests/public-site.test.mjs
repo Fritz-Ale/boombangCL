@@ -73,12 +73,12 @@ test('public preview has a complete homepage, progress page and all 17 routable 
     const account = await readFile(join(dir,'cuenta.html'),'utf8');
     const news = await readFile(join(dir,'noticias.html'),'utf8');
     const blockers = await readFile(join(dir,'pendientes.html'),'utf8');
-    assert.match(homepage, /El mundo de/);
+    assert.match(homepage, /Islas, kekos y comunidad de BoomBangCL/);
     assert.match(homepage, /href="index.html"/);
     assert.match(homepage, /href="comunidad.html"/);
     assert.match(homepage, /href="buscar.html"/);
     assert.match(homepage, /href="galeria.html"/);
-    assert.match(homepage, /Ver las salas/);
+    assert.match(homepage, /Explorar comunidad/);
     assert.match(galleryPage, /ARCHIVO VISUAL/);
     assert.match(galleryPage, /site-gallery.css/);
     assert.match(galleryPage, /data-gallery-filter="all"/);
