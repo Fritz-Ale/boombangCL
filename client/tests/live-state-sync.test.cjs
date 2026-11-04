@@ -190,7 +190,7 @@ test('public backpack reconciles snapshots and live delta events with unmount cl
   assert.match(code, /socket\.on\(ResponseSocketsEnum\.ADD_ITEM_TO_INVENTORY, handleItemAdded\)/);
   assert.match(code, /socket\.off\(ResponseSocketsEnum\.ADD_ITEM_TO_INVENTORY, handleItemAdded\)/);
   assert.match(code, /socket\.off\(ResponseSocketsEnum\.REMOVE_ITEM_FROM_INVENTORY, handleItemRemoved\)/);
-  assert.match(code, /String\\(item\\.id\\) === id/);
+  assert.match(code, /String\(item\.id\) === id/);
   assert.match(code, /watch\(totalPages/);
 });
 
