@@ -77,3 +77,20 @@ body.archive-home { margin:0; font-family:Arial,Helvetica,sans-serif; background
  .archive-footer-layout { flex-direction:column; }
 }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+
+/* Bloques de la jerarquía documentada por la auditoría pública del 04-11-2026.
+ * Sin imágenes adicionales, usuarios simulados, datos ajenos ni contenido visual generado. */
+.bbcl-experience { padding:30px 0 45px; background:#f5f6f3; border-bottom:1px solid var(--line); }
+.bbcl-experience-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:15px; }
+.bbcl-experience article { padding:20px; background:#fff; border:1px solid var(--line); border-top:4px solid #26768c; }
+.bbcl-experience h2 { font-size:1.4rem; letter-spacing:0; margin:0 0 10px; }
+.bbcl-experience p { font-size:.94rem; margin:0 0 12px; }
+.bbcl-experience a,.bbcl-community-grid a { color:#14617a; font-weight:800; text-underline-offset:4px; }
+.bbcl-community-panel { padding:64px 0; background:#e5f0f0; border-top:1px solid var(--line); }
+.bbcl-community-panel>div>p:not(.archive-kicker) { max-width:790px; }
+.bbcl-community-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-top:25px; }
+.bbcl-community-grid article { background:#fff; padding:22px; border:1px solid var(--line); }
+.bbcl-community-grid h3 { margin:0 0 9px; font-size:1.25rem; }
+.bbcl-community-grid p { margin:0 0 12px; }
+@media(max-width:950px){.bbcl-experience-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:620px){.bbcl-experience-grid,.bbcl-community-grid{grid-template-columns:1fr;}.bbcl-community-panel{padding:42px 0;}}
