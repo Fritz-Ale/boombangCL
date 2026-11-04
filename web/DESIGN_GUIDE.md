@@ -16,15 +16,15 @@ El diseño usa una paleta limitada: turquesa (`#3bc2cf`), azul profundo (`#19384
 - No presentar menús sin destino ni falsos botones para iniciar partidas, pagar, registrar usuarios o conectarse a salas. Todas las funciones no desplegadas deben indicarse como tales.
 - Garantizar navegación mediante teclado, descripciones alternativas, controles con estado `aria-pressed`, foco visible y preferencia por movimiento reducido.
 - Conservar los nombres, las rutas, el SEO y los enlaces internos. No introducir dependencias de registro ni secretos de Laravel en GitHub Pages.
-- No descargar ni copiar recursos de BoomBang.tv. Antes de redistribuir los recursos heredados del repositorio, seguir `doc/PUBLIC_ASSET_REVIEW.md`, cuya revisión de permisos continúa pendiente.
+- No descargar ni copiar recursos de BoomBang.tv, ni generar imágenes nuevas. La portada solo referencia las capturas existentes del proyecto. Antes de redistribuir los recursos heredados del repositorio, seguir `doc/PUBLIC_ASSET_REVIEW.md`, cuya revisión de permisos continúa pendiente.
 
 ## Rutas y componentes
 
-**Portada:** `web/pro-home.html` es la fuente editorial. El compilador `web/scripts/build-professional-home.mjs` muestra el estado verdadero del proyecto. Los botones llevan a Mundo, Galería, Noticias y Avances.
+**Portada canónica:** `web/index.html` es la única fuente de la portada tanto para Docker/Nginx como para la compilación estática de GitHub Pages. `web/archive-home.css` usa solamente capturas existentes en `doc/screenshots/`. `web/pro-home.html` y `web/scripts/build-professional-home.mjs` se conservan como archivos anteriores, pero no deben reemplazar la portada durante el empaquetado. Los enlaces llevan a islas y salas, personajes, catálogo, guía, noticias y avances.
 
-**Explorador de escenarios:** `web/site-game.js` ofrece vistas de salas, islas y Golden Ring. Cambia capturas y textos alternativos, sin simular usuarios ni tráfico Socket.IO.
+**Capturas de escenarios:** la portada presenta imágenes versionadas de salas, islas y Golden Ring. `web/site-game.js` es un módulo heredado de la portada anterior; no se carga en la portada canónica.
 
-**Páginas interiores:** `web/site-game.css` establece el estilo tropical. `web/site-image-center.css` mantiene las imágenes completas y centradas. Las secciones informativas se generan desde `web/scripts/build-public-site.mjs` y `web/scripts/enhance-public-site.mjs`.
+**Páginas interiores:** conservan sus estilos actuales, incluidos `web/site-game.css` y `web/site-image-center.css`. La portada usa exclusivamente `web/archive-home.css` para que las reglas globales heredadas no alteren las capturas. Las secciones informativas se generan desde `web/scripts/build-public-site.mjs` y `web/scripts/enhance-public-site.mjs`.
 
 **Noticias y seguimiento:** leer hitos del archivo versionado `web/avance-data.json`, no inventar actividad de juego online. Mantener públicas las tareas faltantes y sus dependencias.
 
