@@ -203,6 +203,8 @@ export async function enhancePublicSite(directory,roadmap) {
    // Load after all theme styles so image framing wins at every breakpoint.
    if(!html.includes('href="site-image-center.css"'))
      html=html.replace('</head>','<link rel="stylesheet" href="site-image-center.css"></head>');
+   // Heritage CSS debe cerrar la cascada para la portada documental.
+   if(filename==='index.html') html=html.replace('</head>','<link rel="stylesheet" href="heritage.css"></head>');
    await writeFile(join(output,filename),html);
  }
 
