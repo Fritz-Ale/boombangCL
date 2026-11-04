@@ -373,29 +373,60 @@
       wrap.append(card);
     }
   }
-  async function initCatalog() {
-    try {
-      const data = await api('/catalog');
-      state.items = data.items || [];
-      message('Catálogo cargado desde la API. Compras web desactivadas.');
-      renderCatalog();
-      one('[data-catalog-search]').addEventListener('input', renderCatalog);
-    } catch (error) { message(formatError(error), true); empty(one('[data-catalog-items]'), 'Sin datos del catálogo hasta que la API esté disponible.'); }
+  // Actualizaciones periódicas solo para consultas de lectura: evita recargar
+  // la página y no envía información de una cuenta autenticada.
+  function watchPublicData(refresh) {
+    window.setInterval(() => {
+      if (document.visibilityState === 'visible') refresh();
+    }, 30000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') refresh();
+    });
   }
-  async function initRanking() {
-    try {
-      const data = await api('/ranking');
-      const wrap = one('[data-ranking-list]');
-      wrap.replaceChildren();
-      if (data.week) put('[data-ranking-heading]', (data.week.game || 'Minijuego') + ' · semana ' + data.week.number + '/' + data.week.year);
-      if (!(data.items || []).length) empty(wrap, 'Aún no hay puntuaciones públicas para la última semana.');
-      for (const item of (data.items || [])) {
-        const entry = node('div', null, 'portal-rank-row');
-        entry.append(node('b', '#' + item.position), node('strong', item.username), node('span', item.score + ' puntos'));
-        wrap.append(entry);
-      }
-      message('Ranking consultado en la base de datos de BoomBang CL.');
-    } catch (error) { message(formatError(error), true); }
+  function initCatalog() {
+    const search = one('[data-catalog-search]');
+    if (search) search.addEventListener('input', renderCatalog);
+    let pending = false;
+    async function refresh() {
+      if (pending) return;
+      pending = true;
+      try {
+        const data = await api('/catalog');
+        state.items = Array.isArray(data.items) ? data.items : [];
+        message('Catálogo actualizado desde BBCL. Compras web desactivadas.');
+        renderCatalog();
+      } catch (error) {
+        message(formatError(error), true);
+        if (!state.items.length) empty(one('[data-catalog-items]'), 'Sin datos del catálogo hasta que la API esté disponible.');
+      } finally { pending = false; }
+    }
+    refresh();
+    watchPublicData(refresh);
+  }
+  function initRanking() {
+    let pending = false;
+    async function refresh() {
+      if (pending) return;
+      pending = true;
+      try {
+        const data = await api('/ranking');
+        const wrap = one('[data-ranking-list]');
+        wrap.replaceChildren();
+        put('[data-ranking-heading]', data.week
+          ? (data.week.game || 'Minijuego') + ' · semana ' + data.week.number + '/' + data.week.year
+          : 'Última clasificación disponible');
+        if (!(data.items || []).length) empty(wrap, 'Aún no hay puntuaciones públicas para la última semana.');
+        for (const item of (data.items || [])) {
+          const entry = node('div', null, 'portal-rank-row');
+          entry.append(node('b', '#' + item.position), node('strong', item.username), node('span', item.score + ' puntos'));
+          wrap.append(entry);
+        }
+        message('Ranking actualizado desde la base de datos de BBCL.');
+      } catch (error) { message(formatError(error), true); }
+      finally { pending = false; }
+    }
+    refresh();
+    watchPublicData(refresh);
   }
 
   async function loadNews() {
