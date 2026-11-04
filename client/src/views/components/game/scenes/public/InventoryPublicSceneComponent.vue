@@ -153,27 +153,44 @@ const loadInventory = () => {
   socket.emit(RequestSocketsEnum.GET_PUBLIC_INVENTORY);
 };
 
-// Mantener el inventario sincronizado mientras el panel está abierto. La compra
-// y las retiradas de la isla generan eventos; el snapshot sigue siendo la fuente
-// de verdad para una carga inicial o una reconciliación.
-const handleInventorySnapshot = (data) => {
-  loading.value = false;
-  if (data?.success !== false && Array.isArray(data?.inventory)) {
-    inventoryItems.value = data.inventory;
+// Los deltas recibidos antes del primer snapshot deben aplicarse sobre él.
+// De otro modo, una respuesta de red tardía puede borrar una compra o retirada
+// recién confirmada y obligar al usuario a cambiar de sala para recuperarla.
+let hasInitialSnapshot = false;
+let pendingInventoryDeltas = [];
+const applyInventoryDelta = (items, event) => {
+  const id = String(event.id);
+  if (event.type === 'remove') {
+    return items.filter(item => String(item.id) !== id);
   }
+  const found = items.some(item => String(item.id) === id);
+  return found ? items : [...items, event.item];
+};
+const handleInventorySnapshot = (data) => {
+  if (data?.success === false || !Array.isArray(data?.inventory)) {
+    loading.value = false;
+    return;
+  }
+  const snapshot = data.inventory;
+  inventoryItems.value = hasInitialSnapshot
+    ? snapshot
+    : pendingInventoryDeltas.reduce(applyInventoryDelta, snapshot);
+  hasInitialSnapshot = true;
+  pendingInventoryDeltas = [];
+  loading.value = false;
 };
 const handleItemAdded = (data) => {
   const item = data?.item;
   if (item?.id == null) return;
-  if (!inventoryItems.value.some(existing => String(existing.id) === String(item.id))) {
-    inventoryItems.value = [...inventoryItems.value, item];
-  }
+  const event = { type: 'add', id: item.id, item };
+  if (!hasInitialSnapshot) pendingInventoryDeltas.push(event);
+  inventoryItems.value = applyInventoryDelta(inventoryItems.value, event);
 };
 const handleItemRemoved = (data) => {
   if (data?.user_catalog_item_id == null) return;
-  inventoryItems.value = inventoryItems.value.filter(
-    item => String(item.id) !== String(data.user_catalog_item_id)
-  );
+  const event = { type: 'remove', id: data.user_catalog_item_id };
+  if (!hasInitialSnapshot) pendingInventoryDeltas.push(event);
+  inventoryItems.value = applyInventoryDelta(inventoryItems.value, event);
 };
 watch(totalPages, pages => {
   currentPage.value = Math.min(currentPage.value, pages - 1);

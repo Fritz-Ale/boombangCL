@@ -119,6 +119,43 @@ class PortalFeatureTest extends TestCase
             ->assertStatus(503);
     }
 
+    public function test_public_catalog_ranking_and_forum_can_be_read_without_signing_in(): void
+    {
+        // Estos endpoints muestran solo datos del servidor BBCL, nunca los de la
+        // captura histórica de BoomBang.tv ni credenciales de una sesión.
+        $catalog = $this->getJson('/portal/catalog')
+            ->assertOk()
+            ->assertJsonStructure(['items', 'purchases_enabled']);
+        $this->assertFalse($catalog->json('purchases_enabled'));
+        foreach ($catalog->json('items') as $item) {
+            $this->assertArrayHasKey('name', $item);
+            $this->assertArrayHasKey('category', $item);
+            $this->assertArrayNotHasKey('user_id', $item);
+            $this->assertArrayNotHasKey('password', $item);
+        }
+
+        $ranking = $this->getJson('/portal/ranking')
+            ->assertOk()
+            ->assertJsonStructure(['week', 'items']);
+        foreach ($ranking->json('items') as $item) {
+            $this->assertArrayHasKey('username', $item);
+            $this->assertArrayHasKey('score', $item);
+            $this->assertArrayNotHasKey('user_id', $item);
+            $this->assertArrayNotHasKey('email', $item);
+        }
+
+        $forum = $this->getJson('/portal/forum/threads')
+            ->assertOk()
+            ->assertJsonStructure(['items', 'page', 'has_more']);
+        $this->assertSame(1, $forum->json('page'));
+        foreach ($forum->json('items') as $thread) {
+            $this->assertArrayHasKey('title', $thread);
+            $this->assertArrayHasKey('author', $thread);
+            $this->assertArrayNotHasKey('user_id', $thread);
+            $this->assertArrayNotHasKey('email', $thread);
+        }
+    }
+
     public function test_session_is_anonymous_by_default_and_guest_may_not_publish(): void
     {
         $this->getJson('/portal/session')->assertOk()->assertJsonPath('authenticated', false);

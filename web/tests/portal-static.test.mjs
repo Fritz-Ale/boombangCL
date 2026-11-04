@@ -8,7 +8,7 @@ const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const web = join(repo, 'web');
 const read = path => readFileSync(join(repo, path), 'utf8');
 const pages = ['index.html', 'comunidad.html', 'noticias.html', 'ayuda.html', 'cuenta.html', 'foro.html', 'chat.html', 'catalogo.html', 'ranking.html', 'social.html', 'moderacion.html', 'normas.html', 'privacidad.html', 'restablecer.html', 'avance.html'];
-const assets = ['styles.css', 'portal.css', 'live.css', 'script.js', 'portal.js', 'portal-app.js', 'social-app.js', 'moderacion.js', 'password-reset.js', 'avance.js', 'avance.css', 'avance-data.json'];
+const assets = ['styles.css', 'portal.css', 'archive-home.css', 'community-archive.css', 'live.css', 'script.js', 'portal.js', 'portal-app.js', 'social-app.js', 'moderacion.js', 'password-reset.js', 'avance.js', 'avance.css', 'avance-data.json'];
 
 test('all portal pages, scripts and styles are included in Docker image', () => {
   const docker = read('web/Dockerfile');
@@ -110,4 +110,25 @@ test('new portal accounts must confirm email before social writes; legacy game a
   assert.match(account, /data-email-pending/);
   assert.match(account, /data-resend-verification/);
   assert.match(client, /resend-verification/);
+});
+
+test('consultas públicas siguen funcionando sin sesión y catálogo no inventa precios', () => {
+  const script = read('web/portal-app.js');
+  assert.match(script, /if \(kind === 'forum'\) initForum\(\)/);
+  assert.match(script, /if \(kind === 'news'\) initNews\(\)/);
+  assert.match(script, /Temas públicos consultados en la API de BBCL/);
+  assert.match(script, /Precio no disponible/);
+  assert.match(script, /Number\.isFinite\(Number\(item\.price\)\)/);
+  assert.doesNotMatch(script, /innerHTML|eval\(/);
+});
+
+test('catalogo y ranking se refrescan con datos reales sin recargar la pagina', () => {
+  const script = read('web/portal-app.js');
+  assert.match(script, /function watchPublicData\(refresh\)/);
+  assert.match(script, /document\.visibilityState === 'visible'/);
+  assert.match(script, /30000/);
+  assert.match(script, /document\.addEventListener\('visibilitychange'/);
+  assert.match(script, /if \(pending\) return/);
+  assert.match(script, /search\.addEventListener\('input', renderCatalog\)/);
+  assert.doesNotMatch(script, /window\.location\.reload\(/);
 });

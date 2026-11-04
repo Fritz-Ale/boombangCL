@@ -1,0 +1,10 @@
+/* BBCL Comunidad: jerarquia verificada en la auditoria publica.
+   No se generan graficos, avatares ni datos de usuarios. */
+.bbcl-community-sections{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 28px;padding:14px;background:#edf3f1;border:1px solid #b7cbd1}
+.bbcl-community-sections a{display:inline-block;padding:10px 14px;min-height:44px;border:1px solid #8daab4;background:#fff;color:#164253;font-weight:700;text-decoration:none}
+.bbcl-community-sections a:hover,.bbcl-community-sections a:focus-visible{background:#d8e9ec;text-decoration:underline}
+.bbcl-verified-rooms{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.bbcl-verified-room{display:flex;flex-direction:column;justify-content:center;padding:19px;border:1px solid #b7cbd1;background:#fff;min-height:113px}
+.bbcl-verified-room h3{font-size:1.1rem;margin:0 0 11px;color:#164253}
+.bbcl-verified-room small{color:#4b6471;line-height:1.5}
+@media(max-width:560px){.bbcl-verified-rooms{grid-template-columns:1fr}.bbcl-community-sections a{flex:1 1 40%;text-align:center}}

@@ -3,46 +3,71 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0c3444"><meta name="description" content="Explora las áreas, sistemas sociales y actividades previstas para el portal de BoomBang CL.">
 <title>Comunidad · BoomBang CL</title>
-<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="portal.css">
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="portal.css"><link rel="stylesheet" href="community-archive.css">
 <script defer src="script.js"></script><script defer src="portal.js"></script>
 </head><body class="portal-page">
 <a class="skip-link" href="#principal">Saltar al contenido</a>
-<div class="top-strip"><span aria-hidden="true">✦</span> Proyecto independiente · Portal conectado a la API si se ejecuta Laravel</div>
+<div class="top-strip">BBCL · Comunidad del proyecto HTML5</div>
 <header class="site-header"><div class="container header-inner">
-<a class="brand" href="index.html" aria-label="BoomBang CL, inicio"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a>
+<a class="brand" href="index.html" aria-label="BoomBang CL, inicio"><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a>
 <button class="menu-button" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
 <nav class="main-nav" id="main-nav" aria-label="Navegación principal">
-<a href="index.html">Inicio</a><a href="comunidad.html" aria-current="page">Comunidad</a><a href="noticias.html">Noticias</a><a href="foro.html">Foro</a><a href="social.html">Amigos y clanes</a><a href="avance.html">Avances</a><a href="cuenta.html">Mi cuenta</a>
-<a class="nav-cta" href="index.html#jugar">Entrar al juego ↗</a></nav></div></header>
+<a href="index.html">Inicio</a><a href="comunidad.html" aria-current="page">Comunidad</a><a href="foro.html">Foro</a><a href="ayuda.html">Acerca de</a><a href="noticias.html">Noticias</a><a href="cuenta.html">Acceso</a><a class="nav-cta" href="cuenta.html">Registrarte</a></nav></div></header>
 <main id="principal">
-<section class="portal-banner"><div class="container portal-banner-grid"><div><span class="eyebrow light">LA COMUNIDAD</span><h1>Donde empiezan las <em>amistades.</em></h1><p>Descubre las salas, los rincones sociales y las funciones que queremos reunir en BoomBang CL.</p><a class="button button-sun" href="#areas">Explorar áreas ↓</a></div><img src="screenshots/lobby.png" alt="Captura del lobby de BoomBang HTML5" loading="eager"></div></section>
-<div class="container portal-notice" role="note"><strong>Vista de desarrollo:</strong> las áreas y categorías son ilustrativas. Los nombres de salas no reflejan conexiones al juego. Foro, chat y rankings tienen sus propias páginas, que requieren una API activa.</div>
-<section id="areas" class="portal-section container"><div class="portal-heading"><span class="eyebrow orange">LUGARES PARA ENCONTRARSE</span><h2>Explora el mundo</h2><p>Un vistazo a escenarios conocidos del universo BoomBang y a los sistemas incluidos en el cliente HTML5.</p></div>
+<section class="portal-banner"><div class="container portal-banner-grid"><div><span class="eyebrow light">LA COMUNIDAD</span><h1>Comunidad de BoomBangCL</h1><p>Explora salas, amigos, clanes, rankings, galería, concursos y catálogo, siguiendo la jerarquía documentada en la auditoría.</p><a class="button button-sun" href="#areas">Explorar salas</a></div><img src="screenshots/lobby.png" alt="Captura del lobby de BoomBang HTML5" loading="eager"></div></section>
+<div class="container portal-notice" role="note"><strong>Vista de desarrollo:</strong> las salas nombradas a continuación constan en la auditoría pública, pero su ocupación no corresponde a BBCL. Foro, chat y rankings tienen sus propias páginas, que requieren una API activa.</div>
+<section id="areas" class="portal-section container"><div class="portal-heading"><span class="eyebrow orange">LUGARES PARA ENCONTRARSE</span><h2>Explora el mundo</h2><p>Nombres verificados en el directorio público de la auditoría; no se muestran imágenes específicas sin verificar su procedencia.</p></div>
 <div class="portal-toolbar"><label for="search-areas">Buscar una sala</label><input id="search-areas" type="search" placeholder="Escribe el nombre de una sala…" autocomplete="off" data-area-search></div>
-<div class="portal-areas" data-area-list>
-<article class="portal-area" data-area="Beluga Beach"><span class="area-emoji" aria-hidden="true">🏖️</span><h3>Beluga Beach</h3><p>Playa y encuentros.</p><small>Sin datos de ocupación</small></article>
-<article class="portal-area" data-area="Jardín Secreto"><span class="area-emoji" aria-hidden="true">🌺</span><h3>Jardín Secreto</h3><p>Un rincón para conversar.</p><small>Sin datos de ocupación</small></article>
-<article class="portal-area" data-area="BaoBab"><span class="area-emoji" aria-hidden="true">🌳</span><h3>BaoBab</h3><p>Un lugar entre árboles.</p><small>Sin datos de ocupación</small></article>
-<article class="portal-area" data-area="Ring Golden Ring"><span class="area-emoji" aria-hidden="true">🥊</span><h3>Golden Ring</h3><p>Encuentros y minijuegos.</p><small>Sin datos de ocupación</small></article>
-<article class="portal-area" data-area="Pantano"><span class="area-emoji" aria-hidden="true">🐸</span><h3>Pantano</h3><p>Una aventura misteriosa.</p><small>Sin datos de ocupación</small></article>
-<article class="portal-area" data-area="Islas privadas"><span class="area-emoji" aria-hidden="true">🏝️</span><h3>Islas privadas</h3><p>Espacios creados por jugadores.</p><small>Sin datos de ocupación</small></article>
+<div class="portal-areas bbcl-verified-rooms" data-area-list>
+<article class="portal-area bbcl-verified-room" data-area="Ring"><h3>Ring</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Pantano"><h3>Pantano</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Igloo"><h3>Igloo</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Jardín del Origami"><h3>Jardín del Origami</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Sendero Oculto"><h3>Sendero Oculto</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Jardín Secreto"><h3>Jardín Secreto</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Beluga Beach"><h3>Beluga Beach</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Tarántula"><h3>Tarántula</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="CocosLocos"><h3>CocosLocos</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Inframundo"><h3>Inframundo</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Jungle Love"><h3>Jungle Love</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Ryuu"><h3>Ryuu</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="XionMao"><h3>XionMao</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Pengüin Mafia"><h3>Pengüin Mafia</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="El Castillo de los clanes"><h3>El Castillo de los clanes</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="U.F.O"><h3>U.F.O</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="MiniKong"><h3>MiniKong</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="BaoBab"><h3>BaoBab</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Media Noche"><h3>Media Noche</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Vértigo"><h3>Vértigo</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="IceAge"><h3>IceAge</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Aquarium"><h3>Aquarium</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Laponia"><h3>Laponia</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Ciénaga"><h3>Ciénaga</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="SkatePark"><h3>SkatePark</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Dinoland"><h3>Dinoland</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Area51"><h3>Area51</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Simon Dice"><h3>Simon Dice</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Papa Caliente"><h3>Papa Caliente</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Colapso"><h3>Colapso</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
+<article class="portal-area bbcl-verified-room" data-area="Mano Oculta"><h3>Mano Oculta</h3><small>Referenciada en la auditoría · sin datos de ocupación de BBCL</small></article>
 </div><p class="portal-empty" data-area-empty hidden>No encontramos áreas con ese nombre.</p></section>
 <section class="portal-section portal-surface"><div class="container"><div class="portal-heading"><span class="eyebrow orange">TU COMUNIDAD, A TU MANERA</span><h2>Mucho por compartir</h2></div>
+<nav class="bbcl-community-sections" aria-label="Secciones de Comunidad"><a href="ranking.html">Ranking</a><a href="social.html">Amigos</a><a href="social.html">Clanes</a><a href="#areas">Salas</a><a href="index.html#mundo">Galería</a><a href="foro.html">Concursos y eventos</a><a href="catalogo.html">Catálogo</a></nav>
 <div class="portal-linkgrid">
-<a class="portal-preview-card" href="avance.html"><span aria-hidden="true">📊</span><h3>Estado del proyecto</h3><p>Qué está implementado, pruebas de GitHub y tareas pendientes para lanzar la web.</p><strong>Consultar avances →</strong></a>
+<a class="portal-preview-card" href="avance.html"><h3>Estado del proyecto</h3><p>Qué está implementado, pruebas de GitHub y tareas pendientes para lanzar la web.</p><strong>Consultar avances →</strong></a>
 
-<a class="portal-preview-card" href="social.html"><span aria-hidden="true">🤝</span><h3>Amigos y clanes</h3><p>Solicitudes de amistad y grupos con invitación. Se requiere iniciar sesión.</p><strong>Gestionar mi comunidad →</strong></a>
+<a class="portal-preview-card" href="social.html"><h3>Amigos y clanes</h3><p>Solicitudes de amistad y grupos con invitación. Se requiere iniciar sesión.</p><strong>Gestionar mi comunidad →</strong></a>
 
-<a class="portal-preview-card" href="ranking.html"><span aria-hidden="true">🏅</span><h3>Rankings</h3><p>Consulta clasificaciones reales de la última semana registrada cuando la API esté disponible.</p><strong>Ver clasificación →</strong></a>
-<a class="portal-preview-card" href="cuenta.html"><span aria-hidden="true">🧑‍🤝‍🧑</span><h3>Mi cuenta</h3><p>Acceso con sesión web protegida. El juego mantiene su autenticación propia.</p><strong>Acceder →</strong></a>
-<a class="portal-preview-card" href="chat.html"><span aria-hidden="true">💬</span><h3>Chat del portal</h3><p>Conversaciones persistentes para usuarios registrados, separadas de las salas del juego.</p><strong>Ir al chat →</strong></a>
-<a class="portal-preview-card" href="catalogo.html"><span aria-hidden="true">🛍️</span><h3>Catálogo</h3><p>Consulta los objetos activos en la base de datos. Compras web desactivadas.</p><strong>Ver catálogo →</strong></a>
-<a class="portal-preview-card" href="foro.html"><span aria-hidden="true">📝</span><h3>Foro</h3><p>Publica temas, responde y participa cuando los servicios estén en marcha.</p><strong>Entrar al foro →</strong></a>
-<a class="portal-preview-card" href="ayuda.html"><span aria-hidden="true">🧭</span><h3>Cómo jugar</h3><p>Instala y configura el cliente, servidor y API del proyecto en tu Mac.</p><strong>Leer guía →</strong></a></div></div></section>
+<a class="portal-preview-card" href="ranking.html"><h3>Rankings</h3><p>Los rankings de BBCL necesitan resultados de sus propios jugadores y servicios.</p><strong>Ver clasificación →</strong></a>
+<a class="portal-preview-card" href="cuenta.html"><h3>Mi cuenta</h3><p>Acceso con sesión web protegida. El juego mantiene su autenticación propia.</p><strong>Acceder →</strong></a>
+<a class="portal-preview-card" href="chat.html"><h3>Chat del portal</h3><p>Conversaciones persistentes para usuarios registrados, separadas de las salas del juego.</p><strong>Ir al chat →</strong></a>
+<a class="portal-preview-card" href="catalogo.html"><h3>Catálogo</h3><p>El inventario y los precios dependen del catálogo de BBCL; no se copian datos de otros servidores.</p><strong>Ver catálogo →</strong></a>
+<a class="portal-preview-card" href="foro.html"><h3>Foro</h3><p>Publica temas, responde y participa cuando los servicios estén en marcha.</p><strong>Entrar al foro →</strong></a>
+<a class="portal-preview-card" href="ayuda.html"><h3>Cómo jugar</h3><p>Instala y configura el cliente, servidor y API del proyecto en tu Mac.</p><strong>Leer guía →</strong></a></div></div></section>
 <section class="portal-section container"><div class="portal-image-feature"><img src="screenshots/islas.png" alt="Captura del sistema de islas del repositorio" loading="lazy"><div><span class="eyebrow orange">TU LUGAR EN EL MUNDO</span><h2>Crea tu propia isla</h2><p>El código del juego incluye creación y decoración de islas. Conoce cómo preparar el proyecto antes de jugar.</p><a class="button button-sun" href="ayuda.html">Guía de acceso ↗</a></div></div></section>
 </main>
 <footer class="site-footer"><div class="container"><div class="footer-top">
-<div><a class="brand footer-brand" href="index.html"><span class="brand-sun" aria-hidden="true">✳</span><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a><p>Un portal construido para el proyecto independiente BoomBang CL.<br>Sin afiliación con BoomBang.tv.</p></div>
+<div><a class="brand footer-brand" href="index.html"><span>boom<span class="brand-accent">bang</span><strong>CL</strong></span></a><p>Un portal construido para el proyecto independiente BoomBang CL.<br>Sin afiliación con BoomBang.tv.</p></div>
 <nav aria-label="Enlaces de pie de página"><a href="index.html">Inicio</a><a href="foro.html">Foro</a><a href="chat.html">Chat</a><a href="catalogo.html">Catálogo</a><a href="ranking.html">Ranking</a><a href="ayuda.html">Ayuda</a><a href="https://github.com/Fritz-Ale/boombangCL">GitHub</a></nav></div>
 <div class="footer-bottom"><span>© <span id="year">2026</span> BoomBang CL · Proyecto no oficial.</span><span>Créditos y condiciones: <a href="https://github.com/Fritz-Ale/boombangCL/blob/main/LICENSE.txt">Licencia del repositorio</a></span></div></div></footer>
 </body></html>

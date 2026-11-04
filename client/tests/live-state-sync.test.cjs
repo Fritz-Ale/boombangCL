@@ -190,6 +190,24 @@ test('public backpack reconciles snapshots and live delta events with unmount cl
   assert.match(code, /socket\.on\(ResponseSocketsEnum\.ADD_ITEM_TO_INVENTORY, handleItemAdded\)/);
   assert.match(code, /socket\.off\(ResponseSocketsEnum\.ADD_ITEM_TO_INVENTORY, handleItemAdded\)/);
   assert.match(code, /socket\.off\(ResponseSocketsEnum\.REMOVE_ITEM_FROM_INVENTORY, handleItemRemoved\)/);
-  assert.match(code, /String\(existing\.id\) === String\(item\.id\)/);
+  assert.match(code, /String\(item\.id\) === id/);
   assert.match(code, /watch\(totalPages/);
+});
+
+test('public backpack reconciles a late snapshot with in-flight add/remove events', () => {
+  const source = fs.readFileSync(path.join(root,
+    'src/views/components/game/scenes/public/InventoryPublicSceneComponent.vue'), 'utf8');
+  const match = source.match(/const applyInventoryDelta = \(items, event\) => \{[\s\S]*?\n\};/);
+  assert.ok(match, 'inventory reconciliation helper must exist');
+  const apply = vm.runInNewContext(match[0] + '\napplyInventoryDelta;', {});
+  const original = [{ id: 1, sprite_name: 'island_object' }, { id: 2 }];
+  const added = { type: 'add', id: '3', item: { id: '3', sprite_name: 'another_object' } };
+  const removed = { type: 'remove', id: '1' };
+  const merged = [added, removed].reduce(apply, original);
+  assert.deepEqual(Array.from(merged, x => String(x.id)), ['2', '3']);
+  assert.equal(apply(merged, added).length, 2, 'duplicate delivery cannot duplicate item');
+  assert.deepEqual(Array.from(apply(merged, { type: 'remove', id: 3 }), x => String(x.id)), ['2']);
+  assert.match(source, /pendingInventoryDeltas\.reduce\(applyInventoryDelta, snapshot\)/);
+  assert.match(source, /if \(!hasInitialSnapshot\) pendingInventoryDeltas\.push\(event\)/);
+  assert.match(source, /pendingInventoryDeltas = \[\]/);
 });

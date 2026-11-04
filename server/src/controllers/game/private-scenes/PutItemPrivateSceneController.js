@@ -19,7 +19,13 @@ class PutItemPrivateSceneController {
                 user.currentArea.user_id != user.id
             ) return;
 
-            const { user_catalog_item_id, occupied_tiles, is_move } = data || {};
+            const { occupied_tiles, is_move } = data || {};
+            // Los identificadores pueden llegar como números o cadenas decimales
+            // desde el cliente. Rechazar conversiones ambiguas y valores inseguros.
+            const rawId = data?.user_catalog_item_id;
+            const user_catalog_item_id = typeof rawId === 'number' ||
+                (typeof rawId === 'string' && /^[1-9][0-9]*$/.test(rawId))
+                ? Number(rawId) : NaN;
             if (!Number.isSafeInteger(user_catalog_item_id) || user_catalog_item_id < 1) {
                 throw new Error('ID de objeto inválido');
             }
@@ -33,7 +39,7 @@ class PutItemPrivateSceneController {
 
             if (is_move) {
                 // Logic for moving an item already in the scene
-                const itemToMove = user.currentArea.objects.find(item => item.id == user_catalog_item_id);
+                const itemToMove = user.currentArea.objects.find(item => String(item.id) === String(user_catalog_item_id));
                 if (!itemToMove) {
                     throw new Error('Item to move not found in the scene');
                 }
