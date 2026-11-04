@@ -37,7 +37,7 @@ test('placing item with string inventory ID accepts numeric socket ID and reserv
 test('moving existing object excludes itself from collision when serialized ID is a string', async () => {
   const source = fs.readFileSync(path.join(__dirname, '../src/controllers/game/private-scenes/PutItemPrivateSceneController.js'), 'utf8');
   let persisted=0;
-  const item = {id:'44',map_size:[[0,0]],occupied_tiles:[[0,0]],type_of_behavior:0};
+  const item = {id:'44',private_scene_id:8,map_size:[[0,0]],occupied_tiles:[[0,0]],type_of_behavior:0};
   const scene = {id:8,user_id:'3',scene_type:'private',objects:[item],max_objects:20,game_map:[[0,0],[0,0]],map_rows:2,map_cols:2,
     rebuildObjectNavigationMap(){},emit(){}};
   const user={id:'3',currentArea:scene,inventory:[]};
@@ -94,7 +94,7 @@ test('retirar muebles valida ids antes de consultar API y acepta cadenas decimal
 
 test('colocar y mover aceptan IDs decimales seguros sin persistir entradas invalidas', async () => {
   const source=fs.readFileSync(path.join(__dirname,'../src/controllers/game/private-scenes/PutItemPrivateSceneController.js'),'utf8');
-  const item={id:'44',map_size:[[0,0]],occupied_tiles:[],type_of_behavior:0};
+  const item={id:'44',private_scene_id:null,map_size:[[0,0]],occupied_tiles:[],type_of_behavior:0};
   const emitted=[];
   let placed=0,moved=0;
   const scene={id:8,user_id:'3',scene_type:'private',objects:[],max_objects:20,
@@ -131,4 +131,31 @@ test('colocar y mover aceptan IDs decimales seguros sin persistir entradas inval
   assert.equal(item.occupied_tiles[0][0],1);
   assert.equal(scene._catalogMutationPending,false);
   assert.equal(emitted.filter(([event])=>event==='put').length,2);
+});
+
+test('rechaza mover un mueble que declara pertenecer a otra isla', async () => {
+  const source=fs.readFileSync(path.join(__dirname,'../src/controllers/game/private-scenes/PutItemPrivateSceneController.js'),'utf8');
+  let persisted=0;
+  const item={id:'44',private_scene_id:99,map_size:[[0,0]],occupied_tiles:[[0,0]],type_of_behavior:0};
+  const scene={id:8,user_id:'3',scene_type:'private',objects:[item],max_objects:20,
+    game_map:[[0,0],[0,0]],map_rows:2,map_cols:2,rebuildObjectNavigationMap(){},
+    emit(){throw Error('No se debe notificar un movimiento rechazado');}};
+  const user={id:'3',currentArea:scene,inventory:[]};
+  const emitted=[];
+  const socket={id:'test',emit(event){emitted.push(event);}};
+  const deps={
+    '../../../utils/Log':{error(){}},
+    '../../../collections/ConnectedUsersCollection':{getBySocketId:()=>user},
+    '../../../enums/SceneTypesEnum':{PRIVATE_SCENE:'private'},
+    '../../../enums/ResponseSocketsEnum':{SCENE_PUT_ITEM:'put'},
+    '../../../services-api/PrivateSceneApiService':{async updateItemPosition(){persisted++;}},
+    '../../../enums/CatalogItemTypeOfBehaviorEnum':{WALKABLE:1,WALKABLE_OVERLAY:2}
+  };
+  const sandbox={module:{exports:{}},console:{error(){}},require(key){return deps[key];}};
+  vm.runInNewContext(source,sandbox);
+  await sandbox.module.exports.main(socket,{}, {user_catalog_item_id:'44',occupied_tiles:[[1,0]],is_move:true});
+  assert.equal(persisted,0);
+  assert.equal(item.occupied_tiles[0][0],0);
+  assert.equal(scene._catalogMutationPending,false);
+  assert.deepEqual(emitted,['scene_item_error']);
 });
