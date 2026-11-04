@@ -257,7 +257,7 @@
   function initForum() {
     visible('[data-forum-create-wrap]', Boolean(state.user));
     visible('[data-forum-login]', !state.user);
-    message('Foro conectado. Los temas y respuestas se guardan en la base de datos.');
+    message('Consultando temas públicos del foro…');
     const form = one('[data-forum-create]');
     form.addEventListener('submit', async event => {
       event.preventDefault();
@@ -293,6 +293,7 @@
       else { visible('[data-thread-view]', false); one('.portal-forum-layout').hidden = false; }
     });
     loadThreads().then(() => {
+      message('Temas públicos consultados en la API de BBCL.');
       const selected = new URLSearchParams(location.search).get('id');
       if (selected && /^\d+$/.test(selected)) return openThread(selected, false);
     }).catch(error => message(formatError(error), true));
@@ -365,7 +366,10 @@
     for (const item of selected) {
       const card = node('article', null, 'portal-catalog-item');
       const price = item.price_type ? String(item.price_type).replaceAll('_', ' ') : 'monedas';
-      card.append(node('span', item.category || 'Otros'), node('h3', item.name || 'Objeto'), node('p', String(item.description || '').slice(0, 300)), node('strong', item.price + ' ' + price));
+      const hasPrice = item.price !== null && item.price !== undefined && String(item.price).trim() !== '';
+      const amount = hasPrice && Number.isFinite(Number(item.price)) && Number(item.price) >= 0
+        ? String(item.price) + ' ' + price : 'Precio no disponible';
+      card.append(node('span', item.category || 'Otros'), node('h3', item.name || 'Objeto'), node('p', String(item.description || '').slice(0, 300)), node('strong', amount));
       wrap.append(card);
     }
   }
@@ -443,7 +447,11 @@
     }
   }).catch(error => {
     message('No se pudo iniciar el portal: ' + formatError(error) + '. Revisa que Docker, Laravel y las migraciones estén activos.', true);
+    // Los endpoints GET son públicos: si falla /session, consultar sin
+    // autenticación y sin habilitar acciones protegidas de escritura.
     if (kind === 'catalog') initCatalog();
     if (kind === 'ranking') initRanking();
+    if (kind === 'forum') initForum();
+    if (kind === 'news') initNews();
   });
 })();
