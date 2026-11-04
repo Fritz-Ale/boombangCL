@@ -181,7 +181,9 @@ export async function buildPublicSite(targetDir) {
   const pages = new Map();
   for (const name of readonlyPages) {
     const content = await readFile(join(web,name+'.html'),'utf8');
-    pages.set(name+'.html',transformReadonlyPage(name,content));
+    // La portada revisada es canonica; no reemplazar su menu ni inyectar
+    // avisos del portal heredado. Las demas paginas conservan su transformacion.
+    pages.set(name+'.html',name==='index' ? content : transformReadonlyPage(name,content));
   }
   for (const [filename,title,emoji,description] of pendingPages) {
     pages.set(filename,unavailablePage(filename,title,emoji,description));
