@@ -121,3 +121,14 @@ test('consultas públicas siguen funcionando sin sesión y catálogo no inventa 
   assert.match(script, /Number\.isFinite\(Number\(item\.price\)\)/);
   assert.doesNotMatch(script, /innerHTML|eval\(/);
 });
+
+test('catalogo y ranking se refrescan con datos reales sin recargar la pagina', () => {
+  const script = read('web/portal-app.js');
+  assert.match(script, /function watchPublicData\(refresh\)/);
+  assert.match(script, /document\.visibilityState === 'visible'/);
+  assert.match(script, /30000/);
+  assert.match(script, /document\.addEventListener\('visibilitychange'/);
+  assert.match(script, /if \(pending\) return/);
+  assert.match(script, /search\.addEventListener\('input', renderCatalog\)/);
+  assert.doesNotMatch(script, /window\.location\.reload\(/);
+});
