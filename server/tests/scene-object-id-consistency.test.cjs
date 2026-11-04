@@ -178,3 +178,52 @@ test('Laravel confirms successful decoration mutations before Socket.IO updates 
       method + ' only acknowledges after the database update check');
   }
 });
+
+test('Laravel scopes decoration writes to the authorized scene and Node sends scene ID', () => {
+  const php = fs.readFileSync(path.join(__dirname,
+    '../../api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php'), 'utf8');
+  const node = fs.readFileSync(path.join(__dirname,
+    '../src/controllers/game/private-scenes/PutItemPrivateSceneController.js'), 'utf8');
+  for (const method of ['putItem', 'updateItemPosition']) {
+    const start = php.indexOf('public function ' + method + '(');
+    const end = php.indexOf('public function ', start + 1);
+    const body = php.slice(start, end === -1 ? undefined : end);
+    assert.match(body, /PrivateScene::findOrFail\(\$validated\['private_scene_id'\]\)/);
+    assert.match(body, /\$scene->user_id != \$user->id/);
+    assert.match(body, /\$scene->island->user_id != \$user->id/);
+  }
+  const start = php.indexOf('public function updateItemPosition(');
+  const end = php.indexOf('public function ', start + 1);
+  assert.match(php.slice(start, end), /where\('private_scene_id', \$scene->id\)/);
+  assert.match(node, /PrivateSceneApiService\.updateItemPosition\(\{\s*private_scene_id: scene\.id,/);
+});
+
+
+test('removing furniture is scoped to the authorized scene in Laravel and Node', () => {
+  const php = fs.readFileSync(path.join(__dirname,
+    '../../api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php'), 'utf8');
+  const node = fs.readFileSync(path.join(__dirname,
+    '../src/controllers/game/private-scenes/RemoveItemPrivateSceneController.js'), 'utf8');
+  const start = php.indexOf('public function removeItem(');
+  const end = php.indexOf('public function ', start + 1);
+  const body = php.slice(start, end);
+  assert.match(body, /'private_scene_id' => 'required\|integer\|exists:private_scenes,id'/);
+  assert.match(body, /PrivateScene::findOrFail\(\$validated\['private_scene_id'\]\)/);
+  assert.match(body, /\$scene->user_id != \$user->id/);
+  assert.match(body, /\$scene->island->user_id != \$user->id/);
+  assert.match(body, /where\('private_scene_id', \$scene->id\)/);
+  assert.match(node, /PrivateSceneApiService\.removeItem\(\{\s*private_scene_id: scene\.id,/);
+});
+
+
+test('Laravel rejects decoration writes when the scene island relation is missing', () => {
+  const php = fs.readFileSync(path.join(__dirname,
+    '../../api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php'), 'utf8');
+  for (const method of ['putItem', 'updateItemPosition', 'removeItem']) {
+    const start = php.indexOf('public function ' + method + '(');
+    assert.ok(start !== -1, method + ' must exist');
+    const end = php.indexOf('public function ', start + 1);
+    const body = php.slice(start, end === -1 ? undefined : end);
+    assert.match(body, /!\$scene->island/, method + ' must reject a missing island');
+  }
+});

@@ -54,6 +54,7 @@ class PutItemPrivateSceneController {
                 }
 
                 await PrivateSceneApiService.updateItemPosition({
+                    private_scene_id: scene.id,
                     user_catalog_item_id: user_catalog_item_id,
                     occupied_tiles: occupied_tiles
                 }, user);
