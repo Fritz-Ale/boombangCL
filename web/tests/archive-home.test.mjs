@@ -51,3 +51,17 @@ test('los enlaces locales de la portada tienen archivos de destino', () => {
     assert.ok(existsSync(join(root, 'web', path)), 'enlace inexistente: ' + link);
   }
 });
+
+test('la portada adopta jerarquia auditada sin inventar datos de BoomBang.tv', () => {
+  for (const label of ['Inicio','Comunidad','Foro','Acerca de','Noticias','Acceso','Registrarte']) {
+    assert.match(home, new RegExp('>'+label+'<'));
+  }
+  for (const heading of ['Tu isla','Chat','Acciones','Minijuegos','Comunidad, salas y actividad']) {
+    assert.ok(home.includes('>'+heading+'</h'), 'falta apartado: '+heading);
+  }
+  assert.ok(home.includes('Dónde está la gente'));
+  assert.ok(home.includes('Últimos en unirse'));
+  assert.match(home, /no publicamos cifras ni usuarios de BoomBang\.tv/);
+  assert.doesNotMatch(home, /api\.boombang\.tv\/api\/avatar/);
+  assert.doesNotMatch(home, /static\.boombang\.tv\/web\/assets/);
+});
