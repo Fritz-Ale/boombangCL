@@ -146,7 +146,7 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
             ]);
             $user = Auth::user();
             $scene = PrivateScene::findOrFail($validated['private_scene_id']);
-            if ($scene->user_id != $user->id || $scene->island->user_id != $user->id) {
+            if ($scene->user_id != $user->id || !$scene->island || $scene->island->user_id != $user->id) {
                 throw new Exception('You do not have permission to decorate this scene.');
             }
             $responseUpdate = UserCatalogItem::where('id', $validated['user_catalog_item_id'])
@@ -177,7 +177,7 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
             ]);
             $user = Auth::user();
             $scene = PrivateScene::findOrFail($validated['private_scene_id']);
-            if ($scene->user_id != $user->id || $scene->island->user_id != $user->id) {
+            if ($scene->user_id != $user->id || !$scene->island || $scene->island->user_id != $user->id) {
                 throw new Exception('You do not have permission to move objects in this scene.');
             }
             $responseUpdate = UserCatalogItem::where('id', $validated['user_catalog_item_id'])
