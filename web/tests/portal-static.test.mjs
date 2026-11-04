@@ -8,7 +8,7 @@ const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const web = join(repo, 'web');
 const read = path => readFileSync(join(repo, path), 'utf8');
 const pages = ['index.html', 'comunidad.html', 'noticias.html', 'ayuda.html', 'cuenta.html', 'foro.html', 'chat.html', 'catalogo.html', 'ranking.html', 'social.html', 'moderacion.html', 'normas.html', 'privacidad.html', 'restablecer.html', 'avance.html'];
-const assets = ['styles.css', 'portal.css', 'archive-home.css', 'live.css', 'script.js', 'portal.js', 'portal-app.js', 'social-app.js', 'moderacion.js', 'password-reset.js', 'avance.js', 'avance.css', 'avance-data.json'];
+const assets = ['styles.css', 'portal.css', 'archive-home.css', 'community-archive.css', 'live.css', 'script.js', 'portal.js', 'portal-app.js', 'social-app.js', 'moderacion.js', 'password-reset.js', 'avance.js', 'avance.css', 'avance-data.json'];
 
 test('all portal pages, scripts and styles are included in Docker image', () => {
   const docker = read('web/Dockerfile');
