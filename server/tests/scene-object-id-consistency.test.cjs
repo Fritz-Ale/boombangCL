@@ -224,6 +224,6 @@ test('Laravel rejects decoration writes when the scene island relation is missin
     assert.ok(start !== -1, method + ' must exist');
     const end = php.indexOf('public function ', start + 1);
     const body = php.slice(start, end === -1 ? undefined : end);
-    assert.match(body, /!\\$scene->island/, method + ' must reject a missing island');
+    assert.match(body, /!\$scene->island/, method + ' must reject a missing island');
   }
 });
