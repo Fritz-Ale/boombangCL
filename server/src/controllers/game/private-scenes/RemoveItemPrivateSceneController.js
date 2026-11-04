@@ -45,6 +45,7 @@ class RemoveItemPrivateSceneController {
 
             // La BD debe aceptar el cambio antes de notificar al cliente.
             await PrivateSceneApiService.removeItem({
+                private_scene_id: scene.id,
                 user_catalog_item_id: userCatalogItemId,
             }, user);
             // Actualizar la escena original incluso si el propietario salió
