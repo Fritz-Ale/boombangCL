@@ -20,13 +20,12 @@
     <button class="menu-button" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
     <nav class="main-nav" id="main-nav" aria-label="Navegación principal">
       <a href="index.html" aria-current="page">Inicio</a>
-      <a href="#mundo">Islas y salas</a>
-      <a href="#personajes">Kekos</a>
-      <a href="#catalogo">Objetos</a>
       <a href="comunidad.html">Comunidad</a>
+      <a href="foro.html">Foro</a>
+      <a href="ayuda.html">Acerca de</a>
       <a href="noticias.html">Noticias</a>
-      <a href="avance.html">Avances</a>
-      <a class="archive-nav-action" href="#jugar">Cómo entrar</a>
+      <a href="cuenta.html">Acceso</a>
+      <a class="archive-nav-action" href="cuenta.html">Registrarte</a>
     </nav>
   </div>
 </header>
@@ -35,12 +34,12 @@
   <section class="archive-hero" aria-labelledby="hero-title">
     <div class="archive-container archive-hero-layout">
       <div class="archive-hero-copy">
-        <p class="archive-kicker">BOOMBANG CL · CLIENTE HTML5</p>
-        <h1 id="hero-title">El mundo de<br>BoomBang, en HTML5.</h1>
+        <p class="archive-kicker">BBCL · COMUNIDAD Y CLIENTE HTML5</p>
+        <h1 id="hero-title">Islas, kekos y comunidad de BoomBangCL</h1>
         <p>Volvemos a recorrer las salas, los kekos y las islas a través del cliente conservado en este proyecto. Las imágenes son capturas de los archivos de BoomBangCL, no escenas generadas.</p>
         <div class="archive-actions">
-          <a class="archive-button archive-button-primary" href="#mundo">Ver las salas</a>
-          <a class="archive-button archive-button-secondary" href="#jugar">Estado del acceso</a>
+          <a class="archive-button archive-button-primary" href="#jugar">Jugar · Estado de acceso</a>
+          <a class="archive-button archive-button-secondary" href="comunidad.html">Explorar comunidad</a>
         </div>
         <p class="archive-status">Proyecto independiente. El servidor multijugador aún no tiene acceso público verificado.</p>
       </div>
@@ -48,6 +47,15 @@
         <img src="screenshots/portada.png" alt="Captura de la portada del cliente BoomBang HTML5 conservada en BoomBangCL" fetchpriority="high" width="1200" height="750">
         <figcaption>Captura existente: <code>doc/screenshots/portada.png</code></figcaption>
       </figure>
+    </div>
+  </section>
+
+  <section class="bbcl-experience" id="experiencia" aria-label="Qué ofrece BoomBangCL">
+    <div class="archive-container bbcl-experience-grid">
+      <article><h2>Tu isla</h2><p>Decoración y personalización: consulta las capturas del sistema existente.</p><a href="#mundo">Ver islas</a></article>
+      <article><h2>Chat</h2><p>La comunicación multijugador depende de la conexión real del servidor.</p><a href="ayuda.html">Estado del chat</a></article>
+      <article><h2>Acciones</h2><p>Los movimientos e interacciones de los kekos pertenecen al cliente HTML5.</p><a href="#personajes">Ver kekos</a></article>
+      <article><h2>Minijuegos</h2><p>Consulta la captura conservada de Golden Ring; no se inventan resultados.</p><a href="#mundo">Ver minijuego</a></article>
     </div>
   </section>
 
@@ -77,6 +85,20 @@
     </div>
   </section>
 
+  <section class="bbcl-community-panel" id="actividad" aria-labelledby="activity-title">
+    <div class="archive-container">
+      <p class="archive-kicker">COMUNIDAD · REFERENCIA DE JERARQUÍA</p>
+      <h2 id="activity-title">Comunidad, salas y actividad</h2>
+      <p>El JSON de auditoría identifica los módulos «Dónde está la gente», «Últimos en unirse» y «¡Hazte VIP!». En BBCL no publicamos cifras ni usuarios de BoomBang.tv como si pertenecieran a nuestro servidor.</p>
+      <div class="bbcl-community-grid">
+        <article><h3>Salas</h3><p>Explora las áreas públicas y las capturas que ya existen en el proyecto.</p><a href="comunidad.html">Explorar salas</a></article>
+        <article><h3>Amigos y clanes</h3><p>Las funciones sociales requieren cuentas y servicios públicos operativos.</p><a href="comunidad.html">Ver comunidad</a></article>
+        <article><h3>Rankings, concursos y catálogo</h3><p>Los objetos y sus categorías deben proceder del inventario real, sin rarezas ni precios inventados.</p><a href="catalogo.html">Consultar catálogo</a></article>
+        <article><h3>Noticias y VIP</h3><p>Los anuncios y beneficios de BBCL deben publicarse únicamente cuando existan.</p><a href="noticias.html">Noticias del proyecto</a></article>
+      </div>
+    </div>
+  </section>
+
   <section class="project section-pad" id="jugar" aria-labelledby="access-title">
     <div class="archive-container archive-access-layout">
       <div><p class="archive-kicker">ACCESO AL CLIENTE</p><h2 id="access-title">Cómo entrar a BoomBangCL</h2><p>El portal público es informativo. El cliente HTML5 necesita Laravel, Node.js/Socket.IO y MariaDB operativos. No presentamos un enlace localhost como si fuera un servidor accesible desde internet.</p><a class="archive-button archive-button-primary" href="ayuda.html">Ver guía de acceso</a></div>
@@ -86,7 +108,7 @@
 </main>
 
 <footer class="archive-footer">
- <div class="archive-container archive-footer-layout"><div><strong>BoomBangCL</strong><p>Proyecto independiente basado en BoomBang HTML5. No afiliado con BoomBang.tv.</p></div><nav aria-label="Enlaces del pie de página"><a href="comunidad.html">Comunidad</a><a href="avance.html">Estado del proyecto</a><a href="normas.html">Normas</a><a href="privacidad.html">Privacidad</a><a href="https://github.com/Fritz-Ale/boombangCL" rel="noopener noreferrer" target="_blank">GitHub</a></nav></div>
+ <div class="archive-container archive-footer-layout"><div><strong>BoomBangCL</strong><p>Proyecto independiente basado en BoomBang HTML5. No afiliado con BoomBang.tv.</p></div><nav aria-label="Enlaces del pie de página"><a href="comunidad.html">Comunidad</a><a href="foro.html">Foro</a><a href="noticias.html">Noticias</a><a href="ayuda.html">Ayuda</a><a href="avance.html">Estado del proyecto</a><a href="normas.html">Normas</a><a href="privacidad.html">Privacidad</a><a href="https://github.com/Fritz-Ale/boombangCL" rel="noopener noreferrer" target="_blank">GitHub</a></nav></div>
 </footer>
 </body>
 </html>
