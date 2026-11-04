@@ -18,6 +18,15 @@ class RemoveItemPrivateSceneController {
                 || user.currentArea.user_id != user.id
             ) return;
 
+            // Rechazar identificadores no enteros antes de reservar la escena
+            // o consultar Laravel. Aceptar número o cadena decimal segura.
+            const rawId = data?.user_catalog_item_id;
+            const userCatalogItemId = typeof rawId === 'number' || (typeof rawId === 'string' && /^[1-9]\\d*$/.test(rawId))
+                ? Number(rawId) : NaN;
+            if (!Number.isSafeInteger(userCatalogItemId) || userCatalogItemId < 1) {
+                throw new Error('ID de objeto inválido');
+            }
+
             const scene = user.currentArea;
             if (scene._catalogMutationPending) {
                 throw new Error('La sala está guardando otro objeto. Vuelve a intentar.');
@@ -25,8 +34,7 @@ class RemoveItemPrivateSceneController {
             scene._catalogMutationPending = true;
             lockedScene = scene;
 
-            let userCatalogItemId = data?.user_catalog_item_id;
-            let userCatalogItem = user.currentArea.objects.find(item => item.id == userCatalogItemId);
+            const userCatalogItem = scene.objects.find(item => String(item.id) === String(userCatalogItemId));
             if (!userCatalogItem) {
                 throw new Error('Item not found in user current area');
             }
