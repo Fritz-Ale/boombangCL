@@ -111,3 +111,13 @@ test('new portal accounts must confirm email before social writes; legacy game a
   assert.match(account, /data-resend-verification/);
   assert.match(client, /resend-verification/);
 });
+
+test('consultas públicas siguen funcionando sin sesión y catálogo no inventa precios', () => {
+  const script = read('web/portal-app.js');
+  assert.match(script, /if \(kind === 'forum'\) initForum\(\)/);
+  assert.match(script, /if \(kind === 'news'\) initNews\(\)/);
+  assert.match(script, /Temas públicos consultados en la API de BBCL/);
+  assert.match(script, /Precio no disponible/);
+  assert.match(script, /Number\.isFinite\(Number\(item\.price\)\)/);
+  assert.doesNotMatch(script, /innerHTML|eval\(/);
+});
