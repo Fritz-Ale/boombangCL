@@ -183,3 +183,25 @@ test('island explorer supports keyboard navigation without a game server', async
   assert.match(script, /target\.focus\(\)/);
   assert.doesNotMatch(script, /fetch\(|WebSocket\(|Authorization/);
 });
+
+test('catálogo, ranking y foro publican exclusivamente taxonomías auditadas', async () => {
+  const dir = await mkdtemp(join(tmpdir(),'bbcl-audited-'));
+  try {
+    await buildPublicSite(dir);
+    for (const [file,labels] of [
+      ['catalogo.html',['Único','Casi único','LTD','Muy rare','Rare','Medallas']],
+      ['ranking.html',['Puntos de logro','Medallas','Minijuegos','Clanes']],
+      ['foro.html',['Foro Oficial de BoomBang','OffTopic','Temas Técnicos']]
+    ]) {
+      const html = await readFile(join(dir,file),'utf8');
+      for (const label of labels) assert.ok(html.includes('<li>'+label+'</li>'),file+': '+label);
+      assert.match(html,/href="pendientes\.html"/);
+      assert.match(html,/Funcionalidad pendiente/);
+      assert.doesNotMatch(html,/<form\b|static\.boombang\.tv|api\.boombang\.tv|<svg\b/);
+    }
+    const catalog = await readFile(join(dir,'catalogo.html'),'utf8');
+    const ranking = await readFile(join(dir,'ranking.html'),'utf8');
+    assert.match(catalog,/screenshots\/catalogo\.png/);
+    assert.match(ranking,/screenshots\/ranking\.png/);
+  } finally { await rm(dir,{recursive:true,force:true}); }
+});
