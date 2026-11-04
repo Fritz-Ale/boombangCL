@@ -148,12 +148,9 @@ export async function enhancePublicSite(directory,roadmap) {
      html=html.replace('</main>',promo+'</main>');
    }
    if(filename==='index.html'){
-     if(!html.includes('<section class="intro section-pad"')) throw new Error('Homepage progress anchor missing');
-     html=html.replace('<section class="intro section-pad"',homepageProgress(tasks)+'<section class="intro section-pad"');
-     const projectAnchor='<section class="project section-pad"';
-     if(!html.includes(projectAnchor))throw new Error('Homepage latest-updates anchor missing');
-     html=html.replace(projectAnchor,homeMilestones(roadmap)+projectAnchor);
-     html=html.replace('</head>','<link rel="stylesheet" href="site-milestones.css"></head>');
+     if(!html.includes('class="archive-intro"')) throw new Error('Homepage must use the real-project screenshot layout');
+     // Mantener la portada revisada: no insertar campañas ni arte generico.
+     // Los hitos comprobables siguen disponibles en avance.html y noticias.html.
      html=html.replace('El botón de juego abre la dirección local del cliente y requiere que los servicios estén configurados.',
        'La página para jugar explica qué servicios faltan. No hay servidor multijugador público activo.');
    }
