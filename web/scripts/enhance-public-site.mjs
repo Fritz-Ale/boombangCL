@@ -148,14 +148,9 @@ export async function enhancePublicSite(directory,roadmap) {
      html=html.replace('</main>',promo+'</main>');
    }
    if(filename==='index.html'){
-     if(!html.includes('<section class="intro section-pad"')) throw new Error('Homepage progress anchor missing');
-     html=html.replace('<section class="intro section-pad"',homepageProgress(tasks)+'<section class="intro section-pad"');
-     const projectAnchor='<section class="project section-pad"';
-     if(!html.includes(projectAnchor))throw new Error('Homepage latest-updates anchor missing');
-     html=html.replace(projectAnchor,homeMilestones(roadmap)+projectAnchor);
-     html=html.replace('</head>','<link rel="stylesheet" href="site-milestones.css"></head>');
-     html=html.replace('El botón de juego abre la dirección local del cliente y requiere que los servicios estén configurados.',
-       'La página para jugar explica qué servicios faltan. No hay servidor multijugador público activo.');
+     // Archivo visual canonico: no insertar secciones promocionales heredadas
+     // ni transformar el contenido de las capturas originales del proyecto.
+     if(!html.includes('href="archive-home.css"')) throw new Error('Canonical archive homepage missing');
    }
    html=addMetadata(filename,html);
    await writeFile(join(output,filename),html);
