@@ -111,11 +111,16 @@ class PrivateSceneApiController extends Controller implements PrivateSceneApiCon
         try {
             $validated = $request->validate([
                 'user_catalog_item_id' => 'required|integer|exists:user_catalog_items,id',
+                'private_scene_id' => 'required|integer|exists:private_scenes,id',
             ]);
             $user = Auth::user();
+            $scene = PrivateScene::findOrFail($validated['private_scene_id']);
+            if ($scene->user_id != $user->id || !$scene->island || $scene->island->user_id != $user->id) {
+                throw new Exception('You do not have permission to remove objects from this scene.');
+            }
             $responseUpdate = UserCatalogItem::where('id', $validated['user_catalog_item_id'])
                 ->where('user_id', $user->id)
-                ->whereNotNull('private_scene_id')
+                ->where('private_scene_id', $scene->id)
                 ->update([
                     'private_scene_id' => null,
                     'occupied_tiles' => '[]'
