@@ -59,7 +59,7 @@ body.archive-home { margin:0; font-family:Arial,Helvetica,sans-serif; background
 .archive-footer nav { display:flex; flex-wrap:wrap; gap:15px; }
 .archive-footer a { font-size:.88rem; text-decoration:none; }
 .archive-footer a:hover { text-decoration:underline; }
-@media(max-width:920px) {
+@media(max-width:760px) {
  .archive-header-inner { flex-wrap:wrap; }
  .archive-header .menu-button { display:block; }
  .archive-header .main-nav { display:none; flex-basis:100%; flex-direction:column; align-items:stretch; gap:0; padding-bottom:12px; }
