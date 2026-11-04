@@ -214,3 +214,16 @@ test('removing furniture is scoped to the authorized scene in Laravel and Node',
   assert.match(body, /where\('private_scene_id', \$scene->id\)/);
   assert.match(node, /PrivateSceneApiService\.removeItem\(\{\s*private_scene_id: scene\.id,/);
 });
+
+
+test('Laravel rejects decoration writes when the scene island relation is missing', () => {
+  const php = fs.readFileSync(path.join(__dirname,
+    '../../api/app/Http/Controllers/Api/Game/Scene/PrivateSceneApiController.php'), 'utf8');
+  for (const method of ['putItem', 'updateItemPosition', 'removeItem']) {
+    const start = php.indexOf('public function ' + method + '(');
+    assert.ok(start !== -1, method + ' must exist');
+    const end = php.indexOf('public function ', start + 1);
+    const body = php.slice(start, end === -1 ? undefined : end);
+    assert.match(body, /!\\$scene->island/, method + ' must reject a missing island');
+  }
+});
