@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync } from 'node:zlib';
@@ -18,6 +18,16 @@ for (const name of ['index.html', 'styles.css', 'script.js']) {
   } else writeFileSync(join(dist, name), bytes);
   console.log('Built', name, bytes.length, 'bytes');
 }
+const screenshotSource = join(source, '..', '..', 'doc', 'screenshots');
+const screenshotDist = join(dist, 'screenshots');
+mkdirSync(screenshotDist, { recursive: true });
+for (const name of ['personalizacion.png', 'catalogo.png', 'inventario.png']) {
+  const from = join(screenshotSource, name);
+  if (!existsSync(from)) throw new Error('Missing original repository screenshot: ' + from);
+  copyFileSync(from, join(screenshotDist, name));
+  console.log('Copied repository screenshot', name);
+}
+
 for (const name of ['explorar.html', 'explorar.css', 'explorar.js']) {
   copyFileSync(join(source, name), join(dist, name));
   console.log('Copied', name);
